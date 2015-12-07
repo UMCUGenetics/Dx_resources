@@ -1,5 +1,5 @@
 # Within this folder there are files needed for IAP, the coverage tool, and NIPT.
-BED files
+Tracks folder
 	* ENSEMBL_UCSC_merged_collapsed_sorted_v2.bed	
 		This is the 'master' BED file without flanks. 
 		Warning: this file is 0-based
@@ -19,7 +19,7 @@ BED files
 		List file with 100bp flanks: first 5 columns of BED with header. This file is used for variant calling with the haplotype caller.
 		Warning: this file is 1-based
 
-Exoncov_v3 files
+Exoncov folder
 	gpanels_10062015.txt
 		This file contains all currently used gen-panels for Dx.
 		Remark: OWS02(Schisis) is not working due to included noncoding genes/genes not included the BED file 	
@@ -32,8 +32,9 @@ Exoncov_v3 files
 		or if no NM's are known, the longest ENST.
 	NM_ENSEMBL_HGNC.txt 
 		This file includes the known link between GENE (HGNC) and all known NM/ENST transcripts
-Controle samples:
+SNP_array_validation folder:
 	control_samples_full_sort.vcf
 		This is a VCF with all SNPs + genotypes for the 4 control samples. This is a genome wide assay.
 
-
+Reference_NIPT folde:
+	This folder contains all files for the NIPT reference set
