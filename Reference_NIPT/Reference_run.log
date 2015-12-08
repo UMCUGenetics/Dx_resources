@@ -1,0 +1,14 @@
+Start full reference 07-12-2015 16:05:07
+Subversion revision: 
+Reference dir: /hpc/cog_bioinf/data/mapping/diagnostiek/NIPT/Validation_IAP_v1.3/Reference_set/
+Working dir: /hpc/cog_bioinf/data/mapping/diagnostiek/NIPT/Validation_IAP_v1.3/Reference_set/
+Female file used: /hpc/cog_bioinf/data/mapping/diagnostiek/NIPT/Validation_IAP_v1.3/Reference_set/females.txt
+Bins: 5000
+Minimum bins for GC class: 100
+Stdev threshold: 3
+Sample threshold: 4
+GC steps: : 1.0
+Reference Genome: /hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta
+Platform: illumina
+Minimum reads required: 10000000
+Max normalised dedup percentage allowed: 0.01
