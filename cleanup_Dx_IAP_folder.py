@@ -12,7 +12,7 @@ os.system("git --git-dir=/hpc/cog_bioinf/common_scripts/ExonCov/.git log > GIT_E
 os.system("git --git-dir=/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/.git log > GIT_Dx_resources.log")
 
 # Make run_stats.txt file from all flagstats
-os.system("/hpc/cog_bioinf/data/mapping/diagnostiek/DEV_Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
+os.system("/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
 
 # move unused VCFs in Redundant folder
 os.system("mkdir Redundant_VCF_files/")
