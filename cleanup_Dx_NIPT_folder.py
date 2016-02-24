@@ -7,8 +7,8 @@ import getopt
 os.system(" date >> GIT_IAP.log")
 os.system(" date >> GIT_ExonCov.log")
 os.system(" date >> GIT_Dx_resources.log")
-os.system("git --git-dir=/hpc/cog_bioinf/common_scripts/IAP_Dx_TARGET/.git log > GIT_IAP.log")
-os.system("git --git-dir=/hpc/cog_bioinf/common_scripts/ExonCov/.git log > GIT_ExonCov.log")
+os.system("git --git-dir=/hpc/cog_bioinf/common_scripts/IAP_Dx_NIPT/.git log > GIT_IAP.log")
+os.system("git --git-dir=/hpc/cog_bioinf/common_scripts/chromate/.git log > GIT_chromate.log")
 os.system("git --git-dir=/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/.git log > GIT_Dx_resources.log")
 
 # Make run_stats.txt file from all flagstats
