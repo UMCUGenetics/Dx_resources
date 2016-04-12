@@ -28,6 +28,11 @@ for file in files:
 	print action
 	os.system(action)
 
+# change dots in Exoncov files into comma's
+action2=" sed -i 's/\./\,/g' "+str(pwd)+"/Exoncov_v3/*tsv"
+action3=" sed -i 's/\./\,/g' "+str(pwd)+"/Exoncov_v3/*/*tsv"
+os.system(action2)
+os.system(action3)
 
 sys.exit("Finished")
 
