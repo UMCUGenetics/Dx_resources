@@ -1,15 +1,26 @@
 module load python/2.7.10
 
+## $1 = sample name, $2 = Git dir. Default is Dx_resources
+
 SAMPLE=$1
 WC_path="/hpc/local/CentOS7/cog_bioinf/WISECONDOR/bin/"
 REF_gcc=/hpc/cog_bioinf/data/mapping/diagnostiek/DEV_Dx_resources/WISECONDOR/dataFiles/GCCcount_IAP_NIPT
 REF_ref=/hpc/cog_bioinf/data/mapping/diagnostiek/DEV_Dx_resources/WISECONDOR/dataFiles/Reference_IAP_NIPT
 TEST_folder=$PWD/WISECONDOR/$SAMPLE/
-GIT_DIR="/hpc/cog_bioinf/data/mapping/diagnostiek/DEV_Dx_resources/WISECONDOR/"
 
+if [ -z $2 ]
+then
+        echo $2" is NULL"
+        REPO=/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/
+else
+        REPO=$2                                                          
+fi      
+
+GIT_DIR=$REPO"/WISECONDOR/"
 
 echo "Sample for testing is "$SAMPLE
 echo "WISECONDOR path is "$WC_path
+echo "Git dir is "$GIT_DIR
 
 mkdir $PWD/WISECONDOR/
 mkdir $PWD/WISECONDOR/$SAMPLE
