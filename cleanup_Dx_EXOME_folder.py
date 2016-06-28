@@ -16,7 +16,7 @@ os.system("/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/get_stats_from_
 
 # move unused VCFs in Redundant folder
 os.system("mkdir Redundant_VCF_files/")
-os.system("find -iname \"*phased.vcf*\" -exec mv {} Redundant_VCF_files/ \;")
+#os.system("find -iname \"*phased.vcf*\" -exec mv {} Redundant_VCF_files/ \;")
 os.system("find -iname \"*raw_variants.vcf*\" -exec mv {} Redundant_VCF_files/ \;")
 
 # cp .bai into bam.bai
