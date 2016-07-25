@@ -25,7 +25,7 @@ echo "Git dir is "$GIT_DIR
 mkdir $PWD/WISECONDOR/
 mkdir $PWD/WISECONDOR/$SAMPLE
 cd $PWD/WISECONDOR/$SAMPLE
-ln -sd $PWD/../../$SAMPLE/mapping/*dedup.ba* .
+ln -sd $PWD/../../$SAMPLE/mapping/*dedup.ba? .
 
 echo "$GIT_DIR/Pickle_bams.py $WC_path $TEST_folder"
 $GIT_DIR/Pickle_bams.py $WC_path $TEST_folder
