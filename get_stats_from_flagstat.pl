@@ -40,8 +40,11 @@ foreach my $file (@files) {
 }
 
 
-print "Total raw reads: ".$fn->format_number($totals{'total'})," reads (", $fn->format_number(100*$totals{'total'})," bp)\n";
-print "Total mapped reads: ".$fn->format_number($totals{'mapped'})," reads (", $fn->format_number(100*$totals{'mapped'})," bp)\n";
+#print "Total raw reads: ".$fn->format_number($totals{'total'})," reads (", $fn->format_number(100*$totals{'total'})," bp)\n";
+#
+print "Total raw reads: ".$fn->format_number($totals{'total'})," reads (Total throughput, 75bp=", $fn->format_number(75*$totals{'total'})," bp, 100bp=", $fn->format_number(100*$totals{'total'})," bp, 150bp=", $fn->format_number(150*$totals{'total'})," bp)\n";
+#print "Total mapped reads: ".$fn->format_number($totals{'mapped'})," reads (", $fn->format_number(100*$totals{'mapped'})," bp)\n";
+print "Total mapped reads: ".$fn->format_number($totals{'mapped'})," reads (Total throughput, 75bp=", $fn->format_number(75*$totals{'mapped'})," bp, 100bp=", $fn->format_number(100*$totals{'mapped'})," bp,150bp=", $fn->format_number(150*$totals{'mapped'})," bp)\n";
 print "Average mapped per lib: ".$fn->format_number(int($totals{'total'}/(scalar @files)))," reads\n";
 print "Average dups per lib: ".$fn->format_number(int($totals{'dups'}/(scalar @files)))," reads\n";
 print "Average dups % per lib: ",$fn->format_number( 100*($totals{'dups'}/$totals{'mapped'}))," %\n";
