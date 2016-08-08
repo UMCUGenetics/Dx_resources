@@ -7,6 +7,7 @@ import getopt
 os.system(" date >> GIT_IAP.log")
 os.system(" date >> GIT_ExonCov.log")
 os.system(" date >> GIT_Dx_resources.log")
+os.system(" date >> GIT_Dx_INI.log")
 #os.system("git --git-dir=/hpc/local/CentOS7/cog_bioinf/IAP_Dx_EXOME/.git log > GIT_IAP.log")
 os.system("git --git-dir=/hpc/local/CentOS7/cog_bioinf/IAP_Dx/.git log > GIT_IAP.log")
 os.system("git --git-dir=/hpc/local/CentOS7/cog_bioinf/ExonCov/.git log > GIT_ExonCov.log")
