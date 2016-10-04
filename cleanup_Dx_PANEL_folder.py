@@ -58,8 +58,8 @@ for file in files:
 	os.system(action)
 
 # change dots in Exoncov files into comma's
-action2=" sed -i 's/\./\,/g' "+str(pwd)+"/Exoncov_"+str(Dx_resources_v)+"/*tsv"
-action3=" sed -i 's/\./\,/g' "+str(pwd)+"/Exoncov_"+str(Dx_resources_v)+"/*/*tsv"
+action2=" sed -i 's/\./\,/g' "+str(pwd)+"/Exoncov*/*tsv" 	## include use Exoncov output folder?
+action3=" sed -i 's/\./\,/g' "+str(pwd)+"/Exoncov*/*/*tsv"	## include use Exoncov output folder?
 os.system(action2)
 os.system(action3)
 
