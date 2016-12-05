@@ -15,7 +15,7 @@ if __name__ == "__main__":
         parser = OptionParser();
         group = OptionGroup(parser, "Main options")
 	group.add_option("-i", dest="vcf", help="VCF input file")
-        group.add_option("-o", default="combined", dest="option", help="options for analysis [combined VCF [\"combined\", default], indel VCF [indel], snp-only VCF [indel]]")
+        group.add_option("-o", default="combined", dest="option", help="options for analysis [combined VCF [\"combined\", default], indel VCF [indel], snp-only VCF [snp]]")
 	group.add_option("-r", default="/hpc/cog_bioinf/common_scripts/rtg-tools-3.6/RTG.jar", dest="RTG", help="RTG path [default /hpc/cog_bioinf/common_scripts/rtg-tools-3.6/RTG.jar]")
 	group.add_option("-c", default="/hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/union13callableMQonlymerged_addcert_nouncert_excludesimplerep_excludesegdups_excludedecoy_excludeRepSeqSTRs_noCNVs_v2.19_2mindatasets_5minYesNoRatio_noMT.bed", dest="high_conf_bed", help="High confident BED GIAB file [default /hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/union13callableMQonlymerged_addcert_nouncert_excludesimplerep_excludesegdups_excludedecoy_excludeRepSeqSTRs_noCNVs_v2.19_2mindatasets_5minYesNoRatio_noMT.bed]")
 	group.add_option("-b", default="/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed", dest="target_bed", help="Target BED file [default /hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed ]")
