@@ -5,8 +5,8 @@ import getopt
 
 IAP_folder="/hpc/local/CentOS7/cog_bioinf/IAP_Dx/"
 Chromate_folder="/hpc/local/CentOS7/cog_bioinf/chromate/"
-Dx_resources_folder="/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/"
-Dx_INI_folder="/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_INI/"
+Dx_resources_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/"
+Dx_INI_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_INI/"
 # Get GIT tag version
 IAP_v=commands.getoutput("git --git-dir="+str(IAP_folder)+".git describe --tags")
 Chromate_v=commands.getoutput("git --git-dir="+str(Chromate_folder)+".git describe --tags")
@@ -41,7 +41,7 @@ os.system("git --git-dir="+str(Dx_INI_folder)+".git log >> "+str(output_Dx_INI))
 
 
 # Make run_stats.txt file from all flagstats
-os.system("/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
+os.system("/hpc/cog_bioinf/diagnostiek/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
 
 sys.exit("Finished")
 

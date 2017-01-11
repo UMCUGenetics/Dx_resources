@@ -6,8 +6,8 @@ import getopt
 # Input folders
 IAP_folder="/hpc/local/CentOS7/cog_bioinf/IAP_Dx/"
 ExonCov_folder="/hpc/local/CentOS7/cog_bioinf/ExonCov/"
-Dx_resources_folder="/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/"
-Dx_INI_folder="/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_INI/"
+Dx_resources_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/"
+Dx_INI_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_INI/"
 # Get GIT tag version
 IAP_v=commands.getoutput("git --git-dir="+str(IAP_folder)+".git describe --tags")
 ExonCov_v=commands.getoutput("git --git-dir="+str(ExonCov_folder)+".git describe --tags")
@@ -41,7 +41,7 @@ os.system("git --git-dir="+str(Dx_resources_folder)+".git log >> "+str(output_Dx
 os.system("git --git-dir="+str(Dx_INI_folder)+".git log >> "+str(output_Dx_INI))
 
 # Make run_stats.txt file from all flagstats
-os.system("/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
+os.system("/hpc/cog_bioinf/diagnostiek/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
 
 # move unused VCFs in Redundant folder
 os.system("mkdir Redundant_VCF_files/")

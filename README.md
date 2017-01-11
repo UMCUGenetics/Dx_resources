@@ -3,8 +3,8 @@ Tracks folder
 	* ENSEMBL_UCSC_merged_collapsed_sorted_v2.bed	
 		This is the 'master' BED file without flanks. 
 		Warning: this file is 0-based
-		This file contains all exon from ENSEMBL (v75) and USCS (downloaded  07-08-2014). For more details see /hpc/cog_bioinf/data/Martin/Exomes/ENSEMBL_UCSC_merge_bed/
-		This BED file is version 2 in /hpc/cog_bioinf/data/Martin/Exomes/ENSEMBL_UCSC_merge_bed/Version2/
+		This file contains all exon from ENSEMBL (v75) and USCS (downloaded  07-08-2014). For more details see /hpc/cog_bioinf/diagnostiek/projects/Martin/Exomes/
+		This BED file is version 2 in /hpc/cog_bioinf/diagnostiek/projects/Martin/Exomes/ENSEMBL_UCSC_merge_bed/Version2/
 		This file is not used directly at the moment.
 	* ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed
 		Normal BED file, with 20bp flanks. This file should be used for the Exoncov_v3 tool.
@@ -20,7 +20,7 @@ Tracks folder
 		Warning: this file is 1-based
 
 Exoncov folder
-	gpanels_10062015.txt
+	gpanels.txt
 		This file contains all currently used gen-panels for Dx.
 		Remark: OWS02(Schisis) is not working due to included noncoding genes/genes not included the BED file 	
 	Preferred_transcript_list.txt

@@ -4,14 +4,14 @@ module load python/2.7.10
 
 SAMPLE=$1
 WC_path="/hpc/local/CentOS7/cog_bioinf/WISECONDOR/bin/"
-REF_gcc=/hpc/cog_bioinf/data/mapping/diagnostiek/DEV_Dx_resources/WISECONDOR/dataFiles/GCCcount_IAP_NIPT
-REF_ref=/hpc/cog_bioinf/data/mapping/diagnostiek/DEV_Dx_resources/WISECONDOR/dataFiles/Reference_IAP_NIPT
+REF_gcc=/hpc/cog_bioinf/diagnostiek/production/Dx_resources/WISECONDOR/dataFiles/GCCcount_IAP_NIPT
+REF_ref=/hpc/cog_bioinf/diagnostiek/production/Dx_resources/WISECONDOR/dataFiles/Reference_IAP_NIPT
 TEST_folder=$PWD/WISECONDOR/$SAMPLE/
 
 if [ -z $2 ]
 then
         echo $2" is NULL"
-        REPO=/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/
+        REPO=/hpc/cog_bioinf/diagnostiek/production/Dx_resources/
 else
         REPO=$2                                                          
 fi      

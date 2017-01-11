@@ -12,7 +12,7 @@ REF_OUT="Reference_IAP_NIPT"
 if [ -z $1 ]
 then
         echo $1" is NULL"
-	REPO=/hpc/cog_bioinf/data/mapping/diagnostiek/Dx_resources/
+	REPO=/hpc/cog_bioinf/diagnostiek/production/Dx_resources/
 else
         REPO=$1 
 fi
