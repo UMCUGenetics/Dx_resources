@@ -18,7 +18,7 @@ if __name__ == "__main__":
 	group.add_option("-e", default="/hpc/local/CentOS7/cog_bioinf/ExonCov/ExonCov.py", dest="EXONCALLCOV_PATH", help="EXONCALLCOV_PATH including executable")
 	group.add_option("-b", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed", dest="EXONCALLCOV_BED", help="EXONCALLCOV_BED")
 	group.add_option("-g", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Exoncov/gpanels.txt", dest="EXONCALLCOV_PANEL", help="EXONCALLCOV_PANEL")
-	group.add_option("-p", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Preferred_transcript_list.txt", dest="EXONCALLCOV_PREF", help="EXONCALLCOV_PREF")
+	group.add_option("-p", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Exoncov/Preferred_transcript_list.txt", dest="EXONCALLCOV_PREF", help="EXONCALLCOV_PREF")
 	group.add_option("-n", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Exoncov/NM_ENSEMBL_HGNC.txt", dest="EXONCALLCOV_ENS", help="EXONCALLCOV_ENS")
 	group.add_option("-t", default="02:00:00", dest="EXONCALLCOV_TIME", metavar="[STRING]", help="EXONCALLCOV_TIME")
 	group.add_option("-q", default="all.q", dest="EXONCALLCOV_QUEUE", metavar="[STRING]", help="EXONCALLCOV_QUEUE")
