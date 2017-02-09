@@ -41,14 +41,12 @@ def send_email(sender, receivers, subject, text, attachment=None):
 		encoders.encode_base64(msg)
 		msg.add_header('Content-Disposition', 'attachment', filename=filename)
 		mail.attach(msg)
-
 	msg = MIMEText(text,'html')
 	mail.attach(msg)
 	s = smtplib.SMTP('smtp-open.umcutrecht.nl')
 	s.sendmail(sender, receivers, mail.as_string())
 	s.quit()
-
-
+	
 def get_sub_dir_path(directory):
 	"""Return absolute path to all directories in input directory."""
 	return filter(isdir,[join(directory, f) for f in listdir(directory)])
@@ -121,73 +119,61 @@ def check_raw_run(sequencer_dirs,processed,ped_folder):
 	return run_dic,error_dic
 
 def html_table(text,data):
-	text = '{}<table>'.format(text)
+	text = '{}\n<table width="100%">'.format(text)
+	text= '{}\n<tr>'.format(text)
 	for item in data.split("\n")[0].split():
         	splititem=item.split()
         	for cell in splititem:
-                	text=('{}<th>'+str(cell)+'</th>').format(text)
+                	text=('{}\n\n<th>'+str(cell.replace("_dedup",""))+'</th>').format(text)
+	text= '{}\n</tr>'.format(text)
       	for item in data.split("\n")[1:]:
-        	text= '{}<tr>'.format(text)
+        	text= '{}\n<tr>'.format(text)
         	splititem=item.split()
         	for cell in splititem:
-                	text=('{}<td><center>'+str(cell)+'</center></td>').format(text)
-               	text= '{}</tr>'.format(text)
-     	text = '{}</table>'.format(text)
+                	text=('{}\n\n<td><center>'+str(cell)+'</center></td>').format(text)
+               	text= '{}\n</tr>'.format(text)
+     	text = '{}\n</table>'.format(text)
+	return text
 
 def make_mail(state,run_id,qc=None,correct=None):
         """ Send failed/completed mail """
 	if state == "started":
                 subject = 'IAP started: IAP analysis for run {} started!'.format(run_id.split("/")[-1])
-                text = 'IAP analysis for {} has started'.format(run_id)
-                email_to = email_from
+		text = "<html><body><p>"+'IAP analysis for {} has started'.format(run_id)+"</p></body></html>"
+                email_to = [email_from]
         if state == "failed":
                 subject = 'ERROR: IAP analysis {} failed 3 times!'.format(run_id.split("/")[-1])
-                text = 'IAP analysis of {} failed 3 times'.format(run_id)
+		text = "<html><body><p><font color=\"red\">"+'IAP analysis of {} failed 3 times'.format(run_id)+"</font></p></body></html>"
                 email_to = failed_mail
+
         if state == "completed":
-                subject = 'COMPLETE: IAP analysis {} completed succesfully!'.format(run_id.split("/")[-1])
-		text = 'IAP analysis of {} completed succesfully\n\nQCstats:\n{}'.format(run_id,qc[0])
-		text = '{}\n\nGENDER CHECK:\n{}'.format(text,qc[1])
-                email_to = finished_mail
+		subject = 'COMPLETE: IAP analysis {} completed succesfully!'.format(run_id.split("/")[-1])
+                text = "<html><body><p>"+'IAP analysis of {} completed succesfully.'.format(run_id)
+              	text = '{}<br><br><u>QCStats:</u>'.format(text)
+                text=html_table(text,qc[0])
+                text = '{}<u>GENDER_check:</u>'.format(text)
+                text=html_table(text,qc[1])
+		text = '{}<u>KINSHIP_analysis:</u>'.format(text)
+                text=html_table(text,qc[2])
+                text = '{}</p></body></html>'.format(text)
+                email_to = finished_mail	
+
 	if state == "warning":
         	subject = 'WARNING: IAP analysis {} completed with WARNINGS!'.format(run_id.split("/")[-1])
-                """
-		text = 'IAP analysis of {} completed with WARNINGS!\n\n<b>DATA WILL NOT BE TRANSFERED TO BGARRAY!</b>\n\nWARNINGS:\n'.format(run_id)
-                for item in qc[2]:
-                	text = '{} {}'.format(text,item)
-                text = '{}\n\nQCstats:\n{}'.format(text,qc[0])
-	        text = '{}\n\nGENDER CHECK:\n{}'.format(text,qc[1])
-		"""
-
-		text = "<html><head></head><body><p>"+\
+		text = "<html><body><p>"+\
                         'IAP analysis of {} completed with WARNINGS.<br><br>\
                         <b><font color="red">DATA WILL NOT BE TRANSFERED TO BGARRAY!</font></b><br><br>\
-                        <u>WARNINGS:</u>\n'.format(run_id)+"<br>"
-		for item in qc[2]:
-			text = '{} {}'.format(text,item)
+                        <u>WARNINGS:</u>'.format(run_id)+"<br>"
+
+		for item in qc[3]:
+			text = '{}<br>{}\n'.format(text,item.rstrip())
+
 		text = '{}<br><br><u>QCStats:</u>'.format(text)
-
-		## Table of QCstats
-		"""
-		text = '{}<table>'.format(text)
-		for item in qc[0].split("\n")[0].split():
-                        splititem=item.split()
-                        for cell in splititem:
-                                text=('{}<th>'+str(cell)+'</th>').format(text)
-		for item in qc[0].split("\n")[1:]:
-			text= '{}<tr>'.format(text)
-			splititem=item.split()
-			for cell in splititem:
-				text=('{}<td><center>'+str(cell)+'</center></td>').format(text)
-			text= '{}</tr>'.format(text)
-		text = '{}</table>'.format(text)
-		"""
 		text=html_table(text,qc[0])
-
-		## Table of GENDER check
-		text = '{}<br><br><u>GENDER_check:</u>'.format(text)
-
-
+		text = '{}<u>GENDER_check:</u>'.format(text)
+		text=html_table(text,qc[1])
+		text = '{}<u>KINSHIP_analysis:</u>'.format(text)
+                text=html_table(text,qc[2])
 		text = '{}</p></body></html>'.format(text)
 		email_to = finished_mail
 
@@ -203,8 +189,9 @@ def make_mail(state,run_id,qc=None,correct=None):
 	send_email(email_from, email_to, subject, text)
 
 def submit_IAP(IAP,INI,output,input,email_from,project):
-	os.system("perl "+str(IAP)+"/illumina_createConfig.pl -ip "+str(INI)+ " -o " + str(output) + " -f " + str(input) + "/Data/Intensities/BaseCalls/"+ str(project) + " -m "+ str(email_from) + " -run")
-	make_mail("started",output,gc)	
+	os.system("perl "+str(IAP)+"/illumina_createConfig.pl -ip "+str(INI)+ " -o " + str(output) + " -f " + str(input) + \
+                  "/Data/Intensities/BaseCalls/"+ str(project) + " -m "+ str(email_from) + " -run")
+	make_mail("started",output)	
 
 def clean_up(run_id):
 	os.chdir(run_id)
@@ -212,6 +199,8 @@ def clean_up(run_id):
 	
 def extract_qc(run_id,run):
         #add information of Conversion Report to trend analysis file. Q30, Cluster, PF, PF%, mismatch. Per sample/per run?
+
+	"""QCSTATS """
 	qcstats = '{}/{}'.format(run_id, '/QCStats/HSMetrics_summary.transposed.txt')
 	qc_lines=open(str(qcstats),"r").readlines()
 	qc=["Sample\t",qc_lines[0][1:]] # add sample name = first line in output
@@ -221,14 +210,30 @@ def extract_qc(run_id,run):
 		warning=[]
 	for line in qc_lines:
 		try:
-			qc_metric[line.split()[0]]
+			splitline=line.split()
+			qc_metric[splitline[0]]
 			qc+=[line]
-			x=1
-			while x< len(line.split()[1:])+1:
+			x=0
+			while x< len(splitline):
 				try:
-					qc_criteria[line.split()[0]]
-					if float(qc_criteria[line.split()[0]]) > float(line.split()[x]):
-						warning+=["WARNING coverage for sample",qc[1].split()[x-1],"is below threshold "+str(line.split()[0])+" (<"+str(qc_criteria[line.split()[0]])+")!\n"]
+					qc_criteria[splitline[0]] # check if first column (header) part of quality criteria
+					try:
+						keys= qc_criteria[splitline[0]].keys() #if dict in dict, such as PARENT and CHILD coverage
+						sample_role=qc_lines[0].split()[x][7:8]
+						if sample_role == "C":
+							if float(qc_criteria[splitline[0]]["CHILD"])> float(splitline[x+1]):
+								warning+=[" ".join(["WARNING coverage for sample",qc[1].split()[x], 
+                                                                          "is below threshold "+str(splitline[0])+ 
+                                                                          " (<"+str(float(qc_criteria[splitline[0]]["CHILD"]))+")!\n"])]
+						if sample_role == "P":
+							if float(qc_criteria[splitline[0]]["PARENT"])> float(splitline[x+1]):
+								warning+=[" ".join(["WARNING coverage for sample",qc[1].split()[x],
+                                                                          "is below threshold "+str(splitline[0])+  
+                                                                          " (<"+str(float(qc_criteria[splitline[0]]["PARENT"]))+")!\n"])]
+					except:
+						if float(qc_criteria[splitline[0]]) > float(splitline[x+1]):
+							warning+=[" ".join(["WARNING coverage for sample",qc[1].split()[x],"is below threshold "
+                                                                  +str(splitline[0])+" (<"+str(qc_criteria[splitline[0]])+")!\n"])]
 				except:	
 					pass
 				x+=1
@@ -237,8 +242,9 @@ def extract_qc(run_id,run):
 			pass
 	qc= "".join(qc)
 
-	gender = '{}/{}'.format(run_id, '/gender_check.out')
-	gender_lines=open(str(gender),"r").readlines()
+	"""GENDER CHECK"""
+	gender_file = '{}/{}'.format(run_id, '/gender_check.out')
+	gender_lines=open(str(gender_file),"r").readlines()
 	gender=[]
 	for line in gender_lines:
 		splitline=line.split()
@@ -251,6 +257,17 @@ def extract_qc(run_id,run):
 
 	gender="".join(gender)
 
+	"""KINSHIP """
+	kinship_file = '{}/{}.kinship'.format(run_id, run_id.split("/")[-1])	
+	kinship_lines=open(str(kinship_file),"r").readlines()
+	kinship=[]
+	for line in kinship_lines:
+                splitline=line.split()
+		kinship+=[splitline[1]+"\t"+splitline[3]+"\t"+splitline[4]+"\t"+splitline[5]+"\t"+splitline[6]+"\t"+splitline[7]+"\n"] 
+		printline=[splitline[1],splitline[3],splitline[7]]
+		warning+=check_kinship(printline)
+	kinship="".join(kinship)
+
 	"""
 	# determine number of lanes?
 	# open conversion mail of lanes, and parse info
@@ -260,12 +277,47 @@ def extract_qc(run_id,run):
 		print line
 		pass
 	"""
-	return qc,gender,warning
+	return qc,gender,kinship,warning
 
 def touch_link(run_id):
         """ Make softlink on Upload folder """
 	os.system("ln -sd " + str(run_id) + " "+str(rsync_folder))
-        # check transfer is complete not possible?
+        # check transfer is with touched Transfer.done? (only accesible vai hpct's!)
+
+def check_kinship(kinship):
+	kin_warn=[]
+	if "ID1" not in kinship[0]:
+		sample1_fam=kinship[0][0:7]
+		sample1_gen=kinship[0][7:8]
+		sample2_fam=kinship[1][0:7]
+		sample2_gen=kinship[1][7:8]
+		"""Check relations with kinship values"""
+		if sample1_fam == sample2_fam and sample1_gen=="C" and sample2_gen=="P" or sample1_gen=="P" and sample2_gen=="C":
+			if float(kinship[2])>0.177 and float(kinship[2])< 0.354:
+				pass # kinship is correct
+			else:
+				kin_warn+=["PARENT-CHILD relation is not correct "+" ".join(kinship)]
+				
+		elif sample1_fam == sample2_fam and  sample1_gen=="C" and sample2_gen=="C":
+			if float(kinship[2])>0.177 and float(kinship[2])< 0.354:
+        			pass # kinship is correct
+			else:
+				kin_warn+=["SIBLING-SIBLING relation is not correct "+" ".join(kinship)]
+
+		elif sample1_fam == sample2_fam and sample1_gen=="P" and sample2_gen=="P":
+			if float(kinship[2])>0.177 and float(kinship[2])< 0.354:
+				kin_warn+=["PARENT-PARENT relation is not correct "+" ".join(kinship)]
+			else:
+				pass  # kinship is correct
+				# note: kinship between 0.10 and 0.177 is not mentioned here!
+
+		elif sample1_fam is not sample2_fam:
+			if float(kinship[2])>0.177 and float(kinship[2])< 0.354:
+				kin_warn+=["UNRELATED relation is not correct "+" ".join(kinship)]
+			else:
+                               	pass  # kinship is correct
+				# note: kinship between 0.10 and 0.177 is not mentioned here!
+	return kin_warn
 
 def run_IAP(runs,IAP,INI):
 	""" Check state of the run """
@@ -283,26 +335,20 @@ def run_IAP(runs,IAP,INI):
 			if(isfile(log_file)):
 				lines=open(str(log_file),"r").readlines()
 				if "completed" in lines[-1]:
-					###### debug!
+					######################
 					#clean_up(run_id)
-					######
 					qc=extract_qc(run_id,run)
-					if not qc[2]:
+					if not qc[3]:
 						"""run completed without warnings """
 						touch_link(run_id)
-						make_mail("completed",run_id,qc)
-						################
-						sys.exit()
-						##############
+						make_mail("completed",run_id,qc,None)
 						state+=["completed",run_id]
         	                                os.system("touch "+ str(done))
                 	                        os.system("rm "+str(running))
 					else:
 						"""run completed with warnings, do not transfer, chmod 775 """
-						make_mail("warning",run_id,qc)
-						################
-                                                sys.exit()
-                                                ##############
+						make_mail("warning",run_id,qc,None)
+						sys.exit()
 						state+=["completed_warnings",run_id]
 			                        os.system("touch "+ str(done))
                                         	os.system("rm "+str(running))
@@ -353,7 +399,7 @@ sequencer_dirs = [
 ]
 trend_folder='/hpc/cog_bioinf/diagnostiek/processed/Trend_analysis'
 qc_metric={'PCT_SELECTED_BASES':'', 'MEAN_BAIT_COVERAGE':'', 'MEAN_TARGET_COVERAGE':'', 'PCT_TARGET_BASES_20X':'','AT_DROPOUT':'','GC_DROPOUT':''}
-qc_criteria={'MEAN_BAIT_COVERAGE':'75','PCT_TARGET_BASES_20X':'0.85'}
+qc_criteria={'MEAN_BAIT_COVERAGE':{"PARENT":'65',"CHILD":75},'PCT_TARGET_BASES_20X':'0.85'}
 
 #################
 ## Main script ##
@@ -361,12 +407,18 @@ qc_criteria={'MEAN_BAIT_COVERAGE':'75','PCT_TARGET_BASES_20X':'0.85'}
 if __name__ == "__main__":
         parser = OptionParser();
         group = OptionGroup(parser, "Main options")
-	group.add_option("-i", default="/hpc/cog_bioinf/diagnostiek/development/DEV_Dx_INI/UMCU_DX_EXOME.ini", dest="INI", type='string', help="path to INI file. Default = /hpc/cog_bioinf/diagnostiek/development/DEV_Dx_INI/UMCU_DX_EXOME.ini")
-	group.add_option("-p", default="/hpc/local/CentOS7/cog_bioinf/IAP_Dx/", dest="IAP", help="path to IAP folder. Default = /hpc/local/CentOS7/cog_bioinf/IAP_Dx/]")
-	#group.add_option("-r", default="/hpc/cog_bioinf/diagnostiek/raw_data/", dest="raw_data", help="path to RAW data folder. Default = /hpc/cog_bioinf/diagnostiek/raw_data/]")
-	#group.add_option("-o", default="/hpc/cog_bioinf/diagnostiek/processed/Exome/", dest="output", help="output folder for processed data. Default = /hpc/cog_bioinf/diagnostiek/processed/Exome/]")
-	group.add_option("-o", default="/hpc/cog_bioinf/diagnostiek/users/Martin/Test_automatic/processed/", dest="processed", help="output folder for processed data. Default = warning test]")
-	group.add_option("-f", default="/hpc/cog_bioinf/diagnostiek/processed/PED_FILES/", dest="ped_folder", help="IAP PED folder. Default = /hpc/cog_bioinf/diagnostiek/processed/PED_FILES/]")
+	group.add_option("-i", default="/hpc/cog_bioinf/diagnostiek/development/DEV_Dx_INI/UMCU_DX_EXOME.ini", dest="INI", type='string',\
+                         help="path to INI file. Default = /hpc/cog_bioinf/diagnostiek/development/DEV_Dx_INI/UMCU_DX_EXOME.ini")
+	group.add_option("-p", default="/hpc/local/CentOS7/cog_bioinf/IAP_Dx/", dest="IAP",\
+                         help="path to IAP folder. Default = /hpc/local/CentOS7/cog_bioinf/IAP_Dx/]")
+	#group.add_option("-r", default="/hpc/cog_bioinf/diagnostiek/raw_data/", dest="raw_data",\
+        #                 help="path to RAW data folder. Default = /hpc/cog_bioinf/diagnostiek/raw_data/]")
+	#group.add_option("-o", default="/hpc/cog_bioinf/diagnostiek/processed/Exome/", dest="output",\
+        #                 help="output folder for processed data. Default = /hpc/cog_bioinf/diagnostiek/processed/Exome/]")
+	group.add_option("-o", default="/hpc/cog_bioinf/diagnostiek/users/Martin/Test_automatic/processed/", dest="processed",\
+                         help="output folder for processed data. Default = warning test]")
+	group.add_option("-f", default="/hpc/cog_bioinf/diagnostiek/processed/PED_FILES/", dest="ped_folder",\
+                         help="IAP PED folder. Default = /hpc/cog_bioinf/diagnostiek/processed/PED_FILES/]")
 	parser.add_option_group(group)
         (opt, args) = parser.parse_args()
 	INI=str(opt.INI)
@@ -376,3 +428,4 @@ if __name__ == "__main__":
 	#RAW=str(opt.raw_data)
 	lists=check_raw_run(sequencer_dirs,processed,ped_folder)
 	print run_IAP(lists[0], IAP, INI)
+
