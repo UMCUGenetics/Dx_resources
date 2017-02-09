@@ -10,6 +10,7 @@ from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 import smtplib
 import mimetypes
+import automatic_settings as s
 
 ## Author: M.G. Elferink (code borrowed from R. Ernst :) )
 ## Date: 25-01-2017
@@ -82,12 +83,12 @@ def check_ped_file(run_dir,ped_file):
 		return False, correct
 		
 
-def check_raw_run(sequencer_dirs,processed,ped_folder):
+def check_raw_run(s.sequencer_dirs,processed,ped_folder):
 	""" Check all folders in raw_data and determine if transfer is complete, pedigree is correct """
 	run_dic={}
 	error_dic={}
-	for project in projects:
-		for sequence_dir in sequencer_dirs:
+	for project in s.projects:
+		for sequence_dir in s.sequencer_dirs:
 			for run_dir in get_sub_dir_path(sequence_dir):
 				try:
 					project_folder=get_sub_dir_path(str(run_dir)+"/Data/Intensities/BaseCalls/")
@@ -119,7 +120,14 @@ def check_raw_run(sequencer_dirs,processed,ped_folder):
 	return run_dic,error_dic
 
 def html_table(text,data):
-	text = '{}\n<table width="100%">'.format(text)
+	column=len(data.split("\n")[0].split())
+	length=0
+	for item in data.split("\n"):
+		for cell in item.split():
+			if len(item) > length:
+				length=len(item)
+	width =(length * (column+15))
+	text = '{}\n<table width={}>'.format(text,width)
 	text= '{}\n<tr>'.format(text)
 	for item in data.split("\n")[0].split():
         	splititem=item.split()
@@ -140,11 +148,11 @@ def make_mail(state,run_id,qc=None,correct=None):
 	if state == "started":
                 subject = 'IAP started: IAP analysis for run {} started!'.format(run_id.split("/")[-1])
 		text = "<html><body><p>"+'IAP analysis for {} has started'.format(run_id)+"</p></body></html>"
-                email_to = [email_from]
+                email_to = [s.email_from]
         if state == "failed":
                 subject = 'ERROR: IAP analysis {} failed 3 times!'.format(run_id.split("/")[-1])
 		text = "<html><body><p><font color=\"red\">"+'IAP analysis of {} failed 3 times'.format(run_id)+"</font></p></body></html>"
-                email_to = failed_mail
+                email_to = s.failed_mail
 
         if state == "completed":
 		subject = 'COMPLETE: IAP analysis {} completed succesfully!'.format(run_id.split("/")[-1])
@@ -156,7 +164,7 @@ def make_mail(state,run_id,qc=None,correct=None):
 		text = '{}<u>KINSHIP_analysis:</u>'.format(text)
                 text=html_table(text,qc[2])
                 text = '{}</p></body></html>'.format(text)
-                email_to = finished_mail	
+                email_to = s.finished_mail	
 
 	if state == "warning":
         	subject = 'WARNING: IAP analysis {} completed with WARNINGS!'.format(run_id.split("/")[-1])
@@ -175,7 +183,7 @@ def make_mail(state,run_id,qc=None,correct=None):
 		text = '{}<u>KINSHIP_analysis:</u>'.format(text)
                 text=html_table(text,qc[2])
 		text = '{}</p></body></html>'.format(text)
-		email_to = finished_mail
+		email_to = s.finished_mail
 
 	""" # excluded as mail will be send infinity
 	if state == "ped_file":
@@ -183,19 +191,19 @@ def make_mail(state,run_id,qc=None,correct=None):
 		text = 'PED file missing/incomplete for run {}.\n IAP not started!\n\nReason:\n'.format(run_id)
 		for item in correct:
 			 text = '{} {}'.format(text,item)
-		email_to = finished_mail
+		email_to = s.finished_mail
 	"""	
 
-	send_email(email_from, email_to, subject, text)
+	send_email(s.email_from, email_to, subject, text)
 
-def submit_IAP(IAP,INI,output,input,email_from,project):
+def submit_IAP(IAP,INI,output,input,s.email_from,project):
 	os.system("perl "+str(IAP)+"/illumina_createConfig.pl -ip "+str(INI)+ " -o " + str(output) + " -f " + str(input) + \
-                  "/Data/Intensities/BaseCalls/"+ str(project) + " -m "+ str(email_from) + " -run")
+                  "/Data/Intensities/BaseCalls/"+ str(project) + " -m "+ str(s.email_from) + " -run")
 	make_mail("started",output)	
 
 def clean_up(run_id):
 	os.chdir(run_id)
-	os.system("python "+str(clean_up_folder))
+	os.system("python "+str(s.clean_up_folder))
 	
 def extract_qc(run_id,run):
         #add information of Conversion Report to trend analysis file. Q30, Cluster, PF, PF%, mismatch. Per sample/per run?
@@ -211,29 +219,29 @@ def extract_qc(run_id,run):
 	for line in qc_lines:
 		try:
 			splitline=line.split()
-			qc_metric[splitline[0]]
+			s.qc_metric[splitline[0]]
 			qc+=[line]
 			x=0
 			while x< len(splitline):
 				try:
-					qc_criteria[splitline[0]] # check if first column (header) part of quality criteria
+					s.qc_criteria[splitline[0]] # check if first column (header) part of quality criteria
 					try:
-						keys= qc_criteria[splitline[0]].keys() #if dict in dict, such as PARENT and CHILD coverage
+						keys= s.qc_criteria[splitline[0]].keys() #if dict in dict, such as PARENT and CHILD coverage
 						sample_role=qc_lines[0].split()[x][7:8]
 						if sample_role == "C":
-							if float(qc_criteria[splitline[0]]["CHILD"])> float(splitline[x+1]):
+							if float(s.qc_criteria[splitline[0]]["CHILD"])> float(splitline[x+1]):
 								warning+=[" ".join(["WARNING coverage for sample",qc[1].split()[x], 
                                                                           "is below threshold "+str(splitline[0])+ 
-                                                                          " (<"+str(float(qc_criteria[splitline[0]]["CHILD"]))+")!\n"])]
+                                                                          " (<"+str(float(s.qc_criteria[splitline[0]]["CHILD"]))+")!\n"])]
 						if sample_role == "P":
-							if float(qc_criteria[splitline[0]]["PARENT"])> float(splitline[x+1]):
+							if float(s.qc_criteria[splitline[0]]["PARENT"])> float(splitline[x+1]):
 								warning+=[" ".join(["WARNING coverage for sample",qc[1].split()[x],
                                                                           "is below threshold "+str(splitline[0])+  
-                                                                          " (<"+str(float(qc_criteria[splitline[0]]["PARENT"]))+")!\n"])]
+                                                                          " (<"+str(float(s.qc_criteria[splitline[0]]["PARENT"]))+")!\n"])]
 					except:
-						if float(qc_criteria[splitline[0]]) > float(splitline[x+1]):
+						if float(s.qc_criteria[splitline[0]]) > float(splitline[x+1]):
 							warning+=[" ".join(["WARNING coverage for sample",qc[1].split()[x],"is below threshold "
-                                                                  +str(splitline[0])+" (<"+str(qc_criteria[splitline[0]])+")!\n"])]
+                                                                  +str(splitline[0])+" (<"+str(s.qc_criteria[splitline[0]])+")!\n"])]
 				except:	
 					pass
 				x+=1
@@ -281,7 +289,7 @@ def extract_qc(run_id,run):
 
 def touch_link(run_id):
         """ Make softlink on Upload folder """
-	os.system("ln -sd " + str(run_id) + " "+str(rsync_folder))
+	os.system("ln -sd " + str(run_id) + " "+str(s.rsync_folder))
         # check transfer is with touched Transfer.done? (only accesible vai hpct's!)
 
 def check_kinship(kinship):
@@ -335,10 +343,9 @@ def run_IAP(runs,IAP,INI):
 			if(isfile(log_file)):
 				lines=open(str(log_file),"r").readlines()
 				if "completed" in lines[-1]:
-					######################
-					#clean_up(run_id)
+					clean_up(run_id)
 					qc=extract_qc(run_id,run)
-					if not qc[3]:
+					if not qc[3] or overrule == "force":
 						"""run completed without warnings """
 						touch_link(run_id)
 						make_mail("completed",run_id,qc,None)
@@ -348,12 +355,10 @@ def run_IAP(runs,IAP,INI):
 					else:
 						"""run completed with warnings, do not transfer, chmod 775 """
 						make_mail("warning",run_id,qc,None)
-						sys.exit()
 						state+=["completed_warnings",run_id]
 			                        os.system("touch "+ str(done))
                                         	os.system("rm "+str(running))
                                         	os.system("chmod 775 -R "+ str(run_id))
-
 					if(isfile(error)):
                                                 os.system("rm "+str(error))
 
@@ -366,7 +371,7 @@ def run_IAP(runs,IAP,INI):
 					else:
 						"""re-submit IAP"""
 						os.system("rm "+ str(log_file))
-						submit_IAP(IAP,INI,run_id,run,email_from,project)	
+						submit_IAP(IAP,INI,run_id,run,s.email_from,project)	
 						state+=["failed_resubmit",run_id]
 
 		elif(isfile(error) and not isfile(running)) and not isfile(error_mail):
@@ -379,27 +384,10 @@ def run_IAP(runs,IAP,INI):
 
 		elif (not isfile(running) and not isfile(error) and not isfile(error_mail)):
 			""" start IAP and touch .running file """
-			submit_IAP(IAP,INI,run_id,run,email_from,project)
+			submit_IAP(IAP,INI,run_id,run,s.email_from,project)
 			os.system("touch "+str(running))
 			state+=["iap_started",run_id]
 	return state
-
-
-## settings > into setting.py? ###
-failed_mail=['m.elferink@umcutrecht.nl']
-finished_mail=['m.elferink@umcutrecht.nl']
-email_from='m.elferink@umcutrecht.nl'
-projects=['NICU']
-rsync_folder= '/hpc/cog_bioinf/diagnostiek/users/Martin/Test_automatic/Upload'
-clean_up_folder='/hpc/cog_bioinf/diagnostiek/development/DEV_Dx_resources/cleanup_Dx_EXOME_folder.py'
-sequencer_dirs = [
-    '/hpc/cog_bioinf/diagnostiek/users/Martin/Test_automatic/hiseq_umc01',
-    '/hpc/cog_bioinf/diagnostiek/users/Martin/Test_automatic/nextseq_umc01',
-    '/hpc/cog_bioinf/diagnostiek/users/Martin/Test_automatic/nextseq_umc02',
-]
-trend_folder='/hpc/cog_bioinf/diagnostiek/processed/Trend_analysis'
-qc_metric={'PCT_SELECTED_BASES':'', 'MEAN_BAIT_COVERAGE':'', 'MEAN_TARGET_COVERAGE':'', 'PCT_TARGET_BASES_20X':'','AT_DROPOUT':'','GC_DROPOUT':''}
-qc_criteria={'MEAN_BAIT_COVERAGE':{"PARENT":'65',"CHILD":75},'PCT_TARGET_BASES_20X':'0.85'}
 
 #################
 ## Main script ##
@@ -409,7 +397,7 @@ if __name__ == "__main__":
         group = OptionGroup(parser, "Main options")
 	group.add_option("-i", default="/hpc/cog_bioinf/diagnostiek/development/DEV_Dx_INI/UMCU_DX_EXOME.ini", dest="INI", type='string',\
                          help="path to INI file. Default = /hpc/cog_bioinf/diagnostiek/development/DEV_Dx_INI/UMCU_DX_EXOME.ini")
-	group.add_option("-p", default="/hpc/local/CentOS7/cog_bioinf/IAP_Dx/", dest="IAP",\
+	group.add_option("-d", default="/hpc/local/CentOS7/cog_bioinf/IAP_Dx/", dest="IAP",\
                          help="path to IAP folder. Default = /hpc/local/CentOS7/cog_bioinf/IAP_Dx/]")
 	#group.add_option("-r", default="/hpc/cog_bioinf/diagnostiek/raw_data/", dest="raw_data",\
         #                 help="path to RAW data folder. Default = /hpc/cog_bioinf/diagnostiek/raw_data/]")
@@ -417,8 +405,9 @@ if __name__ == "__main__":
         #                 help="output folder for processed data. Default = /hpc/cog_bioinf/diagnostiek/processed/Exome/]")
 	group.add_option("-o", default="/hpc/cog_bioinf/diagnostiek/users/Martin/Test_automatic/processed/", dest="processed",\
                          help="output folder for processed data. Default = warning test]")
-	group.add_option("-f", default="/hpc/cog_bioinf/diagnostiek/processed/PED_FILES/", dest="ped_folder",\
+	group.add_option("-p", default="/hpc/cog_bioinf/diagnostiek/processed/PED_FILES/", dest="ped_folder",\
                          help="IAP PED folder. Default = /hpc/cog_bioinf/diagnostiek/processed/PED_FILES/]")
+	group.add_option("-f", dest="overrule",choices=['force'], help="transfer data to bgarray even if FAILED. Default= None")
 	parser.add_option_group(group)
         (opt, args) = parser.parse_args()
 	INI=str(opt.INI)
@@ -426,6 +415,9 @@ if __name__ == "__main__":
 	processed=str(opt.processed)
 	ped_folder=str(opt.ped_folder)
 	#RAW=str(opt.raw_data)
-	lists=check_raw_run(sequencer_dirs,processed,ped_folder)
+	if opt.overrule:
+		overrule=str(opt.overrule)
+	lists=check_raw_run(s.sequencer_dirs,processed,ped_folder)
 	print run_IAP(lists[0], IAP, INI)
+
 
