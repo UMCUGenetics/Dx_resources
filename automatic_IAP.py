@@ -11,6 +11,8 @@ from email.mime.text import MIMEText
 import smtplib
 import mimetypes
 import automatic_settings as s
+import datetime, time
+sys.dont_write_bytecode = True ## do not make .pyc of module(s)
 
 ## Author: M.G. Elferink (code borrowed from R. Ernst :) )
 ## Date: 25-01-2017
@@ -44,17 +46,29 @@ def send_email(sender, receivers, subject, text, attachment=None):
 		mail.attach(msg)
 	msg = MIMEText(text,'html')
 	mail.attach(msg)
-	s = smtplib.SMTP('smtp-open.umcutrecht.nl')
-	s.sendmail(sender, receivers, mail.as_string())
-	s.quit()
+	m = smtplib.SMTP('smtp-open.umcutrecht.nl')
+	m.sendmail(sender, receivers, mail.as_string())
+	m.quit()
 	
 def get_sub_dir_path(directory):
 	"""Return absolute path to all directories in input directory."""
 	return filter(isdir,[join(directory, f) for f in listdir(directory)])
 
+def getfile_insensitive(path):
+    directory, filename = os.path.split(path)
+    directory, filename = (directory or '.'), filename.lower()
+    for f in os.listdir(directory):
+        newpath = join(directory, f)
+        if isfile(newpath) and f.lower() == filename:
+            return newpath
+
+def isfile_insensitive(path):
+    return getfile_insensitive(path) is not None
+
 def check_ped_file(run_dir,ped_file):
 	correct=[]
-	if(isfile(ped_file)):
+	if(isfile_insensitive(ped_file)): 
+		ped_file= getfile_insensitive(ped_file)
 		lines=open(str(ped_file),"r").readlines()
 		header_count=0
 		line_count=0
@@ -82,13 +96,21 @@ def check_ped_file(run_dir,ped_file):
 		#make_mail("ped_file",run_dir,None,correct)
 		return False, correct
 		
+def check_timestamp(run_dir):
+	folderCreation = os.path.getctime(run_dir)
+	date_now = time.time()
+	seconds_ago = date_now - 60*60*24*14 # Number of seconds in 14 days
+        if folderCreation < seconds_ago:
+        	return True
+       	else:
+		return False
 
-def check_raw_run(s.sequencer_dirs,processed,ped_folder):
+def check_raw_run(sequencer_dirs,processed,ped_folder):
 	""" Check all folders in raw_data and determine if transfer is complete, pedigree is correct """
 	run_dic={}
 	error_dic={}
 	for project in s.projects:
-		for sequence_dir in s.sequencer_dirs:
+		for sequence_dir in sequencer_dirs:
 			for run_dir in get_sub_dir_path(sequence_dir):
 				try:
 					project_folder=get_sub_dir_path(str(run_dir)+"/Data/Intensities/BaseCalls/")
@@ -101,7 +123,12 @@ def check_raw_run(s.sequencer_dirs,processed,ped_folder):
 							run_id = '{}/{}'.format(processed,(run_dir.split("/")[-1]+"_"+str(project_run)))
 							analysis_complete = '{}/{}'.format(run_id, 'processing.done')
 							ped_file_format=check_ped_file(run_dir,ped_file)
-							if(isfile(transfer_done) and ped_file_format[0]==True and not isfile(analysis_complete)): ## ignore runs with .done in processed data.
+							if time_check=="on":
+								old=check_timestamp(run_dir)
+							elif time_check=="off":
+								old=False
+	
+							if(isfile(transfer_done) and ped_file_format[0] is True and not isfile(analysis_complete) and old is False): ## ignore runs with .done in processed data.
 								run_dic[run_dir]=run_id,project_run
 							if (not isfile(ped_file_target)):
 								os.system("cp "+str(ped_file)+" "+str(ped_file_target))
@@ -116,7 +143,7 @@ def check_raw_run(s.sequencer_dirs,processed,ped_folder):
 						###### DANGER, if processed run is deleted before raw data, the analysis is performed again! ######
 						###### Write additional file in run completed folder (combined with specs?)
 				except:
-					pass	
+					pass
 	return run_dic,error_dic
 
 def html_table(text,data):
@@ -196,9 +223,9 @@ def make_mail(state,run_id,qc=None,correct=None):
 
 	send_email(s.email_from, email_to, subject, text)
 
-def submit_IAP(IAP,INI,output,input,s.email_from,project):
+def submit_IAP(IAP,INI,output,input,email_from,project):
 	os.system("perl "+str(IAP)+"/illumina_createConfig.pl -ip "+str(INI)+ " -o " + str(output) + " -f " + str(input) + \
-                  "/Data/Intensities/BaseCalls/"+ str(project) + " -m "+ str(s.email_from) + " -run")
+                  "/Data/Intensities/BaseCalls/"+ str(project) + " -m "+ str(email_from) + " -run")
 	make_mail("started",output)	
 
 def clean_up(run_id):
@@ -408,12 +435,14 @@ if __name__ == "__main__":
 	group.add_option("-p", default="/hpc/cog_bioinf/diagnostiek/processed/PED_FILES/", dest="ped_folder",\
                          help="IAP PED folder. Default = /hpc/cog_bioinf/diagnostiek/processed/PED_FILES/]")
 	group.add_option("-f", dest="overrule",choices=['force'], help="transfer data to bgarray even if FAILED. Default= None")
+	group.add_option("-t", default="on", dest="time_check",choices=['on','off'], help="remove time_stamp check of 14 days. Default= on")
 	parser.add_option_group(group)
         (opt, args) = parser.parse_args()
 	INI=str(opt.INI)
 	IAP=str(opt.IAP)
 	processed=str(opt.processed)
 	ped_folder=str(opt.ped_folder)
+	time_check=str(opt.time_check)
 	#RAW=str(opt.raw_data)
 	if opt.overrule:
 		overrule=str(opt.overrule)
