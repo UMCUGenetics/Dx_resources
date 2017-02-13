@@ -37,7 +37,10 @@ def SNP_r():
 	sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_snp)+" --calls="+str(vcf)[0:-4]+"_SNP_intersect.vcf.gz "+ " --output="+str(vcf)+"_SNP_intersect_ALL"+" --bed-regions="+str(bed)+" --all-record\n")
 	## PASS only
 	sh.write("echo RTG calculations SNP PASS variants\n")
-	sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_snp)+" --calls="+str(vcf)[0:-4]+"_SNP_intersect.vcf.gz "+ " --output="+str(vcf)+"_SNP_intersect_PASS"+" --bed-regions="+str(bed)+"\n")
+	if bed =="OFF":
+		sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_snp)+" --calls="+str(vcf)[0:-4]+"_SNP_intersect.vcf.gz "+ " --output="+str(vcf)+"_SNP_intersect_PASS\n")
+	else:
+		sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_snp)+" --calls="+str(vcf)[0:-4]+"_SNP_intersect.vcf.gz "+ " --output="+str(vcf)+"_SNP_intersect_PASS"+" --bed-regions="+str(bed)+"\n")
 
 def INDEL_r():
 	## All records
@@ -45,7 +48,10 @@ def INDEL_r():
 	sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_indel)+" --calls="+str(vcf)[0:-4]+"_INDEL_intersect.vcf.gz "+ " --output="+str(vcf)+"_INDEL_intersect_ALL"+" --bed-regions="+str(bed)+" --all-record\n")
 	## PASS only	
 	sh.write("echo RTG calculations INDEL PASS variants\n")	
-	sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_indel)+" --calls="+str(vcf)[0:-4]+"_INDEL_intersect.vcf.gz "+ " --output="+str(vcf)+"_INDEL_intersect_PASS"+" --bed-regions="+str(bed)+"\n")
+	if bed =="OFF":
+		sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_indel)+" --calls="+str(vcf)[0:-4]+"_INDEL_intersect.vcf.gz "+ " --output="+str(vcf)+"_INDEL_intersect_PASS\n")
+	else:
+		sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_indel)+" --calls="+str(vcf)[0:-4]+"_INDEL_intersect.vcf.gz "+ " --output="+str(vcf)+"_INDEL_intersect_PASS"+" --bed-regions="+str(bed)+"\n")
 
 ################
 if __name__ == "__main__":
@@ -55,7 +61,7 @@ if __name__ == "__main__":
 	group.add_option("-o", default="combined", dest="option",choices=['combined', 'indel', 'snp'], help="options for analysis [combined VCF [\"combined\", default], indel VCF [indel], snp-only VCF [snp]]")
 	group.add_option("-r", default="/hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/RTG.jar", dest="RTG", help="RTG path [default /hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2//RTG.jar]")
 	group.add_option("-c", default="/hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/union13callableMQonlymerged_addcert_nouncert_excludesimplerep_excludesegdups_excludedecoy_excludeRepSeqSTRs_noCNVs_v2.19_2mindatasets_5minYesNoRatio_noMT.bed", dest="high_conf_bed", help="High confident BED GIAB file [default /hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/union13callableMQonlymerged_addcert_nouncert_excludesimplerep_excludesegdups_excludedecoy_excludeRepSeqSTRs_noCNVs_v2.19_2mindatasets_5minYesNoRatio_noMT.bed]")
-	group.add_option("-b", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed", dest="target_bed", help="Target BED file [default /hpc/cog_bioinf/diagnostiek/production/Dx_resources/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed ]")
+	group.add_option("-b", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed", dest="target_bed", help="Target BED file [default /hpc/cog_bioinf/diagnostiek/production/Dx_resources/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed Use \"OFF\" to exclude target BED file use")
 	group.add_option("--sdf", default="/hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/Homo_sapiens.GRCh37.GATK.illumina.SDF", dest="SDF", help="SDF file [default /hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/Homo_sapiens.GRCh37.GATK.illumina.SDF ]")
 	group.add_option("--snp", default="/hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/SNP_GIAB12878_nist2.19_truth.vcf.gz", dest="giab_snp", help="GIAB SNP truth VCF [default /hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/SNP_GIAB12878_nist2.19_truth.vcf.gz]")
 	group.add_option("--indel", default="/hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/INDELS_GIAB12878_nist2.19_truth.vcf.gz", dest="giab_indel", help="GIAB INDEL truth VCF [default /hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/INDEL_GIAB12878_nist2.19_truth.vcf.gz]")
@@ -90,6 +96,8 @@ if __name__ == "__main__":
 	sample_giab=str(opt.sample_giab)
 	giab_snp=str(opt.giab_snp)
 	giab_indel=str(opt.giab_indel)
+		
+
 
 	tag=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
 	sh=open("Submit_RTG_"+str(tag)+".sh","w")
