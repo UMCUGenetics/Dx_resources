@@ -16,23 +16,23 @@ if __name__ == "__main__":
         parser = OptionParser();
         group = OptionGroup(parser, "Main options")
 	group.add_option("-e", default="/hpc/local/CentOS7/cog_bioinf/ExonCov/ExonCov.py", dest="EXONCALLCOV_PATH", help="EXONCALLCOV_PATH including executable")
-	group.add_option("-b", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed", dest="EXONCALLCOV_BED", help="EXONCALLCOV_BED")
-	group.add_option("-g", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Exoncov/gpanels.txt", dest="EXONCALLCOV_PANEL", help="EXONCALLCOV_PANEL")
-	group.add_option("-p", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Exoncov/Preferred_transcript_list.txt", dest="EXONCALLCOV_PREF", help="EXONCALLCOV_PREF")
-	group.add_option("-n", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/Exoncov/NM_ENSEMBL_HGNC.txt", dest="EXONCALLCOV_ENS", help="EXONCALLCOV_ENS")
+	group.add_option("-b", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed", dest="EXONCALLCOV_BED", help="EXONCALLCOV_BED")
+	group.add_option("-g", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Exoncov/gpanels.txt", dest="EXONCALLCOV_PANEL", help="EXONCALLCOV_PANEL")
+	group.add_option("-p", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Exoncov/Preferred_transcript_list.txt", dest="EXONCALLCOV_PREF", help="EXONCALLCOV_PREF")
+	group.add_option("-n", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Exoncov/NM_ENSEMBL_HGNC.txt", dest="EXONCALLCOV_ENS", help="EXONCALLCOV_ENS")
 	group.add_option("-t", default="02:00:00", dest="EXONCALLCOV_TIME", metavar="[STRING]", help="EXONCALLCOV_TIME")
 	group.add_option("-q", default="all.q", dest="EXONCALLCOV_QUEUE", metavar="[STRING]", help="EXONCALLCOV_QUEUE")
 	group.add_option("-k", default="dedup.realigned.bam$", dest="search_string", metavar="[STRING]", help="search_string [default = dedup.realigned.bam$")
 	group.add_option("-m", default="off", dest="EXONCALLCOV_MEM", metavar="[STRING]", help="EXONCALLCOV_MEM")
 	group.add_option("-i", default="off", dest="use_ini", action="store_false", help="use information from INI file: OFF [default] or ON")
-        group.add_option("-f", default="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/", dest="Dx_resources_folder", metavar="[STRING]", help="Dx_resources_folder")
+        group.add_option("-f", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/", dest="Dx_tracks_folder", metavar="[STRING]", help="Dx_tracks_folder")
         group.add_option("-o", default="off", dest="use_custom_folder", help="custom output foldername [default=off]")
 	parser.add_option_group(group)
         (opt, args) = parser.parse_args()
 
 	use_ini=opt.use_ini
 	search_string= opt.search_string
-	Dx_resources_folder=opt.Dx_resources_folder
+	Dx_tracks_folder=opt.Dx_tracks_folder
 
 if use_ini == "ON":
 	"Use INI settings"
@@ -79,14 +79,14 @@ elif use_ini== "off":
 
 EXONCALLCOV_FOLDER="/".join(EXONCALLCOV_PATH.split("/")[0:-1])  ## EXONCALLCOV_PATH is including script file
 ExonCov_v=commands.getoutput("git --git-dir="+str(EXONCALLCOV_FOLDER)+"/.git describe --tags")
-Dx_resources_v=commands.getoutput("git --git-dir="+str(Dx_resources_folder)+"/.git describe --tags")
+Dx_tracks_v=commands.getoutput("git --git-dir="+str(Dx_tracks_folder)+"/.git describe --tags")
 if str(opt.use_custom_folder) == "off":
-	output_folder="Exoncov_reanalysis_GIT_Dx_resources_"+str(Dx_resources_v)
-	output_Dx_resources="Exoncov_reanalysis_GIT_Dx_resources_"+str(Dx_resources_v)+".log"
+	output_folder="Exoncov_reanalysis_GIT_Dx_tracks_"+str(Dx_tracks_v)
+	output_Dx_tracks="Exoncov_reanalysis_GIT_Dx_tracks_"+str(Dx_tracks_v)+".log"
 	output_ExonCov="Exoncov_reanalysis_GIT_ExonCov_"+str(ExonCov_v)+".log"
 else:	
 	output_folder=str(opt.use_custom_folder)        
-	output_Dx_resources=str(output_folder)+"_GIT_Dx_resources_"+str(Dx_resources_v)+".log"
+	output_Dx_tracks=str(output_folder)+"_GIT_Dx_tracks_"+str(Dx_tracks_v)+".log"
 	output_ExonCov=str(output_folder)+"_GIT_ExonCov_"+str(ExonCov_v)+".log"
 
 
@@ -97,13 +97,13 @@ os.system(action)
 
 ## Write Git-log files
 os.system(" date >> "+str(output_ExonCov))
-os.system(" date >> "+str(output_Dx_resources))
+os.system(" date >> "+str(output_Dx_tracks))
 os.system("echo "+str(ExonCov_v)+" >> "+str(output_ExonCov))
-os.system("echo "+str(Dx_resources_v)+" >> "+str(output_Dx_resources))
+os.system("echo "+str(Dx_tracks_v)+" >> "+str(output_Dx_tracks))
 os.system("echo "+str(ExonCov_v)+" >> "+str(output_ExonCov))
-os.system("echo "+str(Dx_resources_v)+" >> "+str(output_Dx_resources))
+os.system("echo "+str(Dx_tracks_v)+" >> "+str(output_Dx_tracks))
 os.system("git --git-dir="+str(EXONCALLCOV_FOLDER)+"/.git log >> "+str(output_ExonCov))
-os.system("git --git-dir="+str(Dx_resources_folder)+"/.git log >> "+str(output_Dx_resources))
+os.system("git --git-dir="+str(Dx_tracks_folder)+"/.git log >> "+str(output_Dx_tracks))
 
 
 if str(opt.use_custom_folder) == "off": 
