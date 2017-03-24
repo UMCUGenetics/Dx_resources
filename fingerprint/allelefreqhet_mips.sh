@@ -3,7 +3,7 @@
 # Simple script to determine average ALT allelefrequency in 0/1 calls per MIP in current folder
 # Would like to add chromosome numbers (column 1 in 81_snps_mip_design_nijmegen_sort.vcf) to output and fix error when MIP has 0 coverage
 
-a=`cat /hpc/cog_bioinf/diagnostiek/production/Dx_resources/FINGERPRINT/81_snps_mip_design_nijmegen_sort.vcf | grep -v '#' | cut -f2`
+a=`cat /hpc/cog_bioinf/diagnostiek/production/Dx_resources/fingerprint/81_snps_mip_design_nijmegen_sort.vcf | grep -v '#' | cut -f2`
 
 for SNP in $a; do
 	if [[ $SNP != '2847439' && $SNP != '2847910' ]] 
