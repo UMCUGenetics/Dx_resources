@@ -43,6 +43,7 @@ def pedfile_dic(pwd):
 
 def check_kinship(kinship, pedigree):
     """Check kinship based on pedigree information."""
+    print kinship
     kin_warn = []
     if "ID1" not in kinship[0]:
         sample1 = kinship[0]
@@ -62,7 +63,8 @@ def check_kinship(kinship, pedigree):
                      # parent-parent
                      relation[sample1]
                      relation[sample2]
-                     if float(kinship[2]) > float(kinship_setting[0]) and float(kinship[2]) < float(kinship_setting[1]):
+                     #if float(kinship[2]) > float(kinship_setting[0]) and float(kinship[2]) < float(kinship_setting[1]):
+                     if float(kinship[2]) > float(kinship_setting[0]): # if parent-parent is more than lower-threshold
                          kin_warn += ["PARENT-PARENT relation is not correct (parent-child or sibling relationship) "+" ".join(kinship)]
                 except:
                     # siblings
@@ -70,9 +72,12 @@ def check_kinship(kinship, pedigree):
                         pass  # kinship is correct
                     else:
                         kin_warn += ["SIBLING-SIBLING relation is not correct "+" ".join(kinship)]
+                        print "\n",sample1, sample2, relation, family
             else:   # unrelated samples
-                if float(kinship[2]) > float(kinship_setting[0]) and float(kinship[2]) < float(kinship_setting[1]):
-                    kin_warn += ["UNRELATED relation is not correct (parent-child or sibling relationship) "+" ".join(kinship)]
+                #if float(kinship[2]) > float(kinship_setting[0]) and float(kinship[2]) < float(kinship_setting[1]):
+                if float(kinship[2]) > float(kinship_setting[0]): # if unrelated is more than lower-threshold
+                    kin_warn += ["UNRELATED relation is not correct (kinship is >0.177) "+" ".join(kinship)]
+        print kin_warn
     return kin_warn
 
 def extract_qc(pwd):
