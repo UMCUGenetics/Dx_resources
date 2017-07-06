@@ -34,7 +34,10 @@ def INDEL_i():
 def SNP_r():
 	## All records
 	sh.write("echo RTG calculations SNP ALL variants\n")
-	sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_snp)+" --calls="+str(vcf)[0:-4]+"_SNP_intersect.vcf.gz "+ " --output="+str(vcf)+"_SNP_intersect_ALL"+" --bed-regions="+str(bed)+" --all-record\n")
+	if bed =="OFF":
+		sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_snp)+" --calls="+str(vcf)[0:-4]+"_SNP_intersect.vcf.gz "+ " --output="+str(vcf)+"_SNP_intersect_ALL"+" --all-record\n")
+	else:
+		sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_snp)+" --calls="+str(vcf)[0:-4]+"_SNP_intersect.vcf.gz "+ " --output="+str(vcf)+"_SNP_intersect_ALL"+" --bed-regions="+str(bed)+" --all-record\n")
 	## PASS only
 	sh.write("echo RTG calculations SNP PASS variants\n")
 	if bed =="OFF":
@@ -45,7 +48,10 @@ def SNP_r():
 def INDEL_r():
 	## All records
 	sh.write("echo RTG calculations INDEL ALL variants\n")
-	sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_indel)+" --calls="+str(vcf)[0:-4]+"_INDEL_intersect.vcf.gz "+ " --output="+str(vcf)+"_INDEL_intersect_ALL"+" --bed-regions="+str(bed)+" --all-record\n")
+	if bed =="OFF":
+		sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_indel)+" --calls="+str(vcf)[0:-4]+"_INDEL_intersect.vcf.gz "+ " --output="+str(vcf)+"_INDEL_intersect_ALL"+" --all-record\n")
+	else:
+		sh.write("java -jar -Xmx10G "+str(rtg)+" vcfeval -t " + str(SDF) + " -T 6 --sample="  +str(sample_giab)+","+str(sample_test)+" --baseline="+str(giab_indel)+" --calls="+str(vcf)[0:-4]+"_INDEL_intersect.vcf.gz "+ " --output="+str(vcf)+"_INDEL_intersect_ALL"+" --bed-regions="+str(bed)+" --all-record\n")
 	## PASS only	
 	sh.write("echo RTG calculations INDEL PASS variants\n")	
 	if bed =="OFF":
