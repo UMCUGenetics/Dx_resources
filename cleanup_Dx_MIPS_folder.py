@@ -113,7 +113,7 @@ for file in os.listdir('.'):
                         message.write('### {}: Only {} homozygous SNPs called but no contamination detected --> OK'.format(file, hom_count) + '\n')
                 elif result[4] == 'F' and int(result[5]) > 30:
                     if false_het > 3: 
-                        message.write('### {}: {} reads on chromosome Y, {} unbalanced heterozygous calls --> disapproved!'.format(file, y_reads) + '\n')
+                        message.write('### {}: {} reads on chromosome Y, {} unbalanced heterozygous calls --> disapproved!'.format(file, y_reads, false_het) + '\n')
                         move(file)
                     else:
                         message.write('### {}: {} reads on chromosome Y but no contamination detected, REPORT TO LAB'.format(file, y_reads) + '\n')
