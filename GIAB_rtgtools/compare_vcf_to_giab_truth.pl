@@ -50,7 +50,7 @@ if ($nist eq "v2.19") {
 
 if ($vcf2) {
     system "java -Xmx4g -jar $GATK -T SelectVariants -se $sample --excludeNonVariants --removeUnusedAlternates -V $vcf -o $sample\_$vcf";
-    system "java -Xmx4g -jar $GATK -T SelectVariants -se $sample2 --excludeNonVariants --removeUnusedAlternates -V $vcf -o $sample2\_$vcf2";
+    system "java -Xmx4g -jar $GATK -T SelectVariants -se $sample2 --excludeNonVariants --removeUnusedAlternates -V $vcf2 -o $sample2\_$vcf2";
     #run rtgtools in duplomode with vcf and vcf2
     my $outputfoldername = "RTG_$nist\_$vcf\_$vcf2";
 	    my $command = "java -Xmx4G -jar /hpc/cog_bioinf/common_scripts/rtg-tools-3.6.2/RTG.jar vcfeval -t $ref -T $threads --baseline=$sample2\_$vcf2 --calls=$sample\_$vcf -o $outputfoldername --all-records";
