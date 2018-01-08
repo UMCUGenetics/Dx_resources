@@ -53,7 +53,7 @@ if ($vcf2) {
     system "java -Xmx4g -jar $GATK -T SelectVariants -se $sample2 --excludeNonVariants --removeUnusedAlternates -V $vcf2 -o $sample2\_$vcf2";
     #run rtgtools in duplomode with vcf and vcf2
     my $outputfoldername = "RTG_$nist\_$vcf\_$vcf2";
-	    my $command = "java -Xmx4G -jar /hpc/cog_bioinf/common_scripts/rtg-tools-3.6.2/RTG.jar vcfeval -t $ref -T $threads --baseline=$sample2\_$vcf2 --calls=$sample\_$vcf -o $outputfoldername --all-records";
+	    my $command = "java -Xmx4G -jar  /hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/RTG.jar vcfeval -t $ref -T $threads --baseline=$sample2\_$vcf2 --calls=$sample\_$vcf -o $outputfoldername --all-records";
             system "$command" ;
 
 
@@ -84,7 +84,7 @@ foreach my $passedonly (@passedonly) {
 	    my $type = $1 if $vcf=~ /(SNP|INDEL)_/;
 	    
 	    system "echo $type $outputfoldername >>$outfile ";
-	    my $command = "java -Xmx4G -jar /hpc/cog_bioinf/common_scripts/rtg-tools-3.6.2/RTG.jar vcfeval -t $ref -T $threads --baseline=$true_path$type\_$truevcf --calls=$vcf -o $outputfoldername";
+	    my $command = "java -Xmx4G -jar  /hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/RTG.jar vcfeval -t $ref -T $threads --baseline=$true_path$type\_$truevcf --calls=$vcf -o $outputfoldername";
 	    
 	    $command .= " --all-records " if ($passedonly eq "no");
 	    $command .= " --bed-regions=$bed " if ($exomeonly eq "yes");
