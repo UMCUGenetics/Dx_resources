@@ -50,15 +50,15 @@ print "\nCheck results..."
 
 os.chdir('./fingerprint')
 os.mkdir(badfolder)
-for file in os.listdir('.'):
-    if fnmatch.fnmatch(file, '*.vcf'):
-        with open(file, 'r') as f:
-            column2 = 0
-            column4 = 0
-            hom_count = 0
-            y_reads = 0 
-            low_cov = 0
-            false_het = 0
+for item in os.listdir('.'):
+    if fnmatch.fnmatch(item, '*.vcf'):
+        with open(item, 'r') as f:
+            refcov = 0 # Total reference reads for all homozygous (1/1) calls
+            totalcov = 0 # Total coverage for all homozygous calls
+            homaltcount = 0 # Number of homozygous calls
+            ycount = 0 # Sum of coverage for two Y SNPs
+            lowcovcount = 0 # Number of SNPs with <15X coverage
+            disbalancecount = 0 # Number of heterozygous (0/1) calls with allelefrequency <0.2 or >0.8
             for line in f:
                 if not line.startswith('#'):
                     line = line.split()
@@ -67,58 +67,48 @@ for file in os.listdir('.'):
                     values = values.split('\t')
                     if line[0] == 'Y':
                         if line[9] != './.':
-                            y_reads += int(values[1])
+                            ycount += int(values[1])
                     elif values[0] == '1/1':
+                        homaltcount += 1
                         if int(values[3]) < 15:
-                            low_cov += 1
-                        for hom in values[1]:
-                            hom_count += 1
-                        column2 += int(values[1])
-                        column4 += int(values[3])
+                            lowcovcount += 1
+                        refcov += int(values[1])
+                        totalcov += int(values[3])
                     elif values[0] != '1/1':
                         if values[0] == './.':
-                            low_cov += 1
+                            lowcovcount += 1
                         elif values[0] == '0/0':
                             if int(values[1]) < 15:
-                                low_cov += 1
+                                lowcovcount += 1
                         else:
                             if int(values[3]) < 15:
-                                low_cov += 1
+                                lowcovcount += 1
                     if values[0] == '0/1':
                         af_value = int(values[1]) / float(int(values[3]))
                         if af_value > 0.8 or af_value < 0.2:
-                            false_het += 1             
+                            disbalancecount += 1             
 
-            contamination = column2 / float(column4)
+            contamination = refcov / float(totalcov)
 
-            result = file, str(low_cov), str(hom_count), str(round(contamination,6)), file[8], str(y_reads)            
-            str_result = '\t'.join(list(result))
-            os.system("echo " + str_result + " >> ../logs.tmp")
+            result = item, str(lowcovcount), str(homaltcount), str(round(contamination,6)), item[8], str(ycount), str(disbalancecount)
+            resultprint = '\t'.join(result)
+            os.system("echo " + resultprint + " >> ../logs.tmp")
 
             with open('../message.tmp','a') as message:
                 gender = ['M', 'F', 'O']
                 if result[4] not in gender:
-                    message.write('### {}: REPORT filename issue TO LAB'.format(file) + '\n')
-                if int(result[1]) > 4: 
-                    message.write('### {}: {} SNPs with <15X coverage --> disapproved'.format(file, result[1]) + '\n') 
-                    move(file)                
-                elif float(result[3]) > 0.02:
-                    message.write('### {}: Contamination value {:.2%} --> disapproved'.format(file, contamination) + '\n')
-                    move(file)
-                elif int(result[2]) < 10:
-                    if false_het > 3: 
-                        message.write('### {}: Only {} homozygous SNPs called, {} unbalanced heterozygous calls --> disapproved!'.format(file, hom_count, false_het) + '\n')
-                        move(file)
-                    else:
-                        message.write('### {}: Only {} homozygous SNPs called but no contamination detected --> OK'.format(file, hom_count) + '\n')
-                elif result[4] == 'F' and int(result[5]) > 30:
-                    if false_het > 3: 
-                        message.write('### {}: {} reads on chromosome Y, {} unbalanced heterozygous calls --> disapproved!'.format(file, y_reads, false_het) + '\n')
-                        move(file)
-                    else:
-                        message.write('### {}: {} reads on chromosome Y but no contamination detected, REPORT TO LAB'.format(file, y_reads) + '\n')
-                if result[4] == 'M' and int(result[5]) < 100:
-                    message.write('### {}: Only {} reads on chromosome Y, REPORT TO LAB'.format(file, y_reads) + '\n')
+                    message.write('### {}: report filename issue to lab'.format(item) + '\n')
+                if int(result[1]) > 15: 
+                    message.write('### {}: >15 SNPs with <15X coverage ({}) --> disapproved'.format(item, result[1]) + '\n') 
+                    move(item)
+                elif int(result[6]) > 8:
+                    message.write('### {}: >8 heterozygous SNPs with <20% MAF ({}) --> disapproved'.format(item, result[6]) + '\n')
+                    move(item)
+                elif int(result[2]) < 8: 
+                    message.write('### {}: <8 homozygous ALT SNPs called ({}) --> disapproved'.format(item, result[2]) + '\n')
+                    move(item)
+                elif result[4] == 'F' and int(result[5]) > 100 or result[4] == 'M' and int(result[5]) < 100:
+                    message.write('### {}: gender {} with {} reads on chromosome Y, discuss with lab and disapprove if needed'.format(item, result[4], result[5]) + '\n')
                 
 ## Write logbook
 
