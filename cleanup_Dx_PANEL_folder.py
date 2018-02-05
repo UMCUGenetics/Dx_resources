@@ -53,10 +53,11 @@ os.system("/hpc/cog_bioinf/diagnostiek/production/Dx_resources/get_stats_from_fl
 # Upload run data to trend analysis database
 print "Uploading run data to trend analysis database\n"
 pwd = commands.getoutput("pwd")
-trend_analysis_command = ". {trend_analysis_path}/venv/bin/activate && {trend_analysis_path}/trend_analysis.py upload processed_data {run_folder}".format(
+trend_analysis_command = ". {trend_analysis_path}/venv/bin/activate && python {trend_analysis_path}/trend_analysis.py upload processed_data {run_folder}".format(
     trend_analysis_path=' /hpc/cog_bioinf/diagnostiek/development/Trend_Analysis_tool',
     run_folder=pwd
 )
+os.system(trend_analysis_command)
 
 # move unused VCFs in Redundant folder
 os.system("mkdir Redundant_VCF_files/")
