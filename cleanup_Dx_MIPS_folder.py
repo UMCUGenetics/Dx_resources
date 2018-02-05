@@ -131,4 +131,16 @@ with open('logbook.txt','a') as out:
 for tmp in glob.glob("*.tmp"):
     os.remove(tmp)
 
+print "Calculating run stats from flagstat files\n" 
+# Make run_stats.txt file from all flagstats
+os.system("/hpc/cog_bioinf/diagnostiek/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
+
+# Upload run data to trend analysis database
+print "Uploading run data to trend analysis database\n"
+pwd = commands.getoutput("pwd")
+trend_analysis_command = ". {trend_analysis_path}/venv/bin/activate && {trend_analysis_path}/trend_analysis.py upload processed_data {run_folder}".format(
+    trend_analysis_path=' /hpc/cog_bioinf/diagnostiek/development/Trend_Analysis_tool',
+    run_folder=pwd
+)
+
 print('\nFinished!\n')

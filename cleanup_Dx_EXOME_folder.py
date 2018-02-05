@@ -88,6 +88,18 @@ def extract_qc(pwd):
         warning += check_kinship(printline, pedigree)
     return warning
 
+print "Calculating run stats from flagstat files\n" 
+# Make run_stats.txt file from all flagstats
+os.system("/hpc/cog_bioinf/diagnostiek/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
+
+# Upload run data to trend analysis database
+print "Uploading run data to trend analysis database\n"
+pwd = commands.getoutput("pwd")
+trend_analysis_command = ". {trend_analysis_path}/venv/bin/activate && {trend_analysis_path}/trend_analysis.py upload processed_data {run_folder}".format(
+    trend_analysis_path=' /hpc/cog_bioinf/diagnostiek/development/Trend_Analysis_tool',
+    run_folder=pwd
+)
+
 # Check kinship
 pwd= commands.getoutput("pwd")
 
@@ -147,10 +159,6 @@ os.system("git --git-dir="+str(ExonCov_folder)+".git log >> "+str(output_ExonCov
 os.system("git --git-dir="+str(Dx_resources_folder)+".git log >> "+str(output_Dx_resources))
 os.system("git --git-dir="+str(Dx_INI_folder)+".git log >> "+str(output_Dx_INI))
 os.system("git --git-dir="+str(Dx_tracks_folder)+".git log >> "+str(output_Dx_tracks))
-
-print "Calculating run stats from flagstat files\n" 
-# Make run_stats.txt file from all flagstats
-os.system("/hpc/cog_bioinf/diagnostiek/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
 
 print "Moving files\n" 
 # move unused VCFs in Redundant folder
