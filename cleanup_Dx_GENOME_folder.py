@@ -76,7 +76,6 @@ os.system(action3)
 
 print "Zipping .vcf file\n"
 # zip filtered_variants.vcf file
-os.system("module load tabix")
-os.system("find -iname \"*filtered_variants.vcf\" -exec bgzip {} \;")
+os.system("find -iname \"*filtered_variants.vcf\" -exec /hpc/local/CentOS7/cog_bioinf/htslib-1.7/bin/bgzip {} \;")
 
 print "Finished"
