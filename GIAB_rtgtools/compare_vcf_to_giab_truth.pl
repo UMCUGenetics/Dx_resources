@@ -3,10 +3,10 @@ use strict;
 use Getopt::Long;
 
 
-my ($nist,$sample,$bed,$high_conf,$vcf,$threads,$vcf2,$sample2) = ("v2.19","GIAB12878", '/data/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed', '', '',6,'', '');
+my ($nist,$sample,$bed,$high_conf,$vcf,$threads,$vcf2,$sample2) = ("v2.19","GIAB12878", '/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed', '', '',6,'', '');
 my ($true_path,$truevcf);
-my $ref = '/data/diagnostiek/production/rtg-tools-3.6.2/Homo_sapiens.GRCh37.GATK.illumina.SDF';
-my $GATK = "/gnu/store/5jnaj91hiimcjh6rzs5pcq6pfdrh8y62-gatk-3.4-46-gbc02625/share/java/gatk/GenomeAnalysisTK.jar -R /data/diagnostiek/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta ";
+my $ref = '/hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/Homo_sapiens.GRCh37.GATK.illumina.SDF';
+my $GATK = "/hpc/local/CentOS7/cog/software/GenomeAnalysisTK-3.4-46/GenomeAnalysisTK.jar -R /hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fa ";
 
 
 my $opt_help = "This tools compares a vcf to the GIAB consensus truth set and calculates with RTGtools sensitivity and precision
@@ -37,9 +37,9 @@ die $opt_help unless ($vcf);
 if ($vcf2 and !$sample2) { die "need sample2!\n"};
 
 if ($nist eq "v2.19") {
-    $true_path ='/data/diagnostiek/production/GIAB/v219/';
+    $true_path ='/hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/';
     $truevcf = 'GIAB12878_nist2.19_truth.vcf.gz';
-    $high_conf = '/data/diagnostiek/production/GIAB/v219/union13callableMQonlymerged_addcert_nouncert_excludesimplerep_excludesegdups_excludedecoy_excludeRepSeqSTRs_noCNVs_v2.19_2mindatasets_5minYesNoRatio_noMT.bed';
+    $high_conf = '/hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/union13callableMQonlymerged_addcert_nouncert_excludesimplerep_excludesegdups_excludedecoy_excludeRepSeqSTRs_noCNVs_v2.19_2mindatasets_5minYesNoRatio_noMT.bed';
 }elsif ($nist eq "v3.3.2") {
     $true_path ='/hpc/cog_bioinf/common_dbs/GIAB/NIST_v3.3.2/';
     $truevcf = 'nistregions_HG001_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-X_v.3.3.2_highconf_PGandRTGphasetransfer.vcf.gz';
@@ -53,7 +53,7 @@ if ($vcf2) {
     system "java -Xmx4g -jar $GATK -T SelectVariants -se $sample2 --excludeNonVariants --removeUnusedAlternates -V $vcf2 -o $sample2\_$vcf2";
     #run rtgtools in duplomode with vcf and vcf2
     my $outputfoldername = "RTG_$nist\_$vcf\_$vcf2";
-	    my $command = "java -Xmx4G -jar  /data/diagnostiek/production/rtg-tools-3.6.2/RTG.jar vcfeval -t $ref -T $threads --baseline=$sample2\_$vcf2 --calls=$sample\_$vcf -o $outputfoldername --all-records";
+	    my $command = "java -Xmx4G -jar  /hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/RTG.jar vcfeval -t $ref -T $threads --baseline=$sample2\_$vcf2 --calls=$sample\_$vcf -o $outputfoldername --all-records";
             system "$command" ;
 
 
@@ -84,7 +84,7 @@ foreach my $passedonly (@passedonly) {
 	    my $type = $1 if $vcf=~ /(SNP|INDEL)_/;
 	    
 	    system "echo $type $outputfoldername >>$outfile ";
-	    my $command = "java -Xmx4G -jar /data/diagnostiek/production/rtg-tools-3.6.2/RTG.jar vcfeval -t $ref -T $threads --baseline=$true_path$type\_$truevcf --calls=$vcf -o $outputfoldername";
+	    my $command = "java -Xmx4G -jar  /hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/RTG.jar vcfeval -t $ref -T $threads --baseline=$true_path$type\_$truevcf --calls=$vcf -o $outputfoldername";
 	    
 	    $command .= " --all-records " if ($passedonly eq "no");
 	    $command .= " --bed-regions=$bed " if ($exomeonly eq "yes");
