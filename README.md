@@ -1,21 +1,20 @@
 # Within this folder there are files needed for IAP, the coverage tool, and NIPT.
 Tracks folder
-	* ENSEMBL_UCSC_merged_collapsed_sorted_v2.bed	
+	* ENSEMBL_UCSC_merged_collapsed_sorted_v3.bed	
 		This is the 'master' BED file without flanks. 
 		Warning: this file is 0-based
 		This file contains all exon from ENSEMBL (v75) and USCS (downloaded  07-08-2014). For more details see /hpc/cog_bioinf/diagnostiek/projects/Martin/Exomes/
-		This BED file is version 2 in /hpc/cog_bioinf/diagnostiek/projects/Martin/Exomes/ENSEMBL_UCSC_merge_bed/Version2/
-		This file is not used directly at the moment.
-	* ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed
+		This BED file is version 3 
+	* ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed
 		Normal BED file, with 20bp flanks. This file should be used for the Exoncov_v3 tool.
 		Warning: this file is 0-based
-	* ENSEMBL_UCSC_merged_collapsed_sorted_v2_100bpflank.bed
+	* ENSEMBL_UCSC_merged_collapsed_sorted_v3_100bpflank.bed
 		Normal BED file, with 100bp flanks. This file can be used as track in IGV/Alamut
 		Warning: this file is 0-based
-	* ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.list
+	* ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.list
 		List file with 20bp flanks: first 5 columns of BED with header. This file should be used for mapping stats (TARGET)for picard.
 		Warning: this file is 1-based
- 	* ENSEMBL_UCSC_merged_collapsed_sorted_v2_100bpflank.list
+ 	* ENSEMBL_UCSC_merged_collapsed_sorted_v3_100bpflank.list
 		List file with 100bp flanks: first 5 columns of BED with header. This file is used for variant calling with the haplotype caller.
 		Warning: this file is 1-based
 

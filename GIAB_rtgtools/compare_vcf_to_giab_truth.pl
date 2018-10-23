@@ -3,7 +3,7 @@ use strict;
 use Getopt::Long;
 
 
-my ($nist,$sample,$bed,$high_conf,$vcf,$threads,$vcf2,$sample2) = ("v2.19","GIAB12878", '/data/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed', '', '',6,'', '');
+my ($nist,$sample,$bed,$high_conf,$vcf,$threads,$vcf2,$sample2) = ("v2.19","GIAB12878", '/data/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed', '', '',6,'', '');
 my ($true_path,$truevcf);
 my $ref = '/data/diagnostiek/production/rtg-tools-3.6.2/Homo_sapiens.GRCh37.GATK.illumina.SDF';
 my $GATK = "/gnu/store/5jnaj91hiimcjh6rzs5pcq6pfdrh8y62-gatk-3.4-46-gbc02625/share/java/gatk/GenomeAnalysisTK.jar -R /data/diagnostiek/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta ";

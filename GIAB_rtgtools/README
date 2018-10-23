@@ -8,7 +8,7 @@ Usage:  compare_vcf_to_giab_truth.pl
 			-sample [s] Samplename in test vcf [GIAB12878],
 			-vcf2 [v2] vcffile to use as truthset for duplo measurements; overlap (true positives) will be compared to nist,
 			-sample2 [s2] samplename in vcf2, 
-			-bed bed [b] file to analyse, ie exome [/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed],
+			-bed bed [b] file to analyse, ie exome [/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed],
 			-high_conf [c] bed file with high confident regions [],
 			-t threads to use during analyses [6],
 			-h help

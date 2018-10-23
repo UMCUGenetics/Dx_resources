@@ -16,7 +16,7 @@ if __name__ == "__main__":
         parser = OptionParser();
         group = OptionGroup(parser, "Main options")
 	group.add_option("-e", default="/hpc/local/CentOS7/cog_bioinf/ExonCov/ExonCov.py", dest="EXONCALLCOV_PATH", help="EXONCALLCOV_PATH including executable")
-	group.add_option("-b", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v2_20bpflank.bed", dest="EXONCALLCOV_BED", help="EXONCALLCOV_BED")
+	group.add_option("-b", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed", dest="EXONCALLCOV_BED", help="EXONCALLCOV_BED")
 	group.add_option("-g", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Exoncov/gpanels.txt", dest="EXONCALLCOV_PANEL", help="EXONCALLCOV_PANEL")
 	group.add_option("-p", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Exoncov/Preferred_transcript_list.txt", dest="EXONCALLCOV_PREF", help="EXONCALLCOV_PREF")
 	group.add_option("-n", default="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Exoncov/NM_ENSEMBL_HGNC.txt", dest="EXONCALLCOV_ENS", help="EXONCALLCOV_ENS")
