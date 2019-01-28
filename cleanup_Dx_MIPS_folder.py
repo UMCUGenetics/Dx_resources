@@ -7,7 +7,7 @@ import shutil
 
 
 # Create git logfiles for files in inputlist
-def logging(inputlist):
+def logging(inputlist, folderlist):
     for repo in inputlist:
         index = inputlist.index(repo)
         repo_folder = folderlist[index]
@@ -42,7 +42,7 @@ badfolder = 'disapprovedVCFs'
 # Create GIT log files
 print '\nMaking GIT log files...'
 
-logging(inputlist)
+logging(inputlist, folderlist)
 
 # Check results
 
@@ -59,32 +59,39 @@ for item in os.listdir('.'):
             ycount = 0  # Sum of coverage for two Y SNPs
             lowcovcount = 0  # Number of SNPs with <15X coverage
             disbalancecount = 0  # Number of heterozygous (0/1) calls with allelefrequency <0.2 or >0.8
+
             for line in f:
                 if not line.startswith('#'):
                     line = line.split()
-                    values = line[9]
-                    values = values.replace(':', '\t').replace(',', '\t')
-                    values = values.split('\t')
-                    if line[0] == 'Y':
-                        if line[9] != './.':
-                            ycount += int(values[1])
-                    elif values[0] == '1/1':
+
+                    # Parse Genotype format
+                    gt_format = line[8].split(':')
+                    gt_index = gt_format.index('GT')
+
+                    # Parse sample genotype
+                    gt_values = line[9].split(':')
+                    #gt_values = gt_values.replace(':', '\t').replace(',', '\t')
+                    gt_value = gt_values[gt_index]
+
+                    if line[0] == 'Y' and gt_value != './.':
+                        ycount += int(gt_values[gt_format.index('DP')])
+                    elif gt_value == '1/1':
                         homaltcount += 1
-                        if int(values[3]) < 15:
+                        if int(gt_values[gt_format.index('DP')]) < 15:
                             lowcovcount += 1
-                        refcov += int(values[1])
-                        totalcov += int(values[3])
-                    elif values[0] != '1/1':
-                        if values[0] == './.':
+                        refcov += int(gt_values[gt_format.index('AD')].split(',')[0])
+                        totalcov += int(gt_values[gt_format.index('DP')])
+                    elif gt_value != '1/1':
+                        if gt_value == './.':
                             lowcovcount += 1
-                        elif values[0] == '0/0':
-                            if int(values[1]) < 15:
+                        elif gt_value == '0/0':
+                            if int(gt_values[gt_format.index('DP')]) < 15:
                                 lowcovcount += 1
                         else:
-                            if int(values[3]) < 15:
+                            if int(gt_values[gt_format.index('DP')]) < 15:
                                 lowcovcount += 1
-                    if values[0] == '0/1':
-                        af_value = int(values[1]) / float(int(values[3]))
+                    if gt_value == '0/1':
+                        af_value = int(gt_values[gt_format.index('AD')].split(',')[0]) / float(int(gt_values[gt_format.index('DP')]))
                         if af_value > 0.8 or af_value < 0.2:
                             disbalancecount += 1
 
