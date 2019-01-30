@@ -73,8 +73,9 @@ for item in os.listdir('.'):
                     #gt_values = gt_values.replace(':', '\t').replace(',', '\t')
                     gt_value = gt_values[gt_index]
 
-                    if line[0] == 'Y' and gt_value != './.':
-                        ycount += int(gt_values[gt_format.index('DP')])
+                    if line[0] == 'Y':
+                        if gt_value != './.':
+                            ycount += int(gt_values[gt_format.index('DP')])
                     elif gt_value == '1/1':
                         homaltcount += 1
                         if int(gt_values[gt_format.index('DP')]) < 15:
