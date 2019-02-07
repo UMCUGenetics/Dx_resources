@@ -1,25 +1,22 @@
 #!/bin/bash
 
-# Simple script to determine average coverage per SNP in current folder
-# Would like to add chromosome numbers (column 1 in 81SNP_design.vcf) to output
+# Simple script to determine average DP per SNP in current folder
 
-#a=`cat /hpc/cog_bioinf/diagnostiek/production/Dx_resources/fingerprint/81_snps_mip_design_nijmegen_sort.vcf | grep -v '#' | cut -f2`
-a=`cat /hpc/cog_bioinf/diagnostiek/production/Dx_tracks/fingerprint/81SNP_design.vcf | grep -v '#' | cut -f2`
+design_vcf='/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/fingerprint/81SNP_design.vcf'
+SnpSift='java -Xmx1G -jar /hpc/local/CentOS7/cog_bioinf/snpEff_v4.2/SnpSift.jar'
+snp_positions=`cat $design_vcf | grep -v '#' | cut -f2`
+samples=`ll *.vcf | wc -l`
 
-for SNP in $a; do
-	if [[ $SNP != '2847439' && $SNP != '2847910' ]]
+for snp in $snp_positions; do
+	if [[ $snp != '2847439' && $snp != '2847910' ]]
 		then
-			printf "$SNP\t"
-			b=`cat *vcf | grep $SNP | grep 0/0 | cut -f10 | sed 's/:/\t/g' | cut -f2 | awk '{sum+=$1} END {print sum}'`
-			c=`cat *vcf | grep $SNP | egrep '0/1|1/1' | cut -f10 | sed 's/:/\t/g' | cut -f3 | awk '{sum+=$1} END {print sum}'`
-			d=`cat *vcf | grep $SNP | wc -l`
-			e=`expr $b + $c`
-			f=`expr $e / $d`
-			echo $f
+			printf "$snp\t"
+            dp_sum=`cat *.vcf | $SnpSift filter POS=$snp | $SnpSift extractFields - DP | awk '{sum+=$1} END {print sum}'`
+            dp_avg=`expr $dp_sum / $samples`
+			echo $dp_avg
 		else
 			printf "$SNP\t"
-			g=`cat *vcf | grep $SNP | grep 0/0 | cut -f10 | sed 's/:/\t/g' | cut -f2 | awk '{sum+=$1} END {print sum}'`
-			h=`expr $g / $d`
-			echo $h
+            dp_avg=`cat *.vcf | $SnpSift filter POS=$snp | $SnpSift filter 'isRef(GEN[0])' | $SnpSift extractFields - DP | grep -v "#" | awk '{sum+=$1; if ($1) n++; } END {print sum / n}'`
+			echo $dp_avg
 	fi
 done
