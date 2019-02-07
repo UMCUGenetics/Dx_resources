@@ -5,7 +5,7 @@
 design_vcf='/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/fingerprint/81SNP_design.vcf'
 SnpSift='java -Xmx1G -jar /hpc/local/CentOS7/cog_bioinf/snpEff_v4.2/SnpSift.jar'
 snp_positions=`cat $design_vcf | grep -v '#' | cut -f2`
-samples=`ll *.vcf | wc -l`
+samples=`ls -1 *.vcf | wc -l`
 
 for snp in $snp_positions; do
 	if [[ $snp != '2847439' && $snp != '2847910' ]]
