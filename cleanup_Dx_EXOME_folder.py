@@ -21,10 +21,13 @@ def pedfile_dic(pwd):
     family = {}
     for line in lines:
         splitline = line.split()
-        try:
-            family[splitline[1]]
-	except:
-	    family[splitline[1]] = splitline[0]
+	if (len(splitline) > 0):
+            try:
+                family[splitline[1]]
+	    except:
+	        family[splitline[1]] = splitline[0]
+	else: # empty line, ignored
+	    continue
 
         if splitline[2] == "0" and splitline[3] == "0":	 # both parents are unknown
             pass
