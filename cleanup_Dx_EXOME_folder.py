@@ -21,7 +21,7 @@ def pedfile_dic(pwd):
     family = {}
     for line in lines:
         splitline = line.split()
-	if (splitline):
+	if splitline:
             try:
                 family[splitline[1]]
 	    except:
