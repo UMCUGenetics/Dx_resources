@@ -3,7 +3,7 @@ use strict;
 use Getopt::Long;
 
 
-my ($nist,$sample,$bed,$high_conf,$vcf,$threads,$vcf2,$sample2) = ("v2.19","GIAB12878", '/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed', '', '',6,'', '');
+my ($nist,$sample,$bed,$high_conf,$vcf,$threads,$vcf2,$sample2) = ("v2.19","U175754CFGIAB12878", '/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed', '', '',6,'', '');
 my ($true_path,$truevcf);
 my $ref = '/hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/Homo_sapiens.GRCh37.GATK.illumina.SDF';
 my $GATK = "/hpc/local/CentOS7/cog/software/GenomeAnalysisTK-3.4-46/GenomeAnalysisTK.jar -R /hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fa ";
@@ -47,7 +47,6 @@ if ($nist eq "v2.19") {
 }
 
 
-
 if ($vcf2) {
     system "java -Xmx4g -jar $GATK -T SelectVariants -se $sample --excludeNonVariants --removeUnusedAlternates -V $vcf -o $sample\_$vcf";
     system "java -Xmx4g -jar $GATK -T SelectVariants -se $sample2 --excludeNonVariants --removeUnusedAlternates -V $vcf2 -o $sample2\_$vcf2";
@@ -66,9 +65,11 @@ if ($vcf2) {
     system "java -Xmx4G -jar $GATK -T SelectVariants -L $high_conf --excludeNonVariants --removeUnusedAlternates -V $vcf_inclpath -selectType INDEL -o INDEL_nistregions_$vcf";
 }else{
     #splitout snps
-    system "java -Xmx4g -jar $GATK -T SelectVariants -se $sample\* -L $high_conf --excludeNonVariants --removeUnusedAlternates -V $vcf -selectType SNP -o SNP_nistregions_$vcf";
+    print("java -Xmx4g -jar $GATK -T SelectVariants -se $sample -L $high_conf --excludeNonVariants --removeUnusedAlternates -V $vcf -selectType SNP -o SNP_nistregions_$vcf");
+    system "java -Xmx4g -jar $GATK -T SelectVariants -se $sample -L $high_conf --excludeNonVariants --removeUnusedAlternates -V $vcf -selectType SNP -o SNP_nistregions_$vcf";
     #splitout indels
-    system "java -Xmx4G -jar $GATK -T SelectVariants -se $sample\* -L $high_conf --excludeNonVariants --removeUnusedAlternates -V $vcf -selectType INDEL -o INDEL_nistregions_$vcf";
+    print("java -Xmx4G -jar $GATK -T SelectVariants -se $sample -L $high_conf --excludeNonVariants --removeUnusedAlternates -V $vcf -selectType INDEL -o INDEL_nistregions_$vcf");
+    system "java -Xmx4G -jar $GATK -T SelectVariants -se $sample -L $high_conf --excludeNonVariants --removeUnusedAlternates -V $vcf -selectType INDEL -o INDEL_nistregions_$vcf";
 }
 
 #Run RTGTOOLS
@@ -96,13 +97,16 @@ foreach my $passedonly (@passedonly) {
 # parse rtgeval results into table
 open IN, $outfile;
 open OUT2, ">parsed_$outfile";
+my @header = ('Type', 'Sample','Threshold','True-pos','False-pos','False-neg','Precision','Sensitivity','F-measure'); 
+print OUT2 join("\t",@header),"\n";
 while (my $line=<IN>) {
     chomp($line);
     my @OUT;
     my @line = split(/\s+/,$line);
     next if !$line[1];
     if ($line[1] =~ /SNP|INDEL/) {
-	print OUT2 join("\t",@line),"\t";
+	#print OUT2 join("\t",@line),"\t";
+        print OUT2 join("\t",@line);
     }
     elsif ($line[1] eq 'None') { #get values without threshold
 	print OUT2 join("\t",@line),"\n";
