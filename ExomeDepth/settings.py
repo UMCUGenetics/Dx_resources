@@ -12,7 +12,8 @@ template=str(cwd)+"template.vcf"
 # Reference genome
 reference_genome= "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta"
 
-
+#Used R version
+Rversion="R/3.5.1"
 
 # Location of target files
 refset_dir="/hpc/cog_bioinf/diagnostiek/projects/WES_CNV_ExomeDepth/Double_reference_analyses/RefSet/Final_RefSet/Full_set/"
