@@ -5,14 +5,14 @@ import getopt
 
 print "Calculating run stats from flagstat files\n" 
 # Make run_stats.txt file from all flagstats
-os.system("/hpc/cog_bioinf/diagnostiek/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
+os.system("/hpc/diaggen/software/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
 
 # Input folders
-IAP_folder="/hpc/local/CentOS7/cog_bioinf/IAP_Dx/"
-ExonCov_folder="/hpc/local/CentOS7/cog_bioinf/ExonCov/"
-Dx_resources_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/"
-Dx_INI_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_INI/"
-Dx_tracks_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/"
+IAP_folder="/hpc/diaggen/software/production/IAP"
+ExonCov_folder="/hpc/diaggen/software/production/ExonCov"
+Dx_resources_folder="/hpc/diaggen/software/production/Dx_resources/"
+Dx_INI_folder="/hpc/diaggen/software/production/Dx_INI/"
+Dx_tracks_folder="/hpc/diaggen/software/production/Dx_tracks/"
 # Get GIT tag version
 IAP_v=commands.getoutput("git --git-dir="+str(IAP_folder)+".git describe --tags")
 ExonCov_v=commands.getoutput("git --git-dir="+str(ExonCov_folder)+".git describe --tags")

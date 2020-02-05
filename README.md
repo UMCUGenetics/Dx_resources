@@ -3,7 +3,7 @@ Tracks folder
 	* ENSEMBL_UCSC_merged_collapsed_sorted_v3.bed	
 		This is the 'master' BED file without flanks. 
 		Warning: this file is 0-based
-		This file contains all exon from ENSEMBL (v75) and USCS (downloaded  07-08-2014). For more details see /hpc/cog_bioinf/diagnostiek/projects/Martin/Exomes/
+		This file contains all exon from ENSEMBL (v75) and USCS (downloaded  07-08-2014). For more details see /hpc/diaggen/users/Martin/Exomes/
 		This BED file is version 3 
 	* ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed
 		Normal BED file, with 20bp flanks. This file should be used for the Exoncov_v3 tool.
