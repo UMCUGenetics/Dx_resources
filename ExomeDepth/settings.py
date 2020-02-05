@@ -16,10 +16,10 @@ reference_genome= "/hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Hom
 Rversion="R/3.5.1"
 
 # Location of target files
-refset_dir="/hpc/cog_bioinf/diagnostiek/projects/WES_CNV_ExomeDepth/Double_reference_analyses/RefSet/Final_RefSet/Full_set/"
+refset_dir="/hpc/cog_bioinf/diagnostiek/development/Dx_tracks/ExomeDepth/"
 
 #Reference set
-refset="Oct2019"
+refset="Nov2019"
 analysis={"HC":
               {"refset":{"female":str(refset_dir)+"/HC_female_"+str(refset)+".EDref",
                          "male":str(refset_dir)+"/HC_male_"+str(refset)+".EDref"},
