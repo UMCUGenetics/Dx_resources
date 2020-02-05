@@ -152,7 +152,7 @@ if opt.make_call and not opt.make_ref : # Call CNV from BAMs
             os.system("ln -sd "+ str(bam)+ "* "+ str(outfolder)) 
             write_file=open(str(outfolder)+"/"+str(item)+"_"+str(gender)+"_"+bam.split("/")[-1]+".sh","w")  
             write_file.write(str(qsub_call)+"\n")
-            write_file.write("module load  R/3.4.1\n")
+            write_file.write("module load "+str(settings.Rversion)+"\n")
             write_file.write("cd "+str(outfolder)+"\n") 
             #write_file.write("Rscript "+str(ED_R)+" "+str(analysis[item]["refset"][gender])+" "+str(analysis[item]["target_bed"])+" "+str(refgenome)+" "+str(analysis[item]["exon_bed"])+" "+str(ED_callCNVref)+" "+str(ED_class)+" "+str(prob[str(item)])+"\n")
             write_file.write("Rscript "+str(ED_R)+" "+str(analysis[item]["refset"][gender])+" "+str(analysis[item]["target_bed"])+" "+str(refgenome)+" "+str(analysis[item]["exon_bed"])+" "+str(prob[str(item)])+"\n")
