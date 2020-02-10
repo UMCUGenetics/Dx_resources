@@ -1,4 +1,4 @@
-.libPaths("/hpc/cog_bioinf/diagnostiek/production/R_libs/3.5.1")
+.libPaths("/hpc/cog_bioinf/diagnostiek/production/R_libs/ExomeDepthv2.0.0/3.5.1/")
 
 library(ExomeDepth)
 library(methods)
