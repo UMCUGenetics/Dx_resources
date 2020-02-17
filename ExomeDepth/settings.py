@@ -2,9 +2,11 @@
 
 # Location of repository
 cwd = "/hpc/cog_bioinf/diagnostiek/development/Dx_resources_ED/ExomeDepth/"
+
 # R script for RefSet and CNV calling
-call_CNV=str(cwd)+"Exomedepth_callCNVs.R"
-refSet=str(cwd)+"Exomedepth_create_Ref_set.R"
+callcnv_r=str(cwd)+"Exomedepth_callCNVs.R"
+createrefset_r=str(cwd)+"Exomedepth_create_Ref_set.R"
+
 #ExomeDepth CSV to VCF parser
 csv2vcf= str(cwd)+"ed_csv_to_vcf.py"
 template=str(cwd)+"template.vcf"
@@ -19,7 +21,8 @@ Rversion="R/3.5.1"
 refset_dir="/hpc/cog_bioinf/diagnostiek/development/Dx_tracks/ExomeDepth/"
 
 #Reference set
-refset="Nov2019"
+#refset="Nov2019"
+refset="Run0280"
 analysis={"HC":
               {"refset":{"female":str(refset_dir)+"/HC_female_"+str(refset)+".EDref",
                          "male":str(refset_dir)+"/HC_male_"+str(refset)+".EDref"},
