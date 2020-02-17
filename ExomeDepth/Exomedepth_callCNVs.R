@@ -12,8 +12,9 @@ input_exon.hg19=paste(args[4],sep="") 			# argument target Exon file
 probability = as.numeric(args[5])		        # argument transition probability
 
 options(scipen = 50)
-pathToBams <- getwd() 
-bam.files <- paste0(pathToBams, "/", dir(pathToBams, "bam$"))
+
+bam.files <- args[6]
+
 exons.hg19= read.table(input_exon.hg19,sep="\t", header=TRUE)
 data(Conrad.hg19)
 
@@ -91,8 +92,6 @@ for (i in 1:nsamples) {
   save(all.exons,file=paste(my.current.samplename,"all.exons",sep = "_"))
   refsize<-toString(length(my.choice[[1]]))
   correlation<-all.exons@refcorrelation
-  #rownames(refsize) <- c("refsize")
-  #print_array<-cbind(all.exons@CNV.calls,all.exons@refcorrelation,toString(length(my.choice[[1]])))
   print_array<-cbind(all.exons@CNV.calls,correlation,refsize)
   write.csv(file = output.file,
           x = print_array,
