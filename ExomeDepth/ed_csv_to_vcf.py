@@ -35,6 +35,9 @@ if __name__ == "__main__":
     group.add_option("-i", dest="input", metavar="[PATH]",
                      help="input folder including csv files"
                      )
+    group.add_option("--id", dest="sampleid", metavar="[STRING]",
+                     help="sampleid name to be included in VCF"
+                     )
     group.add_option("-t", dest="template", metavar="[STRING]",
                      help="Path to template VCF"
                      )
@@ -82,7 +85,11 @@ new_record.samples[0].data = new_record.samples[0].data._make(new_vals)
 
 for csv in csvs:
     csv_file = open(csv, "r")
-    sampleID = csv.split("/")[-1].split("_")[0]
+    if opt.sampleid:
+        sampleID = opt.sampleid
+    else:
+        sampleID = csv.split("/")[-1].split("_")[0]
+
     df_csv = pd.read_csv(csv)
     vcf_reader.samples = [sampleID]  # Change template sampleID in sampleID
     # Add metadata ED reference set used
@@ -187,7 +194,7 @@ for csv in csvs:
 
         """Change INFO fields"""
         new_record.INFO['END'] = row['end']
-        new_record.INFO['NEXONS'] = row['nexons']
+        new_record.INFO['NTARGETS'] = row['nexons']
         new_record.INFO['SVLEN'] = int(
             row['end']) - int(row['start'])  # Input is assumed 0-based
         new_record.INFO['CN'] = copynumber
