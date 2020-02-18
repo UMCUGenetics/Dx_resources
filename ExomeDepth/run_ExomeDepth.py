@@ -210,6 +210,7 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
 
         for item in analysis:
             print "submitting " + str(item) + " jobs"
+            sampleid = bam.split("/")[-1].split("_")[0]
             outfolder = (str(outdir) + "/"+ str(item)+"/" + str(item) + "_"
                          + str(bam.split("/")[-1])
                          )
@@ -228,7 +229,8 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
                           )
                 os.system("python " + str(settings.csv2vcf) + " -i " + str(outfolder) 
                           + " -t " + str(settings.template) + " -m " 
-                          + str(analysis[item]["refset"][gender])
+                          + str(analysis[item]["refset"][gender]) 
+                          + " --id "+ str(sampleid)
                           )
                 os.system("cp " + str(outfolder) + "/*vcf " + str(outdir) + "/" + str(item))
 
@@ -272,7 +274,7 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
                 write_file.write("python " + str(settings.csv2vcf) + " -i "
                                  + str(outfolder) + " -t " + str(settings.template)
                                  + " -m " + str(analysis[item]["refset"][gender])
-                                 + "\n"
+                                 + " --id " + str(sampleid) + "\n"
                                  )
                 write_file.write("cp " + str(outfolder) + "/*vcf " + str(outdir) + "/" + str(item) + "\n")
                 write_file.close()
