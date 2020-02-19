@@ -99,7 +99,7 @@ os.system("/hpc/diaggen/software/production/Dx_resources/get_stats_from_flagstat
 print "Uploading run data to trend analysis database\n"
 pwd = commands.getoutput("pwd")
 trend_analysis_command = ". {trend_analysis_path}/venv/bin/activate && python {trend_analysis_path}/trend_analysis.py upload processed_data {run_folder}".format(
-    trend_analysis_path='/hpc/diaggen/software/production/Dx_Trend_Analysis_tool',
+    trend_analysis_path='/hpc/diaggen/software/production/trend_analysis_tool',
     run_folder=pwd
 )
 os.system(trend_analysis_command)
