@@ -3,10 +3,10 @@ use strict;
 use Getopt::Long;
 
 
-my ($nist,$sample,$bed,$high_conf,$vcf,$threads,$vcf2,$sample2) = ("v2.19","U175754CFGIAB12878", '/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed', '', '',6,'', '');
+my ($nist,$sample,$bed,$high_conf,$vcf,$threads,$vcf2,$sample2) = ("v2.19","U175754CFGIAB12878", '/hpc/diaggen/software/production/Dx_tracks/Tracks/ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed', '', '',6,'', '');
 my ($true_path,$truevcf);
 my $ref = '/hpc/local/CentOS7/cog_bioinf/rtg-tools-3.6.2/Homo_sapiens.GRCh37.GATK.illumina.SDF';
-my $GATK = "/hpc/local/CentOS7/cog/software/GenomeAnalysisTK-3.4-46/GenomeAnalysisTK.jar -R /hpc/cog_bioinf/GENOMES/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fa ";
+my $GATK = "/hpc/local/CentOS7/cog/software/GenomeAnalysisTK-3.4-46/GenomeAnalysisTK.jar -R /hpc/diaggen/data/databases/ref_genomes/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta ";
 
 
 my $opt_help = "This tools compares a vcf to the GIAB consensus truth set and calculates with RTGtools sensitivity and precision
@@ -37,13 +37,13 @@ die $opt_help unless ($vcf);
 if ($vcf2 and !$sample2) { die "need sample2!\n"};
 
 if ($nist eq "v2.19") {
-    $true_path ='/hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/';
+    $true_path ='/hpc/diaggen/data/databases/GIAB/NIST_v2.19/';
     $truevcf = 'GIAB12878_nist2.19_truth.vcf.gz';
-    $high_conf = '/hpc/cog_bioinf/common_dbs/GIAB/NIST_2.19/union13callableMQonlymerged_addcert_nouncert_excludesimplerep_excludesegdups_excludedecoy_excludeRepSeqSTRs_noCNVs_v2.19_2mindatasets_5minYesNoRatio_noMT.bed';
+    $high_conf = '/hpc/diaggen/data/databases/GIAB/NIST_v2.19/union13callableMQonlymerged_addcert_nouncert_excludesimplerep_excludesegdups_excludedecoy_excludeRepSeqSTRs_noCNVs_v2.19_2mindatasets_5minYesNoRatio_noMT.bed';
 }elsif ($nist eq "v3.3.2") {
-    $true_path ='/hpc/cog_bioinf/common_dbs/GIAB/NIST_v3.3.2/';
+    $true_path ='/hpc/diaggen/data/databases/GIAB/NIST_v3.3.2/';
     $truevcf = 'nistregions_HG001_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-X_v.3.3.2_highconf_PGandRTGphasetransfer.vcf.gz';
-    $high_conf = '/hpc/cog_bioinf/common_dbs/GIAB/NIST_v3.3.2/HG001_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-X_v.3.3.2_highconf_nosomaticdel.bed';
+    $high_conf = '/hpc/diaggen/data/databases/GIAB/NIST_v3.3.2/HG001_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-X_v.3.3.2_highconf_nosomaticdel.bed';
 }
 
 

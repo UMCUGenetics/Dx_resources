@@ -27,14 +27,14 @@ def move(vcf):
 
 
 # Variables
-inputlist = ["IAP", "Dx_resources", "Dx_INI", "Dx_tracks", "Dx_mips", "Dx_fingerprinting"]
+inputlist = ["IAP", "Dx_resources", "Dx_INI", "Dx_tracks", "mips", "fingerprinting"]
 folderlist = [
-    "/hpc/local/CentOS7/cog_bioinf/IAP_Dx/",
-    "/hpc/cog_bioinf/diagnostiek/production/Dx_resources/",
-    "/hpc/cog_bioinf/diagnostiek/production/Dx_INI/",
-    "/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/",
-    "/hpc/cog_bioinf/diagnostiek/production/Dx_mips/",
-    "/hpc/cog_bioinf/diagnostiek/production/Dx_fingerprinting/"
+    "/hpc/diaggen/software/production/IAP",
+    "/hpc/diaggen/software/production/Dx_resources/",
+    "/hpc/diaggen/software/production/Dx_INI/",
+    "/hpc/diaggen/software/production/Dx_tracks/",
+    "/hpc/diaggen/software/production/mips/",
+    "/hpc/diaggen/software/production/fingerprinting/"
 ]
 
 badfolder = 'disapprovedVCFs'

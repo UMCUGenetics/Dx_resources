@@ -93,13 +93,13 @@ def extract_qc(pwd):
 
 print "Calculating run stats from flagstat files\n" 
 # Make run_stats.txt file from all flagstats
-os.system("/hpc/cog_bioinf/diagnostiek/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
+os.system("/hpc/diaggen/software/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
 
 # Upload run data to trend analysis database
 print "Uploading run data to trend analysis database\n"
 pwd = commands.getoutput("pwd")
 trend_analysis_command = ". {trend_analysis_path}/venv/bin/activate && python {trend_analysis_path}/trend_analysis.py upload processed_data {run_folder}".format(
-    trend_analysis_path='/hpc/cog_bioinf/diagnostiek/production/Dx_Trend_Analysis_tool',
+    trend_analysis_path='/hpc/diaggen/software/production/trend_analysis_tool',
     run_folder=pwd
 )
 os.system(trend_analysis_command)
@@ -120,11 +120,11 @@ else:
     print "Kinship checked with pedigree: ok!\n"
 
 # Input folders
-IAP_folder="/hpc/local/CentOS7/cog_bioinf/IAP_Dx/"
-ExonCov_folder="/hpc/local/CentOS7/cog_bioinf/ExonCov/"
-Dx_resources_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_resources/"
-Dx_INI_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_INI/"
-Dx_tracks_folder="/hpc/cog_bioinf/diagnostiek/production/Dx_tracks/"
+IAP_folder="/hpc/diaggen/software/production/IAP"
+ExonCov_folder="/hpc/diaggen/software/production/ExonCov"
+Dx_resources_folder="/hpc/diaggen/software/production/Dx_resources/"
+Dx_INI_folder="/hpc/diaggen/software/production/Dx_INI/"
+Dx_tracks_folder="/hpc/diaggen/software/production/Dx_tracks/"
 # Get GIT tag version
 IAP_v=commands.getoutput("git --git-dir="+str(IAP_folder)+".git describe --tags")
 ExonCov_v=commands.getoutput("git --git-dir="+str(ExonCov_folder)+".git describe --tags")
