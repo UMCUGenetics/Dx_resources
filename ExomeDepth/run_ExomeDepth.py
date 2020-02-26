@@ -101,10 +101,12 @@ gender = settings.gender
 
 
 """Log all settings in setting.log file"""
+log_dir=str(outdir)+"/logs"
+os.system("mkdir -p "+str(log_dir))
 if opt.input_folder:
-    write_file=open(outdir+"/settings.log","w")
+    write_file=open(log_dir+"/settings.log","w")
 elif opt.input_bam:
-     write_file=open(outdir+"/"+str(opt.input_bam.split("/")[-1])+"_settings.log","w")
+     write_file=open(log_dir+"/"+str(opt.input_bam.split("/")[-1])+"_settings.log","w")
 (options, args) = parser.parse_args()
 for item in vars(options):
     write_file.write(str(item)
@@ -281,5 +283,7 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
                 os.system("qsub " + outfolder + "/" + str(item) + "_"
                           + str(gender) + "_" + "csv_2_vcf.sh"
                           )
+        """Touch done file is loop is completed"""
+        os.system("touch "+str(log_dir) + "/"+str(bam.split("/")[-1])+".done")
 else:
     sys.exit("Choose either make_ref or make_call")
