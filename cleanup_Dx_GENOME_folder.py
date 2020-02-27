@@ -8,8 +8,8 @@ print "Calculating run stats from flagstat files\n"
 os.system("/hpc/diaggen/software/production/Dx_resources/get_stats_from_flagstat.pl >run_stats.txt")
 
 # Input folders
-IAP_folder="/hpc/diaggen/software/production/IAP"
-ExonCov_folder="/hpc/diaggen/software/production/ExonCov"
+IAP_folder="/hpc/diaggen/software/production/IAP/"
+ExonCov_folder="/hpc/diaggen/software/production/ExonCov/"
 Dx_resources_folder="/hpc/diaggen/software/production/Dx_resources/"
 Dx_INI_folder="/hpc/diaggen/software/production/Dx_INI/"
 Dx_tracks_folder="/hpc/diaggen/software/production/Dx_tracks/"

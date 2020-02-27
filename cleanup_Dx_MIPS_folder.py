@@ -29,7 +29,7 @@ def move(vcf):
 # Variables
 inputlist = ["IAP", "Dx_resources", "Dx_INI", "Dx_tracks", "mips", "fingerprinting"]
 folderlist = [
-    "/hpc/diaggen/software/production/IAP",
+    "/hpc/diaggen/software/production/IAP/",
     "/hpc/diaggen/software/production/Dx_resources/",
     "/hpc/diaggen/software/production/Dx_INI/",
     "/hpc/diaggen/software/production/Dx_tracks/",

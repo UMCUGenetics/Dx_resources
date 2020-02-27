@@ -120,8 +120,8 @@ else:
     print "Kinship checked with pedigree: ok!\n"
 
 # Input folders
-IAP_folder="/hpc/diaggen/software/production/IAP"
-ExonCov_folder="/hpc/diaggen/software/production/ExonCov"
+IAP_folder="/hpc/diaggen/software/production/IAP/"
+ExonCov_folder="/hpc/diaggen/software/production/ExonCov/"
 Dx_resources_folder="/hpc/diaggen/software/production/Dx_resources/"
 Dx_INI_folder="/hpc/diaggen/software/production/Dx_INI/"
 Dx_tracks_folder="/hpc/diaggen/software/production/Dx_tracks/"
