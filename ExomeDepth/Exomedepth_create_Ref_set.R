@@ -5,19 +5,21 @@ library(methods)
 library(stringr)
 
 args = commandArgs(trailingOnly=TRUE)
-name<-(substr(args[2], 0 ,str_length(args[2])-4 ))
-input=args[1]
-output=args[2]
-target.file=args[3]
-reference.file=args[4]
-exons=paste(args[5],sep="")
+input=args[1]  #input folder
+output=args[2]  #output folder  
+name<-(substr(output, 0 ,str_length(output)-4 ))
+target.file=args[3]  #Probe target bed file  
+reference.file=args[4]  #Reference genome (fasta)   
+exons=paste(args[5],sep="")  #Exon target tsv file
 
-pathToRefBams <- input
-refbam.files <- paste0(pathToRefBams, dir(pathToRefBams, "bam$"))
+pathtorefbams <- input
+refbam.files <- paste0(pathtorefbams, dir(pathtorefbams, "bam$"))
 exons.hg19= read.table(exons,sep="\t", header=TRUE)
-my.refcounts <- getBamCounts(bed.frame = exons.hg19,
-                         bam.files = refbam.files,
-                          include.chr = FALSE,
-                         referenceFasta = reference.file)
-save(my.refcounts,file = output)
+refcounts <- getBamCounts(
+    bed.frame = exons.hg19,
+    bam.files = refbam.files,
+    include.chr = FALSE,
+    referenceFasta = reference.file
+)
+save(refcounts,file = output)
 
