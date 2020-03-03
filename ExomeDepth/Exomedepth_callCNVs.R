@@ -124,9 +124,10 @@ if (length( x@phi ) == 1) anno$phi <- x@phi else anno$phi <- x@phi [ selected ]
 
 message(str(anno))
 for (i in 1:nrow(anno)) {
-    anno$min.norm[i] <- qbetabinom (p = 0.01, size = anno$total.counts[i], phi = anno$phi[i], prob = anno$expected[i])
-    anno$max.norm[i] <- qbetabinom (p = 0.99, size = anno$total.counts[i], phi = anno$phi[i], prob = anno$expected[i])
-  }
+    anno$min.norm[ i ] <- qbetabinom (p = 0.01, size = anno$total.counts[ i ], phi = anno$phi[ i ], prob = anno$expected[ i ])
+    anno$max.norm[ i ] <- qbetabinom (p = 0.99, size = anno$total.counts[ i ], phi = anno$phi[ i ], prob = anno$expected[ i ])
+}
+
 anno$min.norm.prop <- anno$min.norm / anno$total.counts
 anno$max.norm.prop <- anno$max.norm / anno$total.counts
 head(anno)
