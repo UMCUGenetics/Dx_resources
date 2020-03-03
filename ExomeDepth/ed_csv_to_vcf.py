@@ -14,8 +14,8 @@ import settings
 
 def cnv_locationtype(region):
     if upper(str(region[0])) == "X":
-        if region[1] >= PAR1[0] and region[2] <= PAR1[1] or region[1] >= PAR2[0] and region[2] <= PAR2[1]:  #If CNV is nested in PAR1 or PAR2 region
-            return "chrXPAR"
+        if region[1] >= par1[0] and region[2] <= par1[1] or region[1] >= par2[0] and region[2] <= par2[1]:  #If CNV is nested in par1 or par2 region
+            return "chrXpar"
         else:
             return "chrX"
     elif upper(str(region[0])) == "Y":
@@ -79,12 +79,12 @@ if __name__ == "__main__":
 
     for csv in csvs:
         if opt.sampleid:
-            sampleID = opt.sampleid
+            sampleid = opt.sampleid
         else:
-            sampleID = csv.split("/")[-1].split("_")[0]
+            sampleid = csv.split("/")[-1].split("_")[0]
 
         df_csv = pd.read_csv(csv)
-        vcf_reader.samples = [sampleID]  # Change template sampleID in sampleID
+        vcf_reader.samples = [sampleid]  # Change template sampleid in sampleid
         # Add metadata ED reference set used
         vcf_reader.metadata['EDreference'] = [str(opt.callmodel)]
 
@@ -141,8 +141,8 @@ if __name__ == "__main__":
                     genotype = "0/1"
 
                 """Determine copy number. Note this will not work for mosaik events"""
-                PAR1 = settings.PAR1
-                PAR2 = settings.PAR2
+                par1 = settings.par1
+                par2 = settings.par2
                 normal_CN = settings.normal_CN
                 region = [str(row['chromosome']), int(row['start']), int(row['end'])]
                 locus_type = cnv_locationtype(region)
@@ -154,7 +154,7 @@ if __name__ == "__main__":
                 if gender == "female" and locus_type == "chrY":
                     """In case CNV is detected on chrY in female, correct for this"""
                     print ("WARNING: {sample} chromosome Y CNV detected (region = {region}) in female, calc_copynumber set to 0 (deletion call) or 1 (duplication call)".format(
-                           sample = str(sampleID),
+                           sample = str(sampleid),
                            region = str("_".join(str(x) for x in region))
                            ))    
 
@@ -170,7 +170,7 @@ if __name__ == "__main__":
                        or row_type == "duplication" and calc_copynumber < normal_copy:
                         """ If calc_copynumber is opposite of expected CN for region, i.e. ratio 1.5 for a deletion"""
                         print ("WARNING: {sample} CNV copynumber estimation {copynumber} does not match CNV type {rowtype} for region {region}".format(
-                               sample = str(sampleID),
+                               sample = str(sampleid),
                                copynumber = str(float(calc_copynumber)),
                                rowtype = row_type,
                                region =  str("_".jrow_type in region)
@@ -180,7 +180,7 @@ if __name__ == "__main__":
                     if copynumber == int(normal_copy):
                         """ Estimated copynumber is similar to copyneutral """
                         print ("WARNING: {sample} true copynumber for region {region} is same as normal CN > set to -1 for deletion, +1 for duplication".format(
-                               sample = str(sampleID),
+                               sample = str(sampleid),
                                region =  str("_".join(str(x) for x in region))
                                ))
                         if row_type == "deletion":  # If deletion correct copynumber with -1
