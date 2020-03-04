@@ -15,11 +15,11 @@ exons=paste(args[5],sep="")  #Exon target tsv file
 pathtorefbams <- input
 refbam.files <- paste0(pathtorefbams, dir(pathtorefbams, "bam$"))
 exons.hg19= read.table(exons,sep="\t", header=TRUE)
-refcounts <- getBamCounts(
+my.refcounts <- getBamCounts(
     bed.frame = exons.hg19,
     bam.files = refbam.files,
     include.chr = FALSE,
     referenceFasta = reference.file
 )
-save(refcounts,file = output)
+save(my.refcounts,file = output)
 
