@@ -181,8 +181,10 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
                     gender = gender_dic[item]
         if gender == "unknown":  # try to determine gender on BAM ID annotation
             if re.search('[C|P]M', bam.split("/")[-1]):
+                print("Sample {0} has a unknown gender based on chrY reads, but resolved as male based on sampleID".format(bam.split("/")[-1]))
                 gender = "male"
             elif re.search('[C|P]F', bam.split("/")[-1]):
+                print("Sample {0} has a unknown gender based on chrY reads, but resolved as female based on sampleID".format(bam.split("/")[-1]))
                 gender = "female"
             else:
                 print("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))
