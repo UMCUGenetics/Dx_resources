@@ -21,67 +21,67 @@ data(Conrad.hg19)
 ################## Call autosomal events  ###################################
 print("Calling CNVs")
 load(file=auto_ref_file)
-counts <- getBamCounts(
+my.counts <- getBamCounts(
     bed.frame = exons.hg19,
     bam.files = bam.files,
     include.chr = FALSE,
     referenceFasta = reference.file
 )
 
-save(counts,file = "counts")
+save(my.counts,file = "my.counts")
 
-counts.dafr <- as(counts[, colnames(counts)], 'data.frame')
-counts.dafr$chromosome <- gsub(as.character(counts.dafr$space),
+my.counts.dafr <- as(my.counts[, colnames(my.counts)], 'data.frame')
+my.counts.dafr$chromosome <- gsub(as.character(my.counts.dafr$space),
     pattern = 'chr',
     replacement = ''
 ) ##remove the annoying chr letters
 
-samplecounts.mat<-as.matrix(counts.dafr[,grep(names(counts.dafr),pattern='*.bam')])
+samplecounts.mat<-as.matrix(my.counts.dafr[,grep(names(my.counts.dafr),pattern='*.bam')])
 nsamples<-ncol(samplecounts.mat)
 
-refcounts.dafr <- as(refcounts[, colnames(refcounts)], 'data.frame')
-refcounts.dafr$chromosome <- gsub(as.character(refcounts.dafr$space),
+my.refcounts.dafr <- as(my.refcounts[, colnames(my.refcounts)], 'data.frame')
+my.refcounts.dafr$chromosome <- gsub(as.character(my.refcounts.dafr$space),
     pattern = 'chr',
     replacement = ''
 ) ##remove the annoying chr letters
 
-ref.samples<-colnames(refcounts.dafr)[7:(ncol(refcounts.dafr)-1)]
+my.ref.samples<-colnames(my.refcounts.dafr)[7:(ncol(my.refcounts.dafr)-1)]
 
-#loop over samples in counts
+#loop over samples in my.counts
 for (i in 1:nsamples) {
-  current.samplename <-colnames(counts.dafr[6+i])
-  messsage(current.samplename)
-  reference.set <- as.matrix(refcounts.dafr[,ref.samples])
-  choice<-select.reference.set(test.counts=samplecounts.mat[,i],
-      reference.counts=(reference.set),
-      bin.length=(counts.dafr$end - counts.dafr$start)/1000,
+  my.current.samplename <-colnames(my.counts.dafr[6+i])
+  messsage(my.current.samplename)
+  my.reference.set <- as.matrix(my.refcounts.dafr[,my.ref.samples])
+  my.choice<-select.reference.set(test.counts=samplecounts.mat[,i],
+      reference.counts=(my.reference.set),
+      bin.length=(my.counts.dafr$end - my.counts.dafr$start)/1000,
       n.bins.reduced = 10000
   )
 
-  file_name=paste(current.samplename,"_CNV.log",sep="")
+  file_name=paste(my.current.samplename,"_CNV.log",sep="")
   write_file = file(file_name,"w")
-  line1=paste("Number of selected reference samples ",toString(length(choice[[1]])),sep="\t")
+  line1=paste("Number of selected reference samples ",toString(length(my.choice[[1]])),sep="\t")
   write(line1,write_file,append=T)
-  line2=paste("Selected reference samples ",toString(choice[[1]]),sep="\t")
+  line2=paste("Selected reference samples ",toString(my.choice[[1]]),sep="\t")
   write(line2,write_file,append=T)
   close(write_file)
 
-  mmatrix <- as.matrix( refcounts.dafr[, choice$reference.choice, drop = FALSE])
-  reference.selected <- apply(X = mmatrix, MAR = 1, FUN = sum)
+  my.matrix <- as.matrix( my.refcounts.dafr[, my.choice$reference.choice, drop = FALSE])
+  my.reference.selected <- apply(X = my.matrix, MAR = 1, FUN = sum)
 
   #CNV calling
   all.exons <- new('ExomeDepth',
       test = samplecounts.mat[,i],
-      reference = reference.selected,
+      reference = my.reference.selected,
       formula = 'cbind(test, reference) ~ 1' 
   )
 
   all.exons <- CallCNVs(x = all.exons,
       transition.probability = probability,
-      chromosome = counts.dafr$space,
-      start = counts.dafr$start,
-      end = counts.dafr$end,
-      name = counts.dafr$names
+      chromosome = my.counts.dafr$space,
+      start = my.counts.dafr$start,
+      end = my.counts.dafr$end,
+      name = my.counts.dafr$names
   )
 
   all.exons <- AnnotateExtra(x = all.exons,
@@ -91,10 +91,10 @@ for (i in 1:nsamples) {
   )
 
   str(all.exons)
-  output.file <- paste(current.samplename,'exome_calls.csv',sep = "")
+  output.file <- paste(my.current.samplename,'exome_calls.csv',sep = "")
 
-  save(all.exons,file=paste(current.samplename,"all.exons",sep = "_"))
-  refsize<-toString(length(choice[[1]]))
+  save(all.exons,file=paste(my.current.samplename,"all.exons",sep = "_"))
+  refsize<-toString(length(my.choice[[1]]))
   correlation<-all.exons@refcorrelation
   print_array<-cbind(all.exons@CNV.calls,correlation,refsize)
   write.csv(file = output.file,
@@ -124,12 +124,12 @@ if (length( x@phi ) == 1) anno$phi <- x@phi else anno$phi <- x@phi [ selected ]
 
 message(str(anno))
 for (i in 1:nrow(anno)) {
-    anno$min.norm[ i ] <- qbetabinom (p = 0.01, size = anno$total.counts[ i ], phi = anno$phi[ i ], prob = anno$expected[ i ])
-    anno$max.norm[ i ] <- qbetabinom (p = 0.99, size = anno$total.counts[ i ], phi = anno$phi[ i ], prob = anno$expected[ i ])
+    anno$my.min.norm[ i ] <- qbetabinom (p = 0.01, size = anno$total.counts[ i ], phi = anno$phi[ i ], prob = anno$expected[ i ])
+    anno$my.max.norm[ i ] <- qbetabinom (p = 0.99, size = anno$total.counts[ i ], phi = anno$phi[ i ], prob = anno$expected[ i ])
 }
 
-anno$min.norm.prop <- anno$min.norm / anno$total.counts
-anno$max.norm.prop <- anno$max.norm / anno$total.counts
+anno$my.min.norm.prop <- anno$my.min.norm / anno$total.counts
+anno$my.max.norm.prop <- anno$my.max.norm / anno$total.counts
 head(anno)
 chroms <- anno$chromosome
 starts <- anno$start
@@ -139,11 +139,11 @@ freq<-anno$freq
 observed <- anno$ratio
 log2ratio<-anno$log2ratio
 expected<-anno$expected
-min <-anno$min.norm.prop/anno$expected
-max<-anno$max.norm.prop/anno$expected
+min <-anno$my.min.norm.prop/anno$expected
+max<-anno$my.max.norm.prop/anno$expected
 correl<-all.exons@refcorrelation
 
 ref_df = data.frame(chroms, starts, ends,name, observed,log2ratio,freq, expected, min, max, correl)
 colnames(ref_df) <- c("chr","start", "end","locusID","ratio_test","log2ratio_test","frequency_test","ratio_expected","ref_min.ratio", "ref_max.ratio","refset_correlation")
-write.table(ref_df,paste(current.samplename,'_ref.igv',sep = ""),sep="\t",row.names=FALSE, quote=FALSE)
+write.table(ref_df,paste(my.current.samplename,'_ref.igv',sep = ""),sep="\t",row.names=FALSE, quote=FALSE)
 
