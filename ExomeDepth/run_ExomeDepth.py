@@ -100,7 +100,7 @@ os.system("mkdir -p "+str(log_dir))
 if opt.input_folder:
     write_file=open(log_dir+"/settings.log","w")
 elif opt.input_bam:
-    write_file=open("{0}/{1}__settings.log".format(log_dir+str(opt.input_bam.split("/")[-1])),"w")
+    write_file=open(("{0}/{1}_settings.log".format(str(log_dir)+str(opt.input_bam.split("/")[-1]))),"w")
 (options, args) = parser.parse_args()
 for item in vars(options):
     write_file.write(str(item) + "\t" + str(vars(options)[item]) + "\n"
