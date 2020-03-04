@@ -1,7 +1,7 @@
 ## Settings used in run_Exomdepth.py ##
 
 # Location of repository
-cwd = "/hpc/diaggen/software/development/Dx_resources_ED/ExomeDepth/"
+cwd = "/hpc/diaggen/software/prodcution/Dx_resources/ExomeDepth/"
 
 # R script for RefSet and CNV calling
 call_cnv_r = str(cwd)+"Exomedepth_callCNVs.R"
@@ -19,7 +19,7 @@ r_version = "R/3.5.1"
 
 # Location of target files
 refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
-reffile_dir = "/hpc/diaggen/software/development/Dx_tracks_ED/ExomeDepth/"
+reffile_dir = "/hpc/diaggen/software/production/Dx_tracks_ED/ExomeDepth/"
 
 #Reference set
 refset = "Nov2019"
