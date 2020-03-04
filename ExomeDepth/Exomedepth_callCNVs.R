@@ -50,7 +50,7 @@ my.ref.samples<-colnames(my.refcounts.dafr)[7:(ncol(my.refcounts.dafr)-1)]
 #loop over samples in my.counts
 for (i in 1:nsamples) {
   my.current.samplename <-colnames(my.counts.dafr[6+i])
-  messsage(my.current.samplename)
+  message(my.current.samplename)
   my.reference.set <- as.matrix(my.refcounts.dafr[,my.ref.samples])
   my.choice<-select.reference.set(test.counts=samplecounts.mat[,i],
       reference.counts=(my.reference.set),
