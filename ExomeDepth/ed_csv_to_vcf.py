@@ -63,8 +63,7 @@ if __name__ == "__main__":
     else:
         sys.exit("please provide referenceset used \"-m\" ")
 
-    csvs = commands.getoutput("find -L "+str(csv_dir)+" -iname \"*.csv\"").split()
-
+    csvs = commands.getoutput("find -L {0} -iname \"*.csv\"".format(csv_dir)).split()
     vcf_reader = vcf.Reader(open(template_vcf, 'r'))
     format_keys = vcf_reader.formats.keys()
     record = vcf_reader.next()  # First record (dummy for all other records)
@@ -85,10 +84,8 @@ if __name__ == "__main__":
 
         df_csv = pd.read_csv(csv)
         vcf_reader.samples = [sampleid]  # Change template sampleid in sampleid
-        # Add metadata ED reference set used
+        """Add metadata ED reference set used."""
         vcf_reader.metadata['EDreference'] = [str(opt.callmodel)]
-
-        #vcf_writer = vcf.Writer(open(str(csv)[0:-4]+".vcf", 'w'), vcf_reader)
         with open(csv[0:-4]+".vcf") as vcf:
             vcf_writer = vcf.Writer(vcf, vcf_reader)
 
