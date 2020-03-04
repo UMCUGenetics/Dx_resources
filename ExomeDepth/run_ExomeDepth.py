@@ -100,7 +100,9 @@ os.system("mkdir -p "+str(log_dir))
 if opt.input_folder:
     write_file=open(log_dir+"/settings.log","w")
 elif opt.input_bam:
-    write_file=open(("{0}/{1}_settings.log".format(str(log_dir)+str(opt.input_bam.split("/")[-1]))),"w")
+    log_file = "{0}/{1}_settings.log".format(str(log_dir),str(opt.input_bam.split("/")[-1]))
+    write_file=open(log_file, "w") 
+
 (options, args) = parser.parse_args()
 for item in vars(options):
     write_file.write(str(item) + "\t" + str(vars(options)[item]) + "\n"
@@ -209,7 +211,7 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
                           settings.refset,
                           bam.split("/")[-1]
                           ))
-                os.system("python {0} -i {1} -t {2} -m {3} --id {4}".format(
+                os.system("python {0} -i {1} -t {2} -m {3} --id={4}".format(
                           settings.csv2vcf,
                           outfolder,
                           settings.template,
@@ -259,13 +261,13 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
                 write_file.write(str(qsub_call) + "\n")
                 write_file.write("#$ -hold_jid {0}\n".format(job_id))
                 write_file.write("cd {0}\n".format(outfolder))
-                write_file.write("rename {0} {1}_{2}_{3} *\n ".format(
+                write_file.write("rename {0} {1}_{2}_{3} *\n".format(
                                  bam.split("/")[-1],
                                  item,
                                  settings.refset,
                                  bam.split("/")[-1]
                                  ))
-                write_file.write("python {0} -i {1} -t {2} -m {3} --id {4}\n".format(
+                write_file.write("python {0} -i {1} -t {2} -m {3} --id={4}\n".format(
                                  settings.csv2vcf,
                                  outfolder,
                                  settings.template,
