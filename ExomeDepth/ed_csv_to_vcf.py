@@ -13,12 +13,12 @@ import pandas as pd
 import settings
 
 def cnv_locationtype(region):
-    if upper(str(region[0])) == "X":
+    if str(region[0]).upper() == "X":
         if region[1] >= par1[0] and region[2] <= par1[1] or region[1] >= par2[0] and region[2] <= par2[1]:  #If CNV is nested in par1 or par2 region
             return "chrXpar"
         else:
             return "chrX"
-    elif upper(str(region[0])) == "Y":
+    elif str(region[0]).upper() == "Y":
         return "chrY"
     else:
         return "auto"
@@ -86,8 +86,8 @@ if __name__ == "__main__":
         vcf_reader.samples = [sampleid]  # Change template sampleid in sampleid
         """Add metadata ED reference set used."""
         vcf_reader.metadata['EDreference'] = [str(opt.callmodel)]
-        with open(csv[0:-4]+".vcf") as vcf:
-            vcf_writer = vcf.Writer(vcf, vcf_reader)
+        with open(csv[0:-4]+".vcf",'w') as vcf_output_file:
+            vcf_writer = vcf.Writer(vcf_output_file, vcf_reader)
 
             """Determine percentage DEL/(DEL+DUP) for all calls in VCF."""
             dels = 0
@@ -132,7 +132,7 @@ if __name__ == "__main__":
                     ratio = 99
 
                 """Consider homozygous genotype only for deletion and with ratio <0.25."""
-                if lower(str(row['type'])) == "deletion" and float(ratio) < float(settings.ratio_threshold_del):
+                if str(row['type']).lower() == "deletion" and float(ratio) < float(settings.ratio_threshold_del):
                     genotype = "1/1"
                 else:  # Always het for duplication, and het for deletion if not < settings.ratio_threshold_del
                     genotype = "0/1"
