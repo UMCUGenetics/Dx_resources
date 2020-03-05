@@ -145,7 +145,7 @@ if opt.make_ref and not opt.make_call:
             write_file.write(str(qsub_ref) + "\n")
             write_file.write("module load {0}\n".format(settings.r_version))
             write_file.write("cd {0}\n".format(folder))
-            write_file.write("Rscript {0} {1}/{1}/{2} {3} {4} {5}\n".format(
+            write_file.write("Rscript {0} {1}/{1}/ {2} {3} {4} {5}\n".format(
                              settings.create_refset_r,
                              folder,
                              output_id,
