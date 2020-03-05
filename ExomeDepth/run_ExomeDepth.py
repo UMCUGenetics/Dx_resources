@@ -105,19 +105,15 @@ elif opt.input_bam:
 
 (options, args) = parser.parse_args()
 for item in vars(options):
-    write_file.write(str(item) + "\t" + str(vars(options)[item]) + "\n"
-                     )
+    write_file.write("{0}\t{1}\n".format(str(item), str(vars(options)[item])))
+
 for item in dir(settings):
     if "__" not in item:
-        write_file.write("{0} {1} \n".format(
-                         item,
-                         str(repr(eval("settings.%s" % item)))
-                         ))
+        write_file.write("{0}\tt{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
 write_file.close()
 
 if opt.make_ref and not opt.make_call:
     """Make new reference set."""
-
     if opt.input_bam:
         sys.exit("please provide BAM folder")
 
@@ -125,25 +121,25 @@ if opt.make_ref and not opt.make_call:
     print("Number of BAM files detected = {0}".format(len(bams)))
 
     """Get gender from chrY read count ratio."""
-    dic = {}  #Dictionary with gender of each sample
+    ref_gender_dic = {}  #Dictionary with gender of each sample
     for item in gender:
-        if str(item) not in dic:
-            dic[str(item)] = []
+        if str(item) not in ref_gender_dic:
+            ref_gender_dic[str(item)] = []
 
     for bam in bams:
         gender = get_gender(bam)
         if gender is not "unknown":
-            dic[get_gender(bam)] += [bam]
+            ref_gender_dic[get_gender(bam)] += [bam]
         else:
             print("Sample {0} has unknown gender and is removed from analysis".format(bam))
 
     """Make folder per gender + analysis, and soflink BAMs in these folders."""
     for target in analysis:
-        for item in dic:
+        for item in ref_gender_dic:
             folder = "{0}/{1}_{2}_{3}".format(outdir,target,item,str(wkdir).split("/")[-1])  
             output_id = "{0}_{1}_{2}.EDref".format(target,item,prefix)
             os.system("mkdir -p {0}".format(folder))
-            for bam in dic[item]:
+            for bam in ref_gender_dic[item]:
                 os.system("ln -sd " + str(bam) + "* " + str(folder))
             write_file = open(str(folder) + "/make_ref.sh", "w")
             write_file.write(str(qsub_ref) + "\n")
