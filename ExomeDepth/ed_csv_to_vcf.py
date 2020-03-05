@@ -12,13 +12,16 @@ import pysam
 import pandas as pd
 import settings
 
-def cnv_locationtype(region):
-    if str(region[0]).upper() == "X":
-        if region[1] >= par1[0] and region[2] <= par1[1] or region[1] >= par2[0] and region[2] <= par2[1]:  #If CNV is nested in par1 or par2 region
+def cnv_locationtype(region, par1, par2):
+    chrom = str(region[0]).upper()
+    start = int(region[1]
+    stop = int(region[2])
+    if chrom == "X":
+        if start >= par1[0] and stop <= par1[1] or start >= par2[0] and stop <= par2[1]:  #If CNV is nested in par1 or par2 region
             return "chrXpar"
         else:
             return "chrX"
-    elif str(region[0]).upper() == "Y":
+    elif chrom == "Y":
         return "chrY"
     else:
         return "auto"
@@ -27,17 +30,17 @@ def cnv_locationtype(region):
 if __name__ == "__main__":
     parser = OptionParser()
     group = OptionGroup(parser, "Main options")
-    group.add_option("-i", dest="input", metavar="[PATH]",
-                     help="input folder including csv files"
+    group.add_option("-i", dest = "input", metavar = "[PATH]",
+                     help = "input folder including csv files"
                      )
-    group.add_option("--id", dest="sampleid", metavar="[STRING]",
-                     help="sampleid name to be included in VCF"
+    group.add_option("--id", dest = "sampleid", metavar = "[STRING]",
+                     help = "sampleid name to be included in VCF"
                      )
-    group.add_option("-t", dest="template", metavar="[STRING]",
-                     help="Path to template VCF"
+    group.add_option("-t", dest = "template", metavar = "[STRING]",
+                     help = "Path to template VCF"
                      )
-    group.add_option("-m", dest="callmodel", metavar="[STRING]",
-                     help="Name of calling model used (order: [Model]_[Gender]_[Date].EDRef)"
+    group.add_option("-m", dest = "callmodel", metavar = "[STRING]",
+                     help = "Name of calling model used (order: [Model]_[Gender]_[Date].EDRef)"
                      )
     parser.add_option_group(group)
     (opt, args) = parser.parse_args()
@@ -86,7 +89,7 @@ if __name__ == "__main__":
         vcf_reader.samples = [sampleid]  # Change template sampleid in sampleid
         """Add metadata ED reference set used."""
         vcf_reader.metadata['EDreference'] = [str(opt.callmodel)]
-        with open(csv[0:-4]+".vcf",'w') as vcf_output_file:
+        with open(csv[0:-4]+".vcf", 'w') as vcf_output_file:
             vcf_writer = vcf.Writer(vcf_output_file, vcf_reader)
 
             """Determine percentage DEL/(DEL+DUP) for all calls in VCF."""
@@ -105,7 +108,7 @@ if __name__ == "__main__":
                 new_record.CHROM = row['chromosome']
                 new_record.POS = row['start']
                 new_record.ID = "."
-                row_type=str(row['type'])
+                row_type = str(row['type'])
 
                 """Include reference genome base"""
                 ref_file = vcf_reader.metadata['reference']
@@ -142,7 +145,7 @@ if __name__ == "__main__":
                 par2 = settings.par2
                 normal_CN = settings.normal_CN
                 region = [str(row['chromosome']), int(row['start']), int(row['end'])]
-                locus_type = cnv_locationtype(region)
+                locus_type = cnv_locationtype(region, par1, par2)
                 normal_copy = float(normal_CN[gender][locus_type])
                 calc_copynumber = normal_copy  * float(ratio)
 
