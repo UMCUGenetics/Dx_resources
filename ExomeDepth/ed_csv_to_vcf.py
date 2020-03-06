@@ -14,7 +14,7 @@ import settings
 
 def cnv_locationtype(region, par1, par2):
     chrom = str(region[0]).upper()
-    start = int(region[1]
+    start = int(region[1])
     stop = int(region[2])
     if chrom == "X":
         if start >= par1[0] and stop <= par1[1] or start >= par2[0] and stop <= par2[1]:  #If CNV is nested in par1 or par2 region
