@@ -22,7 +22,7 @@ refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
 reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
 
 #Reference set
-refset = "Nov2019"
+refset = "Jan2020"
 
 analysis = {"HC":
               {"refset":{"female":str(refset_dir)+"/HC_female_"+str(refset)+".EDref",
@@ -49,7 +49,7 @@ qsub_ref = "#!/bin/bash\n#$ -cwd\n#$ -pe threaded 1\n#$ -l h_vmem=10G\n#$ -l h_r
 # Settings for GT, CN, and gender determination
 gender = {"male":"M","female":"F"}
 ratio_threshold_del = 0.25
-par1 = [10001,2781479]
-par2 = [155701383,156030895]
+par1 = [60001,2699520]
+par2 = [154931044,155260560]
 normal_CN = {"female":{"auto":2,"chrX":2,"chrXpar":2,"chrY":0},"male":{"auto":2,"chrX":1,"chrXpar":2,"chrY":1}}
 
