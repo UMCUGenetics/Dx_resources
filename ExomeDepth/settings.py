@@ -1,9 +1,7 @@
 ## Settings used in run_Exomdepth.py ##
 
 # Location of repository
-#cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/"
-cwd = "/hpc/diaggen/software/development/Dx_resources_ED/ExomeDepth/"
-
+cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/"
 
 # R script for RefSet and CNV calling
 call_cnv_r = str(cwd)+"Exomedepth_callCNVs.R"
@@ -21,12 +19,10 @@ r_version = "R/3.5.1"
 
 # Location of target files
 refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
-#reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
-reffile_dir = "/hpc/diaggen/software/development/Dx_tracks_EDlfs/ExomeDepth/"
+reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
 
 #Reference set
 refset = "Nov2019"
-#refset = "Jan2020"
 
 analysis = {"HC":
               {"refset":{"female":str(refset_dir)+"/HC_female_"+str(refset)+".EDref",
@@ -53,7 +49,7 @@ qsub_ref = "#!/bin/bash\n#$ -cwd\n#$ -pe threaded 1\n#$ -l h_vmem=10G\n#$ -l h_r
 # Settings for GT, CN, and gender determination
 gender = {"male":"M","female":"F"}
 ratio_threshold_del = 0.25
-par1 = [60001,2699520]
-par2 = [154931044,155260560]
+par1 = [10001,2781479]
+par2 = [155701383,156030895]
 normal_CN = {"female":{"auto":2,"chrX":2,"chrXpar":2,"chrY":0},"male":{"auto":2,"chrX":1,"chrXpar":2,"chrY":1}}
 
