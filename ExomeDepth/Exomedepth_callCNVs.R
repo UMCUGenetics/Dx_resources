@@ -5,7 +5,7 @@ library(methods)
 library(stringr)
 
 args = commandArgs(trailingOnly=TRUE)
-auto_ref_file=args[1]					# argument Exomedepth_callCNVs.R  script
+auto_ref_file=args[1]					# argument ExomeDepth reference file 
 target.file=args[2]					# argument target BED file
 reference.file=args[3]					# argument Reference genome
 input_exon.hg19=paste(args[4],sep="") 			# argument target Exon file
@@ -40,6 +40,7 @@ samplecounts.mat<-as.matrix(my.counts.dafr[,grep(names(my.counts.dafr),pattern='
 nsamples<-ncol(samplecounts.mat)
 
 my.refcounts.dafr <- as(my.refcounts[, colnames(my.refcounts)], 'data.frame')
+
 my.refcounts.dafr$chromosome <- gsub(as.character(my.refcounts.dafr$space),
     pattern = 'chr',
     replacement = ''
