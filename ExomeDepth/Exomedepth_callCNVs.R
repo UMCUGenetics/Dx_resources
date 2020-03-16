@@ -36,8 +36,8 @@ my.counts.dafr$chromosome <- gsub(as.character(my.counts.dafr$space),
     replacement = ''
 ) ##remove the annoying chr letters
 
-samplecounts.mat<-as.matrix(my.counts.dafr[,grep(names(my.counts.dafr),pattern='*.bam')])
-nsamples<-ncol(samplecounts.mat)
+samplecounts.mat <- as.matrix(my.counts.dafr[,grep(names(my.counts.dafr),pattern='*.bam')])
+nsamples <- ncol(samplecounts.mat)
 
 my.refcounts.dafr <- as(my.refcounts[, colnames(my.refcounts)], 'data.frame')
 
@@ -46,14 +46,14 @@ my.refcounts.dafr$chromosome <- gsub(as.character(my.refcounts.dafr$space),
     replacement = ''
 ) ##remove the annoying chr letters
 
-my.ref.samples<-colnames(my.refcounts.dafr)[7:(ncol(my.refcounts.dafr)-1)]
+my.ref.samples <- colnames(my.refcounts.dafr)[7:(ncol(my.refcounts.dafr)-1)]
 
 #loop over samples in my.counts
 for (i in 1:nsamples) {
-  my.current.samplename <-colnames(my.counts.dafr[6+i])
+  my.current.samplename <- colnames(my.counts.dafr[6+i])
   message(my.current.samplename)
   my.reference.set <- as.matrix(my.refcounts.dafr[,my.ref.samples])
-  my.choice<-select.reference.set(test.counts=samplecounts.mat[,i],
+  my.choice <- select.reference.set(test.counts=samplecounts.mat[,i],
       reference.counts=(my.reference.set),
       bin.length=(my.counts.dafr$end - my.counts.dafr$start)/1000,
       n.bins.reduced = 10000
@@ -95,9 +95,9 @@ for (i in 1:nsamples) {
   output.file <- paste(my.current.samplename,'exome_calls.csv',sep = "")
 
   save(all.exons,file=paste(my.current.samplename,"all.exons",sep = "_"))
-  refsize<-toString(length(my.choice[[1]]))
-  correlation<-all.exons@refcorrelation
-  print_array<-cbind(all.exons@CNV.calls,correlation,refsize)
+  refsize <- toString(length(my.choice[[1]]))
+  correlation <- all.exons@refcorrelation
+  print_array <- cbind(all.exons@CNV.calls,correlation,refsize)
   write.csv(file = output.file,
       x = print_array,
       row.names = FALSE
@@ -107,7 +107,7 @@ for (i in 1:nsamples) {
 print(all.exons@refcorrelation)
 
 ## Select reference ratio + boundries
-x<-all.exons
+x <- all.exons
 anno <- x@annotations
 selected <- which(anno$start >= 0)		# select all exons
 anno <- anno[selected,]				# select all exons
@@ -135,14 +135,14 @@ head(anno)
 chroms <- anno$chromosome
 starts <- anno$start
 ends <- anno$end
-name<-anno$name
-freq<-anno$freq
+name <- anno$name
+freq <- anno$freq
 observed <- anno$ratio
 log2ratio<-anno$log2ratio
-expected<-anno$expected
-min <-anno$my.min.norm.prop/anno$expected
-max<-anno$my.max.norm.prop/anno$expected
-correl<-all.exons@refcorrelation
+expected <- anno$expected
+min <- anno$my.min.norm.prop/anno$expected
+max <- anno$my.max.norm.prop/anno$expected
+correl <- all.exons@refcorrelation
 
 ref_df = data.frame(chroms, starts, ends,name, observed,log2ratio,freq, expected, min, max, correl)
 colnames(ref_df) <- c("chr","start", "end","locusID","ratio_test","log2ratio_test","frequency_test","ratio_expected","ref_min.ratio", "ref_max.ratio","refset_correlation")
