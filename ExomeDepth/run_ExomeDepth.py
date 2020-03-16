@@ -34,24 +34,24 @@ if __name__ == "__main__":
     parser = OptionParser()
     group = OptionGroup(parser, "Main options")
     group.add_option("-r", dest="make_ref",
-                     action='store_true', help="Make new reference set")
-    group.add_option("-c", dest="make_call",
-                     action='store_true', help="Call CNV from BAMs")
-    group.add_option("-i", dest="input_folder",
-                     metavar="[PATH]", help="path to input folder folder")
-    group.add_option("--ib", dest="input_bam", 
-                     metavar="[PATH]", help="path to input bam file")
-    group.add_option("-o", dest="output_folder",
-                     default="./", metavar="[PATH]",
-                     help="path to output folder [default = ./]")
-    group.add_option("-g", dest="gender_file",
-                     metavar="[PATH]",
-                     help="full path to tab delimited txt file with bam \
+                     action = 'store_true', help="Make new reference set")
+    group.add_option("-c", dest = "make_call",
+                     action = 'store_true', help = "Call CNV from BAMs")
+    group.add_option("-i", dest = "input_folder",
+                     metavar = "[PATH]", help = "path to input folder folder")
+    group.add_option("--ib", dest = "input_bam", 
+                     metavar = "[PATH]", help = "path to input bam file")
+    group.add_option("-o", dest = "output_folder",
+                     default = "./", metavar = "[PATH]",
+                     help = "path to output folder [default = ./]")
+    group.add_option("-g", dest = "gender_file",
+                     metavar = "[PATH]",
+                     help = "full path to tab delimited txt file with bam \
                     + gender (male/female) [default = off]")
-    group.add_option("-p", dest="prefix", metavar="[PATH]",
-                     help="referenceset naming [default = input_folder basename]")
-    group.add_option("-m", dest="mail", metavar="[STRING]",
-                     help="email adress of submitter [default = None")
+    group.add_option("-p", dest = "prefix", metavar = "[PATH]",
+                     help = "referenceset naming [default = input_folder basename]")
+    group.add_option("-m", dest = "mail", metavar = "[STRING]",
+                     help = "email adress of submitter [default = None")
     parser.add_option_group(group)
     (opt, args) = parser.parse_args()
 
@@ -61,7 +61,7 @@ if opt.input_folder and opt.input_bam:
 if opt.input_folder:
     wkdir = opt.input_folder.rstrip("/")
 elif opt.input_bam:
-    wkdir="/".join(opt.input_bam.split("/")[0-1]).rstrip("/")
+    wkdir = "/".join(opt.input_bam.split("/")[0-1]).rstrip("/")
 else:
     wkdir = commands.getoutput("pwd").rstrip("/")
 
@@ -95,13 +95,13 @@ prob = settings.probability
 gender = settings.gender
 
 """Log all settings in setting.log file"""
-log_dir=str(outdir)+"/logs"
+log_dir = str(outdir)+"/logs"
 os.system("mkdir -p "+str(log_dir))
 if opt.input_folder:
-    write_file=open(log_dir+"/settings.log","w")
+    write_file = open(log_dir+"/settings.log", "w")
 elif opt.input_bam:
-    log_file = "{0}/{1}_settings.log".format(str(log_dir),str(opt.input_bam.split("/")[-1]))
-    write_file=open(log_file, "w") 
+    log_file = "{0}/{1}_settings.log".format(str(log_dir), str(opt.input_bam.split("/")[-1]))
+    write_file = open(log_file, "w") 
 
 (options, args) = parser.parse_args()
 for item in vars(options):
@@ -136,8 +136,8 @@ if opt.make_ref and not opt.make_call:
     """Make folder per gender + analysis, and soflink BAMs in these folders."""
     for target in analysis:
         for item in ref_gender_dic:
-            folder = "{0}/{1}_{2}_{3}".format(outdir,target,item,str(wkdir).split("/")[-1])  
-            output_id = "{0}_{1}_{2}.EDref".format(target,item,prefix)
+            folder = "{0}/{1}_{2}_{3}".format(outdir, target, item, str(wkdir).split("/")[-1])  
+            output_id = "{0}_{1}_{2}.EDref".format(target, item, prefix)
             os.system("mkdir -p {0}".format(folder))
             for bam in ref_gender_dic[item]:
                 os.system("ln -sd " + str(bam) + "* " + str(folder))
@@ -161,9 +161,9 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
     """Make CNV call on sample(s)."""
 
     if opt.input_bam:
-        bams=[str(opt.input_bam)]
+        bams = [str(opt.input_bam)]
     else:
-        bams= commands.getoutput("find -L {0} -iname \"*realigned.bam\"".format(wkdir)).split()
+        bams = commands.getoutput("find -L {0} -iname \"*realigned.bam\"".format(wkdir)).split()
     print("Number of BAM files detected = {0}".format(len(bams)))
     if not bams:
         sys.exit("no bams detected")
@@ -189,7 +189,7 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
         for item in analysis:
             print("Submitting {0} jobs".format(item))
             sampleid = bam.split("/")[-1].split("_")[0]
-            outfolder = "{0}/{1}/{1}_{2}".format(outdir,item,bam.split("/")[-1])
+            outfolder = "{0}/{1}/{1}_{2}".format(outdir, item, bam.split("/")[-1])
             os.system("mkdir -p {0}".format(outfolder))
             if opt.input_bam:  #Single BAM processing in serial
                 os.chdir(outfolder)
@@ -222,7 +222,7 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
                           item
                          ))
             else:  # multiple BAM processing for all BAMs in folder (SGE)
-                write_file=open("{0}/{1}_{2}_{3}.sh".format(
+                write_file = open("{0}/{1}_{2}_{3}.sh".format(
                                 outfolder,
                                 item,
                                 gender,
@@ -243,7 +243,7 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
                 write_file.close()
                 """Submit jobs."""
                 os.chdir(outfolder)
-                command="qsub {0}/{1}_{2}_{3}.sh ".format(
+                command = "qsub {0}/{1}_{2}_{3}.sh ".format(
                          outfolder,
                          item,
                          gender,
@@ -278,8 +278,8 @@ elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
                                  item
                                  ))
                 write_file.close()
-                os.system("qsub {0}/{1}_{2}_csv_2_vcf.sh".format(outfolder,item,gender))
+                os.system("qsub {0}/{1}_{2}_csv_2_vcf.sh".format(outfolder, item, gender))
         """Touch done file is loop is completed"""
-        os.system("touch {0}/{1}.done".format(log_dir,bam.split("/")[-1]))
+        os.system("touch {0}/{1}.done".format(log_dir, bam.split("/")[-1]))
 else:
     sys.exit("Choose either make_ref or make_call")
