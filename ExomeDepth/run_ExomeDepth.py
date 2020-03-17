@@ -109,7 +109,7 @@ for item in vars(options):
 
 for item in dir(settings):
     if "__" not in item:
-        write_file.write("{0}\tt{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
+        write_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
 write_file.close()
 
 if opt.make_ref and not opt.make_call:
