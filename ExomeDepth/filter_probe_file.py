@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 import sys
 import os
-import re
-import commands
 from statistics import mean
 from statistics import stdev
 
@@ -10,7 +8,6 @@ wkdir = sys.argv[1]  #Input folder
 dp_min = int(sys.argv[2])  #Minimum read and depth requirement
 dp_max = int(sys.argv[3])  #Maximum read and depth requirement
 cv = int(sys.argv[4])  #Minumum coefficient of varation (CV)
-
 
 """ Make bam_coverage count for each BAM file first"""
 os.system("paste {0}/*bam_coverage > {0}/full_table.txt".format(wkdir))  #Make one table of all bam_coverage counts
@@ -27,9 +24,10 @@ for line in lines:
         while x < len(splitline):
             depth_list += [float(splitline[x])]
             x += 6  #This dependants on the sambamaba output!
+
+        """Calculate mean, std, cv."""
         mean_depth = mean(depth_list)
         std_depth = stdev(depth_list)
-
         if mean_depth > 0:
             cv_depth = float(std_depth / mean_depth) * 100
 
