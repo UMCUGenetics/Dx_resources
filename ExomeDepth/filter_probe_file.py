@@ -26,13 +26,12 @@ for line in lines:
         x=4
         while x < len(splitline):
             depth_list += [float(splitline[x])]
-            x += 6
+            x += 6  #This dependants on the sambamaba output!
         mean_depth = mean(depth_list)
         std_depth = stdev(depth_list)
-        try:
-            cv_depth = float(std_depth/mean_depth)*100
-        except:
-            cv_depth = "na"
+
+        if mean_depth > 0:
+            cv_depth = float(std_depth / mean_depth) * 100
 
         """Print only targets that are within requirements"""
         if mean_depth >= dp_min and cv_depth <= cv and cv_depth < cv:
