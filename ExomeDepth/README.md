@@ -1,13 +1,13 @@
-Wrapper scripts for ExomeDepth (UMCU version) \ 
-All script are made tested using Python 2.7.10 \
+Wrapper scripts for ExomeDepth (UMCU version)\ 
+All script are made tested using Python 2.7.10\
 
 
-run_ExomeDepth.py \
-Main wrapper script for the ExomeDepth analysis \
-run_ExomeDepth.py uses SGE (UMCU HPC enviroment) for reference set creation and parallel multisample CNV-calling.  \
-In addition there is an option for serial single sample CNV-calling that does not use SGE. Setial single sample processing is not avaiable for reference set creation. \
+run_ExomeDepth.py\
+Main wrapper script for the ExomeDepth analysis\
+run_ExomeDepth.py uses SGE (UMCU HPC enviroment) for reference set creation and parallel multisample CNV-calling.\
+In addition there is an option for serial single sample CNV-calling that does not use SGE. Setial single sample processing is not avaiable for reference set creation.\
 
-First create a reference set which can be used to call CNV \
+First create a reference set which can be used to call CNV\
 
 ##Create refset
 ``` bash
