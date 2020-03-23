@@ -51,7 +51,7 @@ if __name__ == "__main__":
     group.add_option("-p", dest = "prefix", metavar = "[PATH]",
                      help = "referenceset naming [default = input_folder basename]")
     group.add_option("-m", dest = "mail", metavar = "[STRING]",
-                     help = "email adress of submitter [default = None")
+                     help = "email adress of submitter [default = None]")
     parser.add_option_group(group)
     (opt, args) = parser.parse_args()
 
