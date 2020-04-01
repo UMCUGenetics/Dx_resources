@@ -22,7 +22,7 @@ with open(str(wkdir) + "/full_table.txt","r") as infile:
 
             """Read depth stats."""
             mean_coverage_column = 4
-            while  mean_coverage_column < len(splitline):
+            while mean_coverage_column < len(splitline):
                 depth_list += [float(splitline[mean_coverage_column])]
                 mean_coverage_column += 6  #Go to next meancoverage column. note: this dependants on the sambamaba output file!
 
