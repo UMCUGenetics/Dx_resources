@@ -212,7 +212,7 @@ if __name__ == "__main__":
                     os.system("python {0} -i {1} -t {2} -m {3} --id={4}".format(
                               settings.csv2vcf,
                               outfolder,
-                              settings.template,
+                              settings.vcf_template,
                               analysis[item]["refset"][gender],
                               sampleid
                              ))
@@ -268,7 +268,7 @@ if __name__ == "__main__":
                     write_file.write("python {0} -i {1} -t {2} -m {3} --id={4}\n".format(
                                      settings.csv2vcf,
                                      outfolder,
-                                     settings.template,
+                                     settings.vcf_template,
                                      analysis[item]["refset"][gender],
                                      sampleid
                                      ))
