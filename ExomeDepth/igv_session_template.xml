@@ -13,7 +13,7 @@
         <Resource path="../../../../Miscellaneous/Dx_tracks/SNP_arrays/Global-Screening-Array-24-v3-0.bed"/>
     </Resources>
     <Panel height="500" name="DataPanel" width="2200">
-        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1823.0;255,255,255;0,0,178" displayMode="EXPANDED" fontSize="10" id="$vcf_SNV" name="$vcf_SNV" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1823.0;255,255,255;0,0,178" displayMode="COLLAPSED" fontSize="10" id="$vcf_SNV" name="$vcf_SNV" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
         <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" displayMode="EXPANDED" fontSize="10" id="$vcf_hc" name="$vcf_hc" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
         <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="10" height="200" id="$igv_ed_hc_test" name="$ratioid_HC" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
             <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
@@ -27,7 +27,7 @@
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="487.0" minimum="0.0" type="LINEAR"/>
         </Track>
         <Track clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" height="60" id="$bam_junctions" name="$sample_id Junctions" visible="false"/>
-        <Track clazz="org.broad.igv.sam.AlignmentTrack" displayMode="EXPANDED" experimentType="OTHER" fontSize="10" id="$bam" name="$sample_id" visible="true">
+        <Track clazz="org.broad.igv.sam.AlignmentTrack" displayMode="COLLAPSED" experimentType="OTHER" fontSize="10" id="$bam" name="$sample_id" visible="true">
             <RenderOptions viewPairs="true"/>
         </Track>
     </Panel>
