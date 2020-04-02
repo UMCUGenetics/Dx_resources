@@ -8,11 +8,11 @@ import settings
 
 def make_igvsession(igv_ed_umcu, igv_ed_hc, bam, vcf_hc, sample_id, vcf_SNV, axis, statistic):
     template_file = Template(open(settings.template_xml).read())
-    new_session = str(sample_id) + "_igv.xml"
+    new_session = "{0}_{1}_igv.xml".format(sample_id, statistic)
     igv_ed_hc_test = "{0}_{1}_test".format(igv_ed_hc, statistic)
     igv_ed_umcu_test = "{0}_{1}_test".format(igv_ed_umcu, statistic)
-    bam_coverage = str(bam) + "_coverage"
-    bam_junctions = str(bam) + "_junctions"
+    bam_coverage = "{0}_coverage".format(bam)
+    bam_junctions = "{0}_junctions".format(bam)
     min_axis = axis[0]
     mid_axis = axis[1]
     max_axis = axis[2]
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     vcf_hc = "HC/HC_{0}_{1}exome_calls.vcf".format(refdate, opt.bam)
     vcf_SNV = "../fingerprint/{0}_fingerprint.vcf".format(opt.sample_id)
     
-    igv_settings=settings.igv_settings
+    igv_settings = settings.igv_settings
     for statistic in igv_settings:
         write_file = open("{0}/{1}_{2}_igv.xml".format(opt.output, opt.sample_id, statistic), "w")
         write_file.write(make_igvsession(igv_ed_umcu, igv_ed_hc, bam_id, vcf_hc, opt.sample_id, vcf_SNV, igv_settings[statistic], statistic))
