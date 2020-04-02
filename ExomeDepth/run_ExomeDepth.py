@@ -285,13 +285,13 @@ if __name__ == "__main__":
                 bam_file = bam.split("/")[-1]
                 refset = analysis[item]["refset"][gender]
                 os.system("python {0} -b {1} -o {2} -i {3} -t {4} -m {5}".format(
-                              settings.igv_xml,
-                              bam_file,
-                              outdir,
-                              sampleid,
-                              settings.igv_xml,
-                              analysis[item]["refset"][gender],
-                             )
+                          settings.igv_xml,
+                          bam_file,
+                          outdir,
+                          sampleid,
+                          settings.igv_xml,
+                          analysis[item]["refset"][gender],
+                          )
                          )                
 
             """Touch done file is loop is completed"""
