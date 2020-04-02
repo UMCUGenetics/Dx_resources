@@ -15,10 +15,10 @@
     <Panel height="500" name="DataPanel" width="2200">
         <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1823.0;255,255,255;0,0,178" displayMode="EXPANDED" fontSize="10" id="$vcf_SNV" name="$vcf_SNV" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
         <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" displayMode="EXPANDED" fontSize="10" id="$vcf_hc" name="$vcf_hc" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
-        <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="10" height="200" id="$igv_ed_hc_test" name="Ratio_HC" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
+        <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="10" height="200" id="$igv_ed_hc_test" name="$ratioid_HC" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
             <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
         </Track>
-        <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="10" height="200" id="$igv_ed_umcu_test" name="Ratio_UMCU" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
+        <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="10" height="200" id="$igv_ed_umcu_test" name="$ratioid_UMCU" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
             <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
         </Track>
     </Panel>
