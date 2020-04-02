@@ -1,6 +1,4 @@
 #! /usr/bin/env python
-import sys
-import os
 from string import Template
 from optparse import OptionParser
 from optparse import OptionGroup
@@ -13,9 +11,7 @@ def make_igvsession(igv_ed_umcu, igv_ed_hc, bam, vcf_hc, sample_id, vcf_SNV, axi
     igv_ed_umcu_test = "{0}_{1}_test".format(igv_ed_umcu, statistic)
     bam_coverage = "{0}_coverage".format(bam)
     bam_junctions = "{0}_junctions".format(bam)
-    min_axis = axis[0]
-    mid_axis = axis[1]
-    max_axis = axis[2]
+    min_axis, mid_axis, max_axis = axis
     ratioid_UMCU = "{0}_UMCU".format(statistic)
     ratioid_HC = "{0}_HC".format(statistic)
     substitute_dic={'session_var' : new_session, 'igv_ed_umcu' : igv_ed_umcu, 'igv_ed_hc' : igv_ed_hc, 
