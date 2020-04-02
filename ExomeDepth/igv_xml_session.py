@@ -16,13 +16,13 @@ def make_igvsession(igv_ed_umcu, igv_ed_hc, bam, vcf_hc, sample_id, vcf_SNV, axi
     min_axis = axis[0]
     mid_axis = axis[1]
     max_axis = axis[2]
-
-    substitute_dic={'session_var' : new_session, 'igv_ed_umcu' : igv_ed_umcu, 
-                    'igv_ed_hc' : igv_ed_hc, 'bam':bam, 'vcf_hc' : vcf_hc, 
-                    'sample_id' : sample_id, 'igv_ed_hc_test' : igv_ed_hc_test,
-                    'igv_ed_umcu_test' : igv_ed_umcu_test, 
-                    'bam_coverage' : bam_coverage, 'bam_junctions' : bam_junctions, 
-                    'vcf_SNV': vcf_SNV, 'min_axis' : min_axis, 'mid_axis' : mid_axis,'max_axis' : max_axis
+    ratioid_UMCU = "{0}_UMCU".format(statistic)
+    ratioid_HC = "{0}_HC".format(statistic)
+    substitute_dic={'session_var' : new_session, 'igv_ed_umcu' : igv_ed_umcu, 'igv_ed_hc' : igv_ed_hc, 
+                    'bam':bam, 'vcf_hc' : vcf_hc, 'sample_id' : sample_id, 'igv_ed_hc_test' : igv_ed_hc_test,
+                    'igv_ed_umcu_test' : igv_ed_umcu_test, 'bam_coverage' : bam_coverage, 'bam_junctions' : bam_junctions, 
+                    'vcf_SNV' : vcf_SNV, 'min_axis' : min_axis, 'mid_axis' : mid_axis,'max_axis' : max_axis,
+                    'ratioid_UMCU' : ratioid_UMCU, 'ratioid_HC': ratioid_HC 
                    }
     new_file = template_file.substitute(substitute_dic)
     return new_file
@@ -54,8 +54,7 @@ if __name__ == "__main__":
     igv_ed_hc = "HC/HC_{0}/HC_{1}_{0}_ref.igv".format(opt.bam, refdate)
     bam_id = "../{0}/mapping/{1}".format(opt.sample_id,opt.bam)
     vcf_hc = "HC/HC_{0}_{1}exome_calls.vcf".format(refdate, opt.bam)
-    vcf_SNV = "../fingerprint/{0}_fingerprint.vcf".format(opt.sample_id)
-    
+    vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(opt.sample_id)
     igv_settings = settings.igv_settings
     for statistic in igv_settings:
         write_file = open("{0}/{1}_{2}_igv.xml".format(opt.output, opt.sample_id, statistic), "w")
