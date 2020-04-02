@@ -27,19 +27,19 @@ with open(str(wkdir) + "/full_table.txt","r") as infile:
                 mean_coverage_column += 6  #Go to next meancoverage column. note: this dependants on the sambamaba output file!
 
             """Calculate mean, std, cv."""
-            mean_depth = mean(depth_list)
-            std_depth = stdev(depth_list)
+            mean_depth = float(mean(depth_list))
+            std_depth = float(stdev(depth_list))
             if mean_depth > 0:
-                cv_depth = (float(std_depth)/float(mean_depth)) * 100
+                cv_depth = (std_depth/mean_depth) * 100
 
             """Print only targets that are within requirements"""
             if mean_depth >= dp_min and mean_depth < dp_max and cv_depth < cv:
                 print "{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(
-                       splitline[0].rstrip(),
-                       splitline[1].rstrip(),
-                       splitline[2].rstrip(),
-                       mean_depth,
-                       std_depth,
-                       cv_depth
-                      )
+                   splitline[0].rstrip(),
+                   splitline[1].rstrip(),
+                   splitline[2].rstrip(),
+                   mean_depth,
+                   std_depth,
+                   cv_depth
+                 )
 
