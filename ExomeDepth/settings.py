@@ -59,5 +59,5 @@ normal_CN = {"female":{"auto":2,"chrX":2,"chrXpar":2,"chrY":0},"male":{"auto":2,
 # IGV session settings:
 template_xml = str(cwd)+"igv_session_template.xml"
 igv_xml = str(cwd)+"igv_xml_session.py"
-igv_settings={"ratio":[0,1,2], "log2ratio":[-2.5,0,2.5] }
+igv_settings = {"ratio":[0, 1, 2], "log2ratio":[-2.5, 0, 2.5] }
 
