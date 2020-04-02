@@ -279,6 +279,21 @@ if __name__ == "__main__":
                                      ))
                     write_file.close()
                     os.system("qsub {0}/{1}_{2}_csv_2_vcf.sh".format(outfolder, item, gender))
+
+            if opt.input_bam:  #Make IGV session. Note this is only possible for single sample processing.
+                sampleid = bam.split("/")[-1].split("_")[0]
+                bam_file = bam.split("/")[-1]
+                refset = analysis[item]["refset"][gender]
+                os.system("python {0} -b {1} -o {2} -i {3} -t {4} -m {5}".format(
+                              settings.igv_xml,
+                              bam_file,
+                              outdir,
+                              sampleid,
+                              settings.igv_xml,
+                              analysis[item]["refset"][gender],
+                             )
+                         )                
+
             """Touch done file is loop is completed"""
             os.system("touch {0}/{1}.done".format(log_dir, bam.split("/")[-1]))
     else:
