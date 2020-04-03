@@ -52,6 +52,8 @@ if __name__ == "__main__":
                      help = "referenceset naming [default = input_folder basename]")
     group.add_option("-m", dest = "mail", metavar = "[STRING]",
                      help = "email adress of submitter [default = None]")
+    group.add_option("--refset", dest = "refset", metavar = "[STRING]",
+                     help = "reference set to be used [default = reference set in setting.py]")
     parser.add_option_group(group)
     (opt, args) = parser.parse_args()
     
@@ -76,7 +78,12 @@ if __name__ == "__main__":
         prefix = opt.prefix
     else:
         prefix = str(wkdir).split("/")[-1]
-    
+  
+    if opt.refset:
+        refset = opt.refset
+    else:
+        refset = settings.refset
+
     if opt.gender_file:
         gender_dic = {}
         gender_file = open(str(opt.gender_file), "r")
@@ -206,7 +213,7 @@ if __name__ == "__main__":
                     os.system("rename {0} {1}_{2}_{3} *".format(
                               bam.split("/")[-1],
                               item,
-                              settings.refset,
+                              refset,
                               bam.split("/")[-1]
                               ))
                     os.system("python {0} -i {1} -t {2} -m {3} --id={4}".format(
@@ -262,7 +269,7 @@ if __name__ == "__main__":
                     write_file.write("rename {0} {1}_{2}_{3} *\n".format(
                                      bam.split("/")[-1],
                                      item,
-                                     settings.refset,
+                                     refset,
                                      bam.split("/")[-1]
                                      ))
                     write_file.write("python {0} -i {1} -t {2} -m {3} --id={4}\n".format(
@@ -283,7 +290,6 @@ if __name__ == "__main__":
             if opt.input_bam:  #Make IGV session. Note this is only possible for single sample processing.
                 sampleid = bam.split("/")[-1].split("_")[0]
                 bam_file = bam.split("/")[-1]
-                refset = analysis[item]["refset"][gender]
                 os.system("python {0} -b {1} -o {2} -i {3} -t {4} -m {5}".format(
                           settings.igv_xml,
                           bam_file,
