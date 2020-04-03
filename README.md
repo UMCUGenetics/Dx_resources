@@ -1,39 +1,18 @@
-# Within this folder there are files needed for IAP, the coverage tool, and NIPT.
-Tracks folder
-	* ENSEMBL_UCSC_merged_collapsed_sorted_v3.bed	
-		This is the 'master' BED file without flanks. 
-		Warning: this file is 0-based
-		This file contains all exon from ENSEMBL (v75) and USCS (downloaded  07-08-2014). For more details see /hpc/diaggen/users/Martin/Exomes/ENSEMBL_UCSC_merge_bed/
-		This BED file is version 3 
-	* ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.bed
-		Normal BED file, with 20bp flanks. This file should be used for the Exoncov_v3 tool.
-		Warning: this file is 0-based
-	* ENSEMBL_UCSC_merged_collapsed_sorted_v3_100bpflank.bed
-		Normal BED file, with 100bp flanks. This file can be used as track in IGV/Alamut
-		Warning: this file is 0-based
-	* ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank.list
-		List file with 20bp flanks: first 5 columns of BED with header. This file should be used for mapping stats (TARGET)for picard.
-		Warning: this file is 1-based
- 	* ENSEMBL_UCSC_merged_collapsed_sorted_v3_100bpflank.list
-		List file with 100bp flanks: first 5 columns of BED with header. This file is used for variant calling with the haplotype caller.
-		Warning: this file is 1-based
+# Repository with standalone wrapper scripts
 
-Exoncov folder
-	gpanels.txt
-		This file contains all currently used gen-panels for Dx.
-		Remark: OWS02(Schisis) is not working due to included noncoding genes/genes not included the BED file 	
-	Preferred_transcript_list.txt
-		This file contains the manually curated/confirmed link between HGNC, NM and ENST.
-		Curation is done by the labspecialists.
-		Currently, all preferred transcripts for all gen-enrichments are pooled (duplicates are removed).
-		It is possible that a specific NM has different linked ENST-ID. This is the result of different choices of the labspecialists.
-		Note: if more than 1 preferred transcript is known within this file, Exoncov_v3 skips these preferred transcripts, and choses the longest NM, 
-		or if no NM's are known, the longest ENST.
-	NM_ENSEMBL_HGNC.txt 
-		This file includes the known link between GENE (HGNC) and all known NM/ENST transcripts
-SNP_array_validation folder:
-	control_samples_full_sort.vcf
-		This is a VCF with all SNPs + genotypes for the 4 control samples. This is a genome wide assay.
 
-Reference_NIPT folde:
-	This folder contains all files for the NIPT reference set
+**cleanup_Dx scripts**: used to perform additional (cleanup)steps within the IAP output folders for EXOME, GENOME, and MIP folder.
+
+
+**get_stats_from_flagstat.pl**:	is used within the cleanup_Dx scripts (EXOME and GENOME) to calculate flagstats statistics.
+
+
+folder **ExomeDepth**:	contains the wrapper scripts for Exomedepth CNV analysis\
+			see ExomeDepth/README.md for more information
+
+
+
+**/GIAB_rtgtools/compare_vcf_to_giab_truth.pl**: is used for GIAB comparisons: see GENOOM160
+
+
+**mips_fingerprint/coverage_mips.sh**: is used for validation of new MIP pool, see GENOOM080 5.3.3
