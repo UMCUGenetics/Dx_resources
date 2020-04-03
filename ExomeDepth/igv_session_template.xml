@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" hasGeneTrack="true" hasSequenceTrack="true" locus="All" nextAutoscaleGroup="2" path="$session_var" version="8">
+    <Resources>
+        <Resource path="$vcf_SNV"/>
+        <Resource path="$igv_ed_umcu"/>
+        <Resource path="$bam"/>
+        <Resource path="$igv_ed_hc"/>
+        <Resource path="../../../../Miscellaneous/Dx_tracks/SNP_arrays/InfiniumOmni2-5-8v1-5.bed"/>
+        <Resource path="$vcf_hc"/>
+        <Resource path="../../../../Miscellaneous/Dx_tracks/SNP_arrays/InfiniumOmniExpressExome-8v1-6.bed"/>
+        <Resource path="../../../../Miscellaneous/Dx_tracks/SNP_arrays/CytoSNP-850Kv1-2.bed"/>
+        <Resource path="../../../../Miscellaneous/Dx_tracks/SNP_arrays/InfiniumOmni5-4v1-2.bed"/>
+        <Resource path="../../../../Miscellaneous/Dx_tracks/SNP_arrays/Global-Screening-Array-24-v3-0.bed"/>
+    </Resources>
+    <Panel height="500" name="DataPanel" width="2200">
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1823.0;255,255,255;0,0,178" displayMode="COLLAPSED" fontSize="10" id="$vcf_SNV" name="$vcf_SNV" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" displayMode="EXPANDED" fontSize="10" id="$vcf_hc" name="$vcf_hc" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
+        <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="10" height="200" id="$igv_ed_hc_test" name="$ratioid_HC" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
+            <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
+        </Track>
+        <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="10" height="200" id="$igv_ed_umcu_test" name="$ratioid_UMCU" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
+            <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="7600" name="Panel1585653601666" width="2200">
+        <Track autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" color="175,175,175" colorScale="ContinuousColorScale;0.0;487.0;255,255,255;175,175,175" fontSize="10" id="$bam_coverage" name="$sample_id Coverage" snpThreshold="0.2" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="487.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track clazz="org.broad.igv.sam.SpliceJunctionTrack" fontSize="10" height="60" id="$bam_junctions" name="$sample_id Junctions" visible="false"/>
+        <Track clazz="org.broad.igv.sam.AlignmentTrack" displayMode="COLLAPSED" experimentType="OTHER" fontSize="10" id="$bam" name="$sample_id" visible="true">
+            <RenderOptions viewPairs="true"/>
+        </Track>
+    </Panel>
+    <Panel height="250" name="FeaturePanel" width="2200">
+        <Track clazz="org.broad.igv.track.SequenceTrack" fontSize="10" id="Reference sequence" name="Reference sequence" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;308.0;255,255,255;0,0,178" fontSize="12" height="35" id="hg19_genes" name="RefSeq Genes hg19" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" height="20" id="../../../../Miscellaneous/Dx_tracks/SNP_arrays/CytoSNP-850Kv1-2.bed" name="CytoSNP-850Kv1-2.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" height="20" id="../../../../Miscellaneous/Dx_tracks/SNP_arrays/Global-Screening-Array-24-v3-0.bed" name="Global-Screening-Array-24-v3-0.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" height="20" id="../../../../Miscellaneous/Dx_tracks/SNP_arrays/InfiniumOmni2-5-8v1-5.bed" name="InfiniumOmni2-5-8v1-5.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" height="20" id="../../../../Miscellaneous/Dx_tracks/SNP_arrays/InfiniumOmni5-4v1-2.bed" name="InfiniumOmni5-4v1-2.bed" visible="true"/>
+        <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" fontSize="8" height="20" id="../../../../Miscellaneous/Dx_tracks/SNP_arrays/InfiniumOmniExpressExome-8v1-6.bed" name="InfiniumOmniExpressExome-8v1-6.bed" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.4269340974212034,0.7554918815663801"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>
