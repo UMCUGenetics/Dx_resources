@@ -2,6 +2,7 @@
 import os
 from optparse import OptionParser, OptionGroup
 import commands
+import settings
 
 if __name__ == "__main__":
     parser = OptionParser()
@@ -19,19 +20,28 @@ if __name__ == "__main__":
                      help = "email adress"
                      )
     group.add_option("-s", default = " -cwd -l h_rt=4:0:0 -l h_vmem=20G -q all.q",
-                     dest = "settings", metavar = "[STRING]", help = "qsub setting [default = qsub -cwd -l h_rt=4:0:0 -pe threaded 4 -l h_vmem=20G -q all.q]"
+                     dest = "qsub_settings", metavar = "[STRING]", help = "qsub setting [default = qsub -cwd -l h_rt=4:0:0 -pe threaded 4 -l h_vmem=20G -q all.q]"
                      )
+    group.add_option("-r", dest = "refset", metavar = "[STRING]",
+                     help = "reference set to be used [default = reference set in setting.py]")
+
     parser.add_option_group(group)
     (opt, args) = parser.parse_args()
 
-    bams = commands.getoutput("find -L {0} -iname \"*realigned.bam\" ".format(input_folder)).split()
+    if opt.refset:
+        refset = opt.refset
+    else:
+        refset = settings.refset
+   
+    bams = commands.getoutput("find -L {0} -iname \"*realigned.bam\" ".format(opt.input_folder)).split()
     for bam in bams:
         sampleid = bam.split("/")[-1].split("_")[0]
-        os.system("echo \"python {exomedepth} -c -m {email} --ib={bam} -o {output}\" | qsub {settings} -M {email} -N {sample}.sh".format(
+        os.system("echo \"python {exomedepth} -c -m {email} --ib={bam} -o {output} --refset={refset} \" | qsub {settings} -M {email} -N {sample}.sh".format(
             exomedepth = opt.exomedepth, 
             email = opt.email, 
-            bam = opt.bam, 
+            bam = bam, 
             output = opt.output_folder,
+            refset = refset,
             settings = opt.qsub_settings, 
-            sample = opt.sampleid
+            sample = sampleid
         ))
