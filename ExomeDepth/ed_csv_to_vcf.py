@@ -166,14 +166,13 @@ if __name__ == "__main__":
                         calc_copynumber = 0
                         genotype = "1/1"
                 else:
-                    if row_type == "deletion" and calc_copynumber > normal_copy \
-                       or row_type == "duplication" and calc_copynumber < normal_copy:
+                    if row_type == "deletion" and calc_copynumber > normal_copy or row_type == "duplication" and calc_copynumber < normal_copy:
                         """ If calc_copynumber is opposite of expected CN for region, i.e. ratio 1.5 for a deletion"""
                         print ("WARNING: {sample} CNV copynumber estimation {copynumber} does not match CNV type {rowtype} for region {region}".format(
                                sample = str(sampleid),
                                copynumber = str(float(calc_copynumber)),
                                rowtype = row_type,
-                               region =  str("_".jrow_type in region)
+                               region =  str("_".join(str(x) for x in region))
                                ))
                         """Note: no correction here. should be bugfix in the ExomeDepth code"""
   
