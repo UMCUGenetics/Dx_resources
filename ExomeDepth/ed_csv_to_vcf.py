@@ -2,7 +2,7 @@
 import sys
 import os
 import re
-import commands
+import subprocess
 from optparse import OptionParser
 from optparse import OptionGroup
 import vcf
@@ -11,6 +11,7 @@ import copy
 import pysam
 import pandas as pd
 import settings
+import decimal
 
 def cnv_locationtype(region, par1, par2):
     chrom = str(region[0]).upper()
@@ -66,10 +67,10 @@ if __name__ == "__main__":
     else:
         sys.exit("please provide referenceset used \"-m\" ")
 
-    csvs = commands.getoutput("find -L {0} -iname \"*.csv\"".format(csv_dir)).split()
+    csvs = subprocess.getoutput("find -L {0} -iname \"*.csv\"".format(csv_dir)).split()
     vcf_reader = vcf.Reader(open(template_vcf, 'r'))
     format_keys = vcf_reader.formats.keys()
-    record = vcf_reader.next()  # First record (dummy for all other records)
+    record = vcf_reader.__next__()  # First record (dummy for all other records)
     new_record = copy.deepcopy(record)
     new_record.samples[0].data = collections.namedtuple('CallData', format_keys)  # For single sample VCF only!
     format_vals = [record.samples[0].data[vx] for vx in range(len(format_keys))]
@@ -150,7 +151,9 @@ if __name__ == "__main__":
                 calc_copynumber = normal_copy  * float(ratio)
 
                 # Estimate true copynumber by rounding to nearest integer
-                copynumber = int(round(calc_copynumber))
+                copynumber = int(decimal.Decimal(calc_copynumber).quantize(decimal.Decimal('0'), rounding=decimal.ROUND_HALF_UP))
+                #addon=0.00000001  ## 0.5 round in python3 is toward 0 instead of 1. By adding a small number this is corrected.
+                #copynumber = int(round(calc_copynumber+addon))
                 if gender == "female" and locus_type == "chrY":
                     """In case CNV is detected on chrY in female, correct for this"""
                     print ("WARNING: {sample} chromosome Y CNV detected (region = {region}) in female, calc_copynumber set to 0 (deletion call) or 1 (duplication call)".format(
@@ -203,7 +206,7 @@ if __name__ == "__main__":
                 for f in ['GT', 'CCN', 'BF', 'RT', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
                     format_dict[f] = ""
                 format_dict['GT'] = str(genotype)
-                format_dict['CCN'] = calc_copynumber
+                format_dict['CCN'] = "%.2f" % (float(calc_copynumber))
                 format_dict['BF'] = "%.2f" % (float(row['BF']))
                 format_dict['RT'] = "%.2f" % (float(ratio))
                 format_dict['CR'] = "%.4f" % (float(row['correlation']))
