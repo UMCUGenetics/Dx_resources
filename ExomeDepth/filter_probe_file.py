@@ -34,12 +34,12 @@ with open(str(wkdir) + "/full_table.txt","r") as infile:
 
             """Print only targets that are within requirements"""
             if mean_depth >= dp_min and mean_depth < dp_max and cv_depth < cv:
-                print "{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(
+                print ("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(
                    splitline[0].rstrip(),
                    splitline[1].rstrip(),
                    splitline[2].rstrip(),
                    mean_depth,
                    std_depth,
                    cv_depth
-                 )
+                 ))
 
