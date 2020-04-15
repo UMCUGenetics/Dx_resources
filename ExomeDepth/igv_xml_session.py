@@ -41,16 +41,22 @@ if __name__ == "__main__":
     group.add_option("-m", dest = "callmodel", metavar = "[STRING]",
                      help = "Name of calling model used (order: [Model]_[Gender]_[Date].EDRef)"
                      )
+    group.add_option("-r", dest = "run_id", metavar = "[STRING]",
+                     help = "Name of run_id"
+                     )
     parser.add_option_group(group)
     (opt, args) = parser.parse_args()
 
     output_folder = opt.output
+    run_id = opt.run_id
     refdate = opt.callmodel.split("/")[-1].split("_")[2].split(".")[0]
     igv_ed_umcu = "UMCU/UMCU_{0}/UMCU_{1}_{0}_ref.igv".format(opt.bam, refdate)
     igv_ed_hc = "HC/HC_{0}/HC_{1}_{0}_ref.igv".format(opt.bam, refdate)
-    bam_id = "../{0}/mapping/{1}".format(opt.sample_id,opt.bam)
+    #bam_id = "../{0}/mapping/{1}".format(opt.sample_id,opt.bam)
+    bam_id = "../bam_files/{0}".format(opt.bam)
     vcf_hc = "HC/HC_{0}_{1}exome_calls.vcf".format(refdate, opt.bam)
-    vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(opt.sample_id)
+    #vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(opt.sample_id)
+    vcf_SNV = "../single_sample_vcf/{0}_{1}.vcf".format(opt.sample_id,run_id)
     igv_settings = settings.igv_settings
     for statistic in igv_settings:
         write_file = open("{0}/{1}_{2}_igv.xml".format(opt.output, opt.sample_id, statistic), "w")
