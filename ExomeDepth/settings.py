@@ -1,7 +1,8 @@
 ## Settings used in run_Exomdepth.py ##
 
 # Location of repository
-cwd = "/hpc/diaggen/software/development/Dx_resources_ED_NF_python3/ExomeDepth/"
+cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/"
+
 
 # R script for RefSet and CNV calling
 call_cnv_r = str(cwd)+"Exomedepth_callCNVs.R"
@@ -41,11 +42,6 @@ analysis = {"HC":
 
 # Parameters transition.probability
 probability = {"HC": 0.0001, "UMCU": 0.5}
-
-# qsub settings
-#qsub_ref = "#!/bin/bash\n#$ -cwd\n#$ -pe threaded 1\n#$ -l h_vmem=10G\n#$ -l h_rt=48:00:00\n#$ -m a\n#$ -M "
-#slurm_ref = "#!/bin/bash\n#SBATCH -t 48:0:0\n#SBATCH --mem=10G\n#SBATCH --mail-type=FAIL\n#SBATCH --mail-user="
-
 
 # Settings for GT, CN, and gender determination
 gender = {"male":"M","female":"F"}
