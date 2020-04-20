@@ -13,7 +13,9 @@ probability = as.numeric(args[5])		        # argument transition probability
 
 options(scipen = 50)
 
-bam.files <- args[6]
+bam.files <- args[6]					# input bam file (compelte path)
+model <- args[7]					# used calling model (eg HC/UMCU)
+refset <- args[8] 					# used reference set (eg Jan2020)
 
 exons.hg19= read.table(input_exon.hg19,sep="\t", header=TRUE)
 data(Conrad.hg19)
@@ -59,7 +61,7 @@ for (i in 1:nsamples) {
       n.bins.reduced = 10000
   )
 
-  file_name=paste(my.current.samplename,"_CNV.log",sep="")
+  file_name=paste(model, refset, my.current.samplename, "CNV.log",sep="_")
   write_file = file(file_name,"w")
   line1=paste("Number of selected reference samples ",toString(length(my.choice[[1]])),sep="\t")
   write(line1,write_file,append=T)
@@ -92,9 +94,9 @@ for (i in 1:nsamples) {
   )
 
   str(all.exons)
-  output.file <- paste(my.current.samplename,'exome_calls.csv',sep = "")
+  output.file <- paste(model, refset, my.current.samplename,'exome_calls.csv',sep = "_")
 
-  save(all.exons,file=paste(my.current.samplename,"all.exons",sep = "_"))
+  save(all.exons,file=paste(model, refset, my.current.samplename,"all.exons",sep = "_"))
   refsize <- toString(length(my.choice[[1]]))
   correlation <- all.exons@refcorrelation
   print_array <- cbind(all.exons@CNV.calls,correlation,refsize)
@@ -146,5 +148,5 @@ correl <- all.exons@refcorrelation
 
 ref_df = data.frame(chroms, starts, ends,name, observed,log2ratio,freq, expected, min, max, correl)
 colnames(ref_df) <- c("chr","start", "end","locusID","ratio_test","log2ratio_test","frequency_test","ratio_expected","ref_min.ratio", "ref_max.ratio","refset_correlation")
-write.table(ref_df,paste(my.current.samplename,'_ref.igv',sep = ""),sep="\t",row.names=FALSE, quote=FALSE)
+write.table(ref_df,paste(model, refset, my.current.samplename,'ref.igv',sep = "_"),sep="\t",row.names=FALSE, quote=FALSE)
 
