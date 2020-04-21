@@ -3,7 +3,6 @@
 # Location of repository
 cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/"
 
-
 # R script for RefSet and CNV calling
 call_cnv_r = str(cwd)+"Exomedepth_callCNVs.R"
 create_refset_r = str(cwd)+"Exomedepth_create_Ref_set.R"
@@ -44,7 +43,7 @@ analysis = {"HC":
 probability = {"HC": 0.0001, "UMCU": 0.5}
 
 # Settings for GT, CN, and gender determination
-gender = {"male":"M","female":"F"}
+#gender = {"male":"M","female":"F"}
 ratio_threshold_del = 0.25
 par1 = [60001,2699520]
 par2 = [154931044,155260560]
