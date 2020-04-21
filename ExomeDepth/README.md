@@ -1,6 +1,11 @@
 # Wrapper scripts for ExomeDepth (UMCU version)
 
-All script are made tested using Python 2.7.10
+All script are made tested using Python 3.6.8
+## Make virtual python enviroment
+virtualenv -p python3 venv
+. venv/bin/activate
+easy_install pip
+pip install -r requirements.txt
 
 
 ## run_ExomeDepth.py
@@ -12,26 +17,25 @@ First create a reference set which can be used to call CNV
 
 ## Create refset
 ``` bash
-python run_ExomeDepth.py -r -i {folder containing realigned.BAM files (recursive in all subfolder)} -o {output folder} -p {reference set naming: i.e. Jan2020} -m {email adress}
+python run_ExomeDepth.py makeref {output folder} {inputfolder: folder containing realigned.BAM files} {prefix: i.e. Jan2020}
 ```
 Refset will (default) create 4 output file in 4 seperate folders: a HighConfident (HC) and LowCondfident (UMCU) reference file (.EDref) for females and male seperate. \
-Male and Female is based on chrY read counts.\
+Male and Female is determined on chrY read counts.\
 Please do not include samples in the folder with known sex-chromsome deviations (e.g. XXY, X)\
 The 4 .EDref files can be copied into a specific folder.\
 Include this folder, and the reference set naming in settings.py for CNV calling.
 
 ## Caling CNVs
-Calling CNV: multisample
+Single sample
 ``` bash
-python run_ExomeDepth.py -c -i {folder containing realigned.BAM files (recursive in all subfolder)} -o {output folder} -m {email adress}
-```
-
-Calling CNV: single sample
-``` bash
-python run_ExomeDepth.py -c --ib={folder containing realigned.BAM files (recursive in all subfolder)} -o {output folder} -m {email adress}
+python run_ExomeDepth.py callcnv  {output folder} {input bam} {run id} {sample id} {refset prefix: i.e. Jan2020)
 ```
 CNV calling will result in a folder with a VCF file containing the significant CNV calls. For both the HC and UMCU target files seperately
 
+Multisample (e.g. re-analysis of old run):
+``` bash
+python submit_batch_exomedepth.py {input folder} {output folder} 
+```
 
 ## How to make a HC file
 Make seperate folders for male and female, and sotflink/copy minimum of 50 BAM files (each) into these folders.\
@@ -101,6 +105,9 @@ Make seperate folders for male and female, and sotflink/copy minimum of 50 BAM f
 #### ed_csv_to_vcf.py
 Converts ExomeDepth csv file to VCF using pyvcf
 
+#### igv_xml_session.py
+Makes IGV session xml files
+
 #### settings.py
-This scripts contains path, files, and settings that are used in run_ExomeDepth.py and ed_csv_to_vcf.py
+This scripts contains path, files, and settings that are used in multiple python scripts
 
