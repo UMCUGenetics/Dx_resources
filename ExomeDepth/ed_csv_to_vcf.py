@@ -1,10 +1,9 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import sys
 import os
 import re
 import subprocess
-from optparse import OptionParser
-from optparse import OptionGroup
+import argparse
 import vcf
 import collections
 import copy
@@ -27,49 +26,17 @@ def cnv_locationtype(region, par1, par2):
     else:
         return "auto"
 
-
 if __name__ == "__main__":
-    parser = OptionParser()
-    group = OptionGroup(parser, "Main options")
-    group.add_option("--csv", dest = "input_csv", metavar = "[PATH]",
-                     help = "full path to input CSV file"
-                     )
- 
-    group.add_option("--template", dest = "template", metavar = "[STRING]",
-                     help = "Path to template VCF"
-                     )
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inputcsv', help='Full path to input CSV file')    
+    parser.add_argument('refset', help='Used reference set ID')
+    parser.add_argument('model', help='Used model ID')
+    parser.add_argument('gender', help='Used gender')
+    parser.add_argument('sampleid', help='sampleid name to be included in VCF')
+    parser.add_argument('template', help='Full path to template VCF')
+    args = parser.parse_args()
 
-    group.add_option("--refset", dest = "refset", metavar = "[STRING]",
-                     help = "used refset"
-                     )
-
-    group.add_option("--model", dest = "model", metavar = "[STRING]",
-                     help = "used model"
-                     )
-    group.add_option("--gender", dest = "gender", metavar = "[STRING]",
-                     help = "used gender"
-                     )
-    group.add_option("--sampleid", dest = "sampleid", metavar = "[STRING]",
-                     help = "sampleid name to be included in VCF"
-                     )
-    parser.add_option_group(group)
-    (opt, args) = parser.parse_args()
-
-
-    if not opt.input_csv:
-         sys.exit("provide input file (--csv)")
-
-    if opt.template:
-        if os.path.isfile(str(opt.template)):
-            template_vcf = str(opt.template)
-        else:
-            sys.exit("Input template VCF does not exist")
-    else:
-        sys.exit("provide template VCF (-t)")
-
-    sampleid= opt.sampleid
-
-    vcf_reader = vcf.Reader(open(template_vcf, 'r'))
+    vcf_reader = vcf.Reader(open(args.template, 'r'))
     format_keys = vcf_reader.formats.keys()
     record = vcf_reader.__next__()  # First record (dummy for all other records)
     new_record = copy.deepcopy(record)
@@ -81,11 +48,11 @@ if __name__ == "__main__":
     new_vals = [format_dict[x] for x in format_keys]
     new_record.samples[0].data = new_record.samples[0].data._make(new_vals)
 
-    df_csv = pd.read_csv(opt.input_csv)
-    vcf_reader.samples = [sampleid]  # Change template sampleid in sampleid
+    df_csv = pd.read_csv(args.inputcsv)
+    vcf_reader.samples = [args.sampleid]  # Change template sampleid in sampleid
     """Add metadata ED reference set used."""
-    vcf_reader.metadata['EDreference'] = ["{0}_{1}_{2}".format(opt.model,opt.gender,opt.refset)]
-    with open(opt.input_csv[0:-4]+".vcf", 'w') as vcf_output_file:
+    vcf_reader.metadata['EDreference'] = ["{0}_{1}_{2}".format(args.model,args.gender,args.refset)]
+    with open(args.inputcsv[0:-4]+".vcf", 'w') as vcf_output_file:
         vcf_writer = vcf.Writer(vcf_output_file, vcf_reader)
 
         """Determine percentage DEL/(DEL+DUP) for all calls in VCF."""
@@ -142,7 +109,7 @@ if __name__ == "__main__":
             normal_CN = settings.normal_CN
             region = [str(row['chromosome']), int(row['start']), int(row['end'])]
             locus_type = cnv_locationtype(region, par1, par2)
-            normal_copy = float(normal_CN[opt.gender][locus_type])
+            normal_copy = float(normal_CN[args.gender][locus_type])
             calc_copynumber = normal_copy  * float(ratio)
 
             # Estimate true copynumber by rounding to nearest integer
@@ -150,7 +117,7 @@ if __name__ == "__main__":
             if opt.gender == "female" and locus_type == "chrY":
                 """In case CNV is detected on chrY in female, correct for this"""
                 print ("WARNING: {sample} chromosome Y CNV detected (region = {region}) in female, calc_copynumber set to 0 (deletion call) or 1 (duplication call)".format(
-                       sample = str(sampleid),
+                       sample = str(args.sampleid),
                        region = str("_".join(str(x) for x in region))
                       ))    
 
@@ -165,7 +132,7 @@ if __name__ == "__main__":
                 if row_type == "deletion" and calc_copynumber > normal_copy or row_type == "duplication" and calc_copynumber < normal_copy:
                     """ If calc_copynumber is opposite of expected CN for region, i.e. ratio 1.5 for a deletion"""
                     print ("WARNING: {sample} CNV copynumber estimation {copynumber} does not match CNV type {rowtype} for region {region}".format(
-                           sample = str(sampleid),
+                           sample = str(args.sampleid),
                            copynumber = str(float(calc_copynumber)),
                            rowtype = row_type,
                            region =  str("_".join(str(x) for x in region))
@@ -175,7 +142,7 @@ if __name__ == "__main__":
                 if copynumber == int(normal_copy):
                     """ Estimated copynumber is similar to copyneutral """
                     print ("WARNING: {sample} true copynumber for region {region} is same as normal CN > set to -1 for deletion, +1 for duplication".format(
-                           sample = str(sampleid),
+                           sample = str(args.sampleid),
                            region =  str("_".join(str(x) for x in region))
                           ))
                     if row_type == "deletion":  # If deletion correct copynumber with -1
@@ -205,7 +172,7 @@ if __name__ == "__main__":
             format_dict['CR'] = "%.4f" % (float(row['correlation']))
             format_dict['RS'] = row['refsize']
             format_dict['IH'] = "NaN"  # Inheritence is not build in yet
-            format_dict['CM'] = opt.model
+            format_dict['CM'] = args.model
             format_dict['PD'] = perc_del
             format_dict['TC'] = total_calls
             new_vals = [format_dict[x] for x in format_keys]
