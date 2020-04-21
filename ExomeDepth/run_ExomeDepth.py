@@ -74,10 +74,11 @@ def call_cnv(args):
     bam = format(os.path.abspath(args.inputbam))
     output_folder = format(os.path.abspath(args.output))
     analysis = settings.analysis
-    ed_r = settings.call_cnv_r
-    refgenome = settings.reference_genome
     prob = settings.probability
-    
+   
+    if not os.path.isdir(args.output):
+         os.system("mkdir -p " + str(args.output)) 
+ 
     """Determine gender"""
     gender = get_gender(bam)
     if args.genderfile:  # overrule gender as given in gender_file
@@ -97,7 +98,12 @@ def call_cnv(args):
 
     for model in analysis:
         """Log all settings in setting.log file"""
-        log_file="{0}_{1}_{2}_settings.log".format(model,args.refset,args.inputbam)
+        log_file="{output}/{model}_{refset}_{bam}_settings.log".format(
+            output = args.output,
+            model = model,
+            refset = args.refset,
+            bam = args.sample
+            )
         write_file = open(log_file, "w")
         options = vars(args) 
         for item in options:
@@ -108,22 +114,28 @@ def call_cnv(args):
         write_file.close()
 
         """Perform ExomeDepth analysis"""
-        action = ("module load {0} && Rscript {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(
-            settings.r_version,
-            ed_r,
-            analysis[model]["refset"][gender],
-            analysis[model]["target_bed"],
-            refgenome,
-            analysis[model]["exon_bed"],
-            prob[str(model)],
-            bam,
-            model,
-            args.refset
+
+        refset_R = "{refset_dir}/{model}_{gender}_{refset}.EDref".format(
+            refset_dir = settings.refset_dir,
+            model = model,
+            gender = gender,
+            refset = args.refset
+            ) 
+        action = ("module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset}".format(
+            rversion = settings.r_version,
+            ed_r = settings.call_cnv_r,
+            refset_R = refset_R,
+            target_bed = analysis[model]["target_bed"],
+            refgenome = settings.reference_genome,
+            exon_bed = analysis[model]["exon_bed"],
+            prob = settings.probability[str(model)],
+            bam = bam,
+            model = model,
+            refset = args.refset
             ))
         os.system(action)
-
+ 
         """Perform csv to vcf conversion """
-        #csv_file="{0}/{1}_{2}_{3}_exome_calls.csv".format(output_folder,model,args.refset,args.inputbam)
         action = ("python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template}".format(
             csv2vcf = settings.csv2vcf,
             inputcsv = "{0}/{1}_{2}_{3}_exome_calls.csv".format(output_folder,model,args.refset,args.inputbam),
