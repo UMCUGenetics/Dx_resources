@@ -23,21 +23,16 @@ reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
 
 #Reference set
 refset = "Jan2020"
-
 analysis = {"HC":
-              {"refset":{"female":str(refset_dir)+"/HC_female_"+str(refset)+".EDref",
-                         "male":str(refset_dir)+"/HC_male_"+str(refset)+".EDref"},
-               "target_bed":str(reffile_dir)+"High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20.bed",
+              {"target_bed":str(reffile_dir)+"High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20.bed",
                "exon_bed":str(reffile_dir)+"exons.hg19.full_HC_CREv2_elidS30409818.tsv"
                },
 
-          "UMCU": 
-               {"refset":{"female":str(refset_dir)+"/UMCU_female_"+str(refset)+".EDref",
-                          "male":str(refset_dir)+"/UMCU_male_"+str(refset)+".EDref"},
-               "target_bed":str(reffile_dir)+"ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank_flat.bed",
+          "UMCU":
+               {"target_bed":str(reffile_dir)+"ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank_flat.bed",
                "exon_bed":str(reffile_dir)+"exons.hg19.full_UMCU20bp.tsv"
                }
-         }   
+         }
 
 # Parameters transition.probability
 probability = {"HC": 0.0001, "UMCU": 0.5}
