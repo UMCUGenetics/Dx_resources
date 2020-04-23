@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
             # Estimate true copynumber by rounding to nearest integer
             copynumber = int(decimal.Decimal(calc_copynumber).quantize(decimal.Decimal('0'), rounding=decimal.ROUND_HALF_UP))
-            if opt.gender == "female" and locus_type == "chrY":
+            if args.gender == "female" and locus_type == "chrY":
                 """In case CNV is detected on chrY in female, correct for this"""
                 print ("WARNING: {sample} chromosome Y CNV detected (region = {region}) in female, calc_copynumber set to 0 (deletion call) or 1 (duplication call)".format(
                        sample = str(args.sampleid),
