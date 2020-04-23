@@ -34,7 +34,10 @@ CNV calling will result in a folder with a VCF file containing the significant C
 
 Multisample (e.g. re-analysis of old run):
 NOTE: use the same amount of threads as samples!
+NOTE: python3 enviroment is needed
+
 ``` bash
+. {path_to_repo}/venv/bin/activate
 python submit_batch_exomedepth.py {input folder} {output folder} {samples(/threads)}
 ```
 
