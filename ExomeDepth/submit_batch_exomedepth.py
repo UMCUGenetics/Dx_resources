@@ -31,7 +31,7 @@ def process(bam):
     os.system("mv {output}/{sampleid}/*log {output}/logs/".format(sampleid = sampleid, output = args.outputfolder))
     os.system("mv {output}/{sampleid}/*igv {output}/igv_tracks/".format(sampleid = sampleid, output = args.outputfolder))
     os.system("mv {output}/{sampleid}/HC*vcf {output}/HC/".format(sampleid = sampleid, output = args.outputfolder))
-    os.system("mv {output}/{sampleid}/UCMU*vcf {output}/UMCU/".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/UMCU*vcf {output}/UMCU/".format(sampleid = sampleid, output = args.outputfolder))
     os.system("mv {output}/{sampleid}/HC* {output}/HC/{sampleid}".format(sampleid = sampleid, output = args.outputfolder))
     os.system("mv {output}/{sampleid}/UMCU* {output}/UMCU/{sampleid}".format(sampleid = sampleid, output = args.outputfolder))
     os.system("rm -r {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
