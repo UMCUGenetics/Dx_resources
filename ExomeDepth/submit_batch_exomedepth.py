@@ -6,7 +6,7 @@ import settings
 from multiprocessing import Pool
 import sys
 
-def square(bam):
+def process(bam):
     bamfile = bam.rstrip("/").split("/")[-1]
     sampleid = bamfile.split("_")[0]
     os.system("mkdir -p {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
@@ -48,6 +48,6 @@ if __name__ == "__main__":
 
     bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
     print("Number of BAM files = "+str(len(bams)))
-
-    with Pool(processes=int(args.simjobs) as pool:
-        result = pool.map(square, bams, 1)
+   
+    with Pool(processes=int(args.simjobs)) as pool:
+        result = pool.map(process, bams, 1)
