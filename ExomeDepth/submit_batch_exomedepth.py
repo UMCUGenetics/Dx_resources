@@ -21,7 +21,6 @@ def process(bam):
             sample = bam.split("/")[-1].split("_")[0],
             refset = args.refset
         ))
-    print(action,"\n")
     os.system(action)
 
     os.chdir("{output}".format(output = args.outputfolder))
