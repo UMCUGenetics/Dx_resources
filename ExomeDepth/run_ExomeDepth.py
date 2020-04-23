@@ -58,14 +58,14 @@ def make_refset(args):
             os.system(action)
             for bam in ref_gender_dic[item]:
                 os.system("ln -sd " + str(bam) + "* " + str(folder))
-            action = ("module load {0} && Rscript {1} {2}/ {2}/{3} {4} {5} {6}\n".format(
-                settings.r_version,
-                settings.create_refset_r,
-                folder,
-                output_id,
-                analysis[model]["target_bed"],
-                settings.reference_genome,
-                analysis[model]["exon_bed"]
+            action = ("module load {renv} && Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
+                renv = settings.r_version,
+                refscript = settings.create_refset_r,
+                folder = folder,
+                outputid = output_id,
+                targetbed = analysis[model]["target_bed"],
+                refgenome = settings.reference_genome,
+                exonbed = analysis[model]["exon_bed"]
                 ))
             os.system(action)
 
