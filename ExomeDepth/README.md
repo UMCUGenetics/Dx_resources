@@ -33,8 +33,9 @@ python run_ExomeDepth.py callcnv  {output folder} {input bam} {run id} {sample i
 CNV calling will result in a folder with a VCF file containing the significant CNV calls. For both the HC and UMCU target files seperately
 
 Multisample (e.g. re-analysis of old run):
+NOTE: use the same amount of threads as samples!
 ``` bash
-python submit_batch_exomedepth.py {input folder} {output folder} 
+python submit_batch_exomedepth.py {input folder} {output folder} {samples(/threads)}
 ```
 
 ## How to make a HC file
