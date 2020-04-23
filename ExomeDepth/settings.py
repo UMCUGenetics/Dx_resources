@@ -38,7 +38,6 @@ analysis = {"HC":
 probability = {"HC": 0.0001, "UMCU": 0.5}
 
 # Settings for GT, CN, and gender determination
-#gender = {"male":"M","female":"F"}
 ratio_threshold_del = 0.25
 par1 = [60001,2699520]
 par2 = [154931044,155260560]
