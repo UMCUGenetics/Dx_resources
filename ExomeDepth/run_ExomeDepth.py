@@ -33,6 +33,7 @@ def make_refset(args):
 
     """Make new reference set."""
     analysis = settings.analysis
+    output_folder = format(os.path.abspath(args.output))
     bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
     print("Number of BAM files detected = {0}".format(len(bams)))
  
@@ -51,7 +52,7 @@ def make_refset(args):
     """Make folder per gender + analysis, and soflink BAMs in these folders."""
     for model in analysis:
         for item in ref_gender_dic:
-            folder = "{0}/{1}_{2}_{3}".format(args.output, model, item, str(args.output).split("/")[-1])
+            folder = "{0}/{1}_{2}_{3}".format(output_folder, model, item, str(args.output).rstrip("/").split("/")[-1])
             output_id = "{0}_{1}_{2}.EDref".format(model, item, args.prefix)
             action = "mkdir -p {0}".format(folder)
             os.system(action)
@@ -66,7 +67,7 @@ def make_refset(args):
                 settings.reference_genome,
                 analysis[model]["exon_bed"]
                 ))
-            os.sytem(action)
+            os.system(action)
 
 def call_cnv(args):
 
@@ -75,10 +76,9 @@ def call_cnv(args):
     output_folder = format(os.path.abspath(args.output))
     analysis = settings.analysis
     prob = settings.probability
-   
-    if not os.path.isdir(args.output):
-         os.system("mkdir -p " + str(args.output)) 
- 
+    if not os.path.isdir(output_folder):
+         os.system("mkdir -p " + str(output_folder)) 
+
     """Determine gender"""
     gender = get_gender(bam)
     if args.genderfile:  # overrule gender as given in gender_file
@@ -99,7 +99,7 @@ def call_cnv(args):
     for model in analysis:
         """Log all settings in setting.log file"""
         log_file="{output}/{model}_{refset}_{bam}_settings.log".format(
-            output = args.output,
+            output = output_folder,
             model = model,
             refset = args.refset,
             bam = args.sample
@@ -151,13 +151,17 @@ def call_cnv(args):
     action = ("python {igv_xml} {bam} {output} {sampleid} {template} {refdate} {runid}".format(
         igv_xml = settings.igv_xml,
         bam = args.inputbam,
-        output = output_folder,
+        output = args.output,
         sampleid = args.sample,
-        template = settings.igv_xml,
+        template = settings.template_xml,
         refdate = args.refset,
         runid = args.run
         ))
-    os.system(action)
+    if args.batch: #For re-analysis IAP
+        action += " --batch"
+        os.system(action)
+    else:
+        os.system(action)
 
 def gender_file(genderfile):
     gender_dic = {}
@@ -187,6 +191,7 @@ if __name__ == "__main__":
     parser_cnv.add_argument('sample', help='Sample name')
     parser_cnv.add_argument('refset', help='Reference set to be used (e.g. Jan2020)')
     parser_cnv.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
+    parser_cnv.add_argument('--batch', action='store_true', help='option for batch processing')
     parser_cnv.set_defaults(func = call_cnv)
 
     args = parser.parse_args()
