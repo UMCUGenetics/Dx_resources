@@ -12,8 +12,7 @@ cv = int(sys.argv[4])  #Minumum coefficient of varation (CV)
 """ Make bam_coverage count for each BAM file first"""
 os.system("paste {0}/*bam_coverage > {0}/full_table.txt".format(wkdir))  #Make one table of all bam_coverage counts
 
-#lines = open(str(wkdir) + "/full_table.txt","r").readlines() 
-with open(str(wkdir) + "/full_table.txt","r") as infile:
+with open(str(wkdir) + "/full_table.txt", "r") as infile:
     for line in infile: 
         if "#" not in line:
             splitline = line.split("\t") 
@@ -34,7 +33,7 @@ with open(str(wkdir) + "/full_table.txt","r") as infile:
 
             """Print only targets that are within requirements"""
             if mean_depth >= dp_min and mean_depth < dp_max and cv_depth < cv:
-                print ("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(
+                print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(
                    splitline[0].rstrip(),
                    splitline[1].rstrip(),
                    splitline[2].rstrip(),
