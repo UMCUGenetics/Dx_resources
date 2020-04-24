@@ -4,13 +4,13 @@ import os
 import re
 import subprocess
 import argparse
-import vcf
 import collections
 import copy
+import decimal
+import vcf
 import pysam
 import pandas as pd
 import settings
-import decimal
 
 def cnv_locationtype(region, par1, par2):
     chrom = str(region[0]).upper()
@@ -116,7 +116,7 @@ if __name__ == "__main__":
             copynumber = int(decimal.Decimal(calc_copynumber).quantize(decimal.Decimal('0'), rounding=decimal.ROUND_HALF_UP))
             if args.gender == "female" and locus_type == "chrY":
                 """In case CNV is detected on chrY in female, correct for this"""
-                print ("WARNING: {sample} chromosome Y CNV detected (region = {region}) in female, calc_copynumber set to 0 (deletion call) or 1 (duplication call)".format(
+                print("WARNING: {sample} chromosome Y CNV detected (region = {region}) in female, calc_copynumber set to 0 (deletion call) or 1 (duplication call)".format(
                        sample = str(args.sampleid),
                        region = str("_".join(str(x) for x in region))
                       ))    
@@ -131,7 +131,7 @@ if __name__ == "__main__":
             else:
                 if row_type == "deletion" and calc_copynumber > normal_copy or row_type == "duplication" and calc_copynumber < normal_copy:
                     """ If calc_copynumber is opposite of expected CN for region, i.e. ratio 1.5 for a deletion"""
-                    print ("WARNING: {sample} CNV copynumber estimation {copynumber} does not match CNV type {rowtype} for region {region}".format(
+                    print("WARNING: {sample} CNV copynumber estimation {copynumber} does not match CNV type {rowtype} for region {region}".format(
                            sample = str(args.sampleid),
                            copynumber = str(float(calc_copynumber)),
                            rowtype = row_type,
@@ -141,7 +141,7 @@ if __name__ == "__main__":
   
                 if copynumber == int(normal_copy):
                     """ Estimated copynumber is similar to copyneutral """
-                    print ("WARNING: {sample} true copynumber for region {region} is same as normal CN > set to -1 for deletion, +1 for duplication".format(
+                    print("WARNING: {sample} true copynumber for region {region} is same as normal CN > set to -1 for deletion, +1 for duplication".format(
                            sample = str(args.sampleid),
                            region =  str("_".join(str(x) for x in region))
                           ))
