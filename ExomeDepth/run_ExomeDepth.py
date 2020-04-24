@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
 import os
 import sys
-import pysam
 import subprocess
 import re
 import settings
 import argparse
+from multiprocessing import Pool
+import pysam
+import settings
 
 def valid_read(read):
     """Check if a read is properly mapped."""
@@ -29,6 +31,18 @@ def get_gender(bam):
     else:
         return "unknown"
 
+def multiprocess_ref(mp_list):
+    action = ("module load {renv} && Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
+        renv = settings.r_version,
+        refscript = settings.create_refset_r,
+        folder = mp_list[0],
+        outputid = mp_list[1],
+        targetbed = mp_list[2],
+        refgenome = settings.reference_genome,
+        exonbed = mp_list[3]
+        ))
+    os.system(action)
+
 def make_refset(args):
 
     """Make new reference set."""
@@ -50,6 +64,8 @@ def make_refset(args):
            print("Sample {0} has unknown gender and is removed from analysis".format(bam))
    
     """Make folder per gender + analysis, and soflink BAMs in these folders."""
+
+    mp_list=[]
     for model in analysis:
         for item in ref_gender_dic:
             folder = "{0}/{1}_{2}_{3}".format(output_folder, model, item, str(args.output).rstrip("/").split("/")[-1])
@@ -58,16 +74,62 @@ def make_refset(args):
             os.system(action)
             for bam in ref_gender_dic[item]:
                 os.system("ln -sd " + str(bam) + "* " + str(folder))
-            action = ("module load {renv} && Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
-                renv = settings.r_version,
-                refscript = settings.create_refset_r,
-                folder = folder,
-                outputid = output_id,
-                targetbed = analysis[model]["target_bed"],
-                refgenome = settings.reference_genome,
-                exonbed = analysis[model]["exon_bed"]
-                ))
-            os.system(action)
+            mp_list+=[[folder, output_id, analysis[model]["target_bed"], analysis[model]["exon_bed"]]]
+
+    with Pool(processes=int(args.simjobs)) as pool:
+        result = pool.map(multiprocess_ref, mp_list, 1)
+
+def multiprocess_call(multiprocess_list):
+
+    """Log all settings in setting.log file"""
+    log_file="{output}/{model}_{refset}_{bam}_settings.log".format(
+        output = multiprocess_list[1],
+        model = multiprocess_list[0],
+        refset = args.refset,
+        bam = args.sample
+        )
+    write_file = open(log_file, "w")
+    options = vars(args)
+    for item in options:
+        write_file.write("{0}\t{1}\n".format(str(item), str(options[item])))
+    for item in dir(settings):
+        if "__" not in item:
+            write_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
+    write_file.close()
+
+    """Perform ExomeDepth analysis"""
+    refset_R = "{refset_dir}/{model}_{gender}_{refset}.EDref".format(
+        refset_dir = settings.refset_dir,
+        model = multiprocess_list[0],
+        gender = multiprocess_list[2],
+        refset = args.refset
+        )
+
+    action = ("module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset}".format(
+        rversion = settings.r_version,
+        ed_r = settings.call_cnv_r,
+        refset_R = refset_R,
+        target_bed = multiprocess_list[3],
+        refgenome = settings.reference_genome,
+        exon_bed = multiprocess_list[4],
+        prob = settings.probability[str(multiprocess_list[0])],
+        bam =  multiprocess_list[5],
+        model =  multiprocess_list[0],
+        refset = args.refset
+        ))
+    os.system(action)
+
+    """Perform csv to vcf conversion """
+    action = ("python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template}".format(
+        csv2vcf = settings.csv2vcf,
+        inputcsv = "{0}/{1}_{2}_{3}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.inputbam),
+        refset = args.refset,
+        model = multiprocess_list[0],
+        gender = multiprocess_list[2],
+        sampleid = args.sample,
+        template = settings.vcf_template
+        ))
+    os.system(action)
 
 def call_cnv(args):
 
@@ -96,56 +158,13 @@ def call_cnv(args):
         else:
             sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))
 
+
+    multiprocess_list=[]
     for model in analysis:
-        """Log all settings in setting.log file"""
-        log_file="{output}/{model}_{refset}_{bam}_settings.log".format(
-            output = output_folder,
-            model = model,
-            refset = args.refset,
-            bam = args.sample
-            )
-        write_file = open(log_file, "w")
-        options = vars(args) 
-        for item in options:
-            write_file.write("{0}\t{1}\n".format(str(item), str(options[item])))
-        for item in dir(settings):
-            if "__" not in item:
-                write_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
-        write_file.close()
-
-        """Perform ExomeDepth analysis"""
-
-        refset_R = "{refset_dir}/{model}_{gender}_{refset}.EDref".format(
-            refset_dir = settings.refset_dir,
-            model = model,
-            gender = gender,
-            refset = args.refset
-            ) 
-        action = ("module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset}".format(
-            rversion = settings.r_version,
-            ed_r = settings.call_cnv_r,
-            refset_R = refset_R,
-            target_bed = analysis[model]["target_bed"],
-            refgenome = settings.reference_genome,
-            exon_bed = analysis[model]["exon_bed"],
-            prob = settings.probability[str(model)],
-            bam = bam,
-            model = model,
-            refset = args.refset
-            ))
-        os.system(action)
- 
-        """Perform csv to vcf conversion """
-        action = ("python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template}".format(
-            csv2vcf = settings.csv2vcf,
-            inputcsv = "{0}/{1}_{2}_{3}_exome_calls.csv".format(output_folder,model,args.refset,args.inputbam),
-            refset = args.refset,
-            model = model,
-            gender = gender,
-            sampleid = args.sample,
-            template = settings.vcf_template
-            ))
-        os.system(action)
+        multiprocess_list += [[model, output_folder, gender, analysis[model]["target_bed"], analysis[model]["exon_bed"], bam, output_folder]] 
+    
+    with Pool(processes=int(args.simjobs)) as pool:
+        result = pool.map(multiprocess_call, multiprocess_list, 1)
 
     """Make IGV session xml """
     action = ("python {igv_xml} {bam} {output} {sampleid} {template} {refdate} {runid}".format(
@@ -181,6 +200,7 @@ if __name__ == "__main__":
     parser_refset.add_argument('output', help='Output folder for reference set files')
     parser_refset.add_argument('inputfolder', help='Input folder containing BAM files')
     parser_refset.add_argument('prefix', help='Prefix for reference set (e.g. Jan2020)')
+    parser_refset.add_argument('--simjobs', default=4, help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session! [default = 4]')
     parser_refset.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
     parser_refset.set_defaults(func = make_refset)
 
@@ -190,6 +210,7 @@ if __name__ == "__main__":
     parser_cnv.add_argument('run', help='Name of the run')
     parser_cnv.add_argument('sample', help='Sample name')
     parser_cnv.add_argument('refset', help='Reference set to be used (e.g. Jan2020)')
+    parser_cnv.add_argument('--simjobs', default=2, help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
     parser_cnv.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
     parser_cnv.add_argument('--batch', action='store_true', help='option for batch processing')
     parser_cnv.set_defaults(func = call_cnv)
