@@ -2,16 +2,15 @@
 import os
 import argparse
 import subprocess
-import settings
 from multiprocessing import Pool
-import sys
+import settings
 
 def process(bam):
     bamfile = bam.rstrip("/").split("/")[-1]
     sampleid = bamfile.split("_")[0]
     os.system("mkdir -p {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
     os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
-    os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(bam = bam, bamfile = bamfile,sample = sampleid, output = args.outputfolder))
+    os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
     os.chdir("{output}/{sample}".format(output = args.outputfolder, sample = sampleid))
     action = ("python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} {refset} --batch".format(
             exomedepth = args.exomedepth,
