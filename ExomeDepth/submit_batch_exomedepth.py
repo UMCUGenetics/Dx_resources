@@ -28,10 +28,11 @@ def process(bam):
     os.system("mkdir -p {output}/HC/{sampleid}".format(output = args.outputfolder, sampleid = sampleid))
     os.system("mkdir -p {output}/logs".format(output = args.outputfolder))
     os.system("mkdir -p {output}/igv_tracks".format(output = args.outputfolder))
-    os.system("mv {output}/{sampleid}/*log {output}/logs/".format(sampleid = sampleid, output = args.outputfolder))
-    os.system("mv {output}/{sampleid}/*igv {output}/igv_tracks/".format(sampleid = sampleid, output = args.outputfolder))
-    os.system("mv {output}/{sampleid}/HC*vcf {output}/HC/".format(sampleid = sampleid, output = args.outputfolder))
-    os.system("mv {output}/{sampleid}/UMCU*vcf {output}/UMCU/".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/*.xml {output}/".format(sampleid = sampleid, output = args.outputfolder)) 
+    os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/HC*.vcf {output}/HC/".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/UMCU*.vcf {output}/UMCU/".format(sampleid = sampleid, output = args.outputfolder))
     os.system("mv {output}/{sampleid}/HC* {output}/HC/{sampleid}".format(sampleid = sampleid, output = args.outputfolder))
     os.system("mv {output}/{sampleid}/UMCU* {output}/UMCU/{sampleid}".format(sampleid = sampleid, output = args.outputfolder))
     os.system("rm -r {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
@@ -47,6 +48,5 @@ if __name__ == "__main__":
 
     bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
     print("Number of BAM files = "+str(len(bams)))
-   
     with Pool(processes=int(args.simjobs)) as pool:
         result = pool.map(process, bams, 1)
