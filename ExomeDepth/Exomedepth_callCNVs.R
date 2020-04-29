@@ -16,6 +16,8 @@ options(scipen = 50)
 bam.files <- args[6]					# input bam file (compelte path)
 model <- args[7]					# used calling model (eg HC/UMCU)
 refset <- args[8] 					# used reference set (eg Jan2020)
+expectedCNV <- as.numeric(args[9])			# expected length CNV (eg 50000)
+
 
 exons.hg19= read.table(input_exon.hg19,sep="\t", header=TRUE)
 data(Conrad.hg19)
@@ -84,7 +86,8 @@ for (i in 1:nsamples) {
       chromosome = my.counts.dafr$space,
       start = my.counts.dafr$start,
       end = my.counts.dafr$end,
-      name = my.counts.dafr$names
+      name = my.counts.dafr$names,
+      expected.CNV.length = expectedCNV
   )
 
   all.exons <- AnnotateExtra(x = all.exons,
