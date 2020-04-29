@@ -12,13 +12,14 @@ def process(bam):
     os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
     os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
     os.chdir("{output}/{sample}".format(output = args.outputfolder, sample = sampleid))
-    action = ("python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} {refset} --batch".format(
+    action = ("python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} {refset} --expectedCNVlength {length} --batch".format(
             exomedepth = args.exomedepth,
             output = args.outputfolder,
             inputbam = bamfile,
             run = args.inputfolder.rstrip("/").split("/")[-1],
             sample = bam.split("/")[-1].split("_")[0],
-            refset = args.refset
+            refset = args.refset,
+            length = args.expectedCNVlength
         ))
     os.system(action)
 
@@ -43,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument('simjobs', help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session!')
     parser.add_argument('--refset', default = settings.refset, help='Reference set to be used')
     parser.add_argument('--exomedepth', default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py", help='Full path to exomedepth script')
+    parser.add_argument('--expectedCNVlength',default=50000, help='expected CNV length (basepairs) taken into account by ExomeDepth [default = 50000]')
     args = parser.parse_args()
 
     bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
