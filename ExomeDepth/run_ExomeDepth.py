@@ -3,7 +3,6 @@ import os
 import sys
 import subprocess
 import re
-import settings
 import argparse
 from multiprocessing import Pool
 import pysam
@@ -105,7 +104,7 @@ def multiprocess_call(multiprocess_list):
         refset = args.refset
         )
 
-    action = ("module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset}".format(
+    action = ("module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected}".format(
         rversion = settings.r_version,
         ed_r = settings.call_cnv_r,
         refset_R = refset_R,
@@ -115,7 +114,8 @@ def multiprocess_call(multiprocess_list):
         prob = settings.probability[str(multiprocess_list[0])],
         bam =  multiprocess_list[5],
         model =  multiprocess_list[0],
-        refset = args.refset
+        refset = args.refset,
+        expected = args.expectedCNVlength
         ))
     os.system(action)
 
@@ -213,6 +213,7 @@ if __name__ == "__main__":
     parser_cnv.add_argument('--simjobs', default=2, help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
     parser_cnv.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
     parser_cnv.add_argument('--batch', action='store_true', help='option for batch processing')
+    parser_cnv.add_argument('--expectedCNVlength',default=50000, help='expected CNV length (basepairs) taken into account by ExomeDepth [default = 50000]')
     parser_cnv.set_defaults(func = call_cnv)
 
     args = parser.parse_args()
