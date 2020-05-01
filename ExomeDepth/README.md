@@ -10,31 +10,30 @@ pip install -r requirements.txt
 
 ## run_ExomeDepth.py
 Main wrapper script for the ExomeDepth analysis\
-run_ExomeDepth.py uses SGE (UMCU HPC enviroment) for reference set creation and parallel multisample CNV-calling.\
-In addition there is an option for serial single sample CNV-calling that does not use SGE. Setial single sample processing is not avaiable for reference set creation.
 
 First create a reference set which can be used to call CNV
 
 ## Create refset
 ``` bash
+. {path_to_repo}/venv/bin/activate
 python run_ExomeDepth.py makeref {output folder} {inputfolder: folder containing realigned.BAM files} {prefix: i.e. Jan2020}
 ```
 Refset will (default) create 4 output file in 4 seperate folders: a HighConfident (HC) and LowCondfident (UMCU) reference file (.EDref) for females and male seperate. \
 Male and Female is determined on chrY read counts.\
 Please do not include samples in the folder with known sex-chromsome deviations (e.g. XXY, X)\
 The 4 .EDref files can be copied into a specific folder.\
-Include this folder, and the reference set naming in settings.py for CNV calling.
+Include this folder path + the reference set naming (i.e. Jan2020) in settings.py for CNV calling.
 
 ## Caling CNVs
 Single sample
 ``` bash
+. {path_to_repo}/venv/bin/activate
 python run_ExomeDepth.py callcnv  {output folder} {input bam} {run id} {sample id} {refset prefix: i.e. Jan2020)
 ```
 CNV calling will result in a folder with a VCF file containing the significant CNV calls. For both the HC and UMCU target files seperately
 
-Multisample (e.g. re-analysis of old run):
-NOTE: use the same amount of threads as samples!
-NOTE: python3 enviroment is needed
+Multisample (e.g. re-analysis of old run):\
+NOTE: Use 2 threads for each sample. Thus to process 4 samples simulatnious use 8 threads
 
 ``` bash
 . {path_to_repo}/venv/bin/activate
@@ -51,10 +50,12 @@ Make seperate folders for male and female, and sotflink/copy minimum of 50 BAM f
 
   Next, filter variable, low or high coverage region in both the female and male folders:
   ``` bash
+  . {path_to_repo}/venv/bin/activate
   python filter_probe_file.py {input_folder} {min coverage} {max coverage} {max coefficient of variation} > {output_filtering}
   ```
   e.g.
   ``` bash
+       . {path_to_repo}/venv/bin/activate
        python ./filter_probe_file.py ./males/ 30 500 20 > male_output_30-500_20
        python ./filter_probe_file.py ./females/ 30 500 20 > female_output_30-500_20
   ```
