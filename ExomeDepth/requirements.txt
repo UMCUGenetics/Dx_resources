@@ -1,0 +1,7 @@
+numpy==1.18.2
+pandas==1.0.3
+pysam==0.15.4
+python-dateutil==2.8.1
+pytz==2019.3
+PyVCF==0.6.8
+six==1.14.0

@@ -1,47 +1,53 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import os
-from optparse import OptionParser, OptionGroup
-import commands
+import argparse
+import subprocess
+from multiprocessing import Pool
 import settings
 
+def process(bam):
+    bamfile = bam.rstrip("/").split("/")[-1]
+    sampleid = bamfile.split("_")[0]
+    os.system("mkdir -p {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
+    os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
+    os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
+    os.chdir("{output}/{sample}".format(output = args.outputfolder, sample = sampleid))
+    action = "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} {refset} --expectedCNVlength {length} --batch".format(
+        exomedepth = args.exomedepth,
+        output = args.outputfolder,
+        inputbam = bamfile,
+        run = args.inputfolder.rstrip("/").split("/")[-1],
+        sample = bam.split("/")[-1].split("_")[0],
+        refset = args.refset,
+        length = args.expectedCNVlength
+        )
+    os.system(action)
+
+    os.chdir("{output}".format(output = args.outputfolder))
+    os.system("mkdir -p {output}/UMCU/{sampleid}".format(output = args.outputfolder, sampleid = sampleid))
+    os.system("mkdir -p {output}/HC/{sampleid}".format(output = args.outputfolder, sampleid = sampleid))
+    os.system("mkdir -p {output}/logs".format(output = args.outputfolder))
+    os.system("mkdir -p {output}/igv_tracks".format(output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/*.xml {output}/".format(sampleid = sampleid, output = args.outputfolder)) 
+    os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/HC*.vcf {output}/HC/".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/UMCU*.vcf {output}/UMCU/".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/HC* {output}/HC/{sampleid}".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("mv {output}/{sampleid}/UMCU* {output}/UMCU/{sampleid}".format(sampleid = sampleid, output = args.outputfolder))
+    os.system("rm -r {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
+
 if __name__ == "__main__":
-    parser = OptionParser()
-    group = OptionGroup(parser, "Main options")
-    group.add_option("-i", dest = "input_folder", metavar = "[PATH]",
-                     help = "input folder for BAM files"
-                     )
-    group.add_option("-o", dest = "output_folder", metavar = "[STRING]",
-                     help = "Path to output folder"
-                     )
-    group.add_option("-e", default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py",
-                     dest = "exomedepth", metavar = "[PATH]", help = "full path to exomedepth script [default = /hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py]"
-                     )
-    group.add_option("-m", dest = "email", metavar = "[STRING]",
-                     help = "email adress"
-                     )
-    group.add_option("-s", default = " -cwd -l h_rt=4:0:0 -l h_vmem=20G -q all.q",
-                     dest = "qsub_settings", metavar = "[STRING]", help = "qsub setting [default = qsub -cwd -l h_rt=4:0:0 -pe threaded 4 -l h_vmem=20G -q all.q]"
-                     )
-    group.add_option("-r", dest = "refset", metavar = "[STRING]",
-                     help = "reference set to be used [default = reference set in setting.py]")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inputfolder', help='Path to input folder containing BAM files to process')
+    parser.add_argument('outputfolder', help='Path to output folder')
+    parser.add_argument('simjobs', help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session!')
+    parser.add_argument('--refset', default = settings.refset, help='Reference set to be used')
+    parser.add_argument('--exomedepth', default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py", help='Full path to exomedepth script')
+    parser.add_argument('--expectedCNVlength',default=50000, help='expected CNV length (basepairs) taken into account by ExomeDepth [default = 50000]')
+    args = parser.parse_args()
 
-    parser.add_option_group(group)
-    (opt, args) = parser.parse_args()
-
-    if opt.refset:
-        refset = opt.refset
-    else:
-        refset = settings.refset
-   
-    bams = commands.getoutput("find -L {0} -iname \"*realigned.bam\" ".format(opt.input_folder)).split()
-    for bam in bams:
-        sampleid = bam.split("/")[-1].split("_")[0]
-        os.system("echo \"python {exomedepth} -c -m {email} --ib={bam} -o {output} --refset={refset} \" | qsub {settings} -M {email} -N {sample}.sh".format(
-            exomedepth = opt.exomedepth, 
-            email = opt.email, 
-            bam = bam, 
-            output = opt.output_folder,
-            refset = refset,
-            settings = opt.qsub_settings, 
-            sample = sampleid
-        ))
+    bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
+    print("Number of BAM files = "+str(len(bams)))
+    with Pool(processes=int(args.simjobs)) as pool:
+        result = pool.map(process, bams, 1)

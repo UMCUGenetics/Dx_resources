@@ -1,10 +1,11 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import os
 import sys
-import pysam
-import commands
+import subprocess
 import re
-from optparse import OptionParser, OptionGroup
+import argparse
+from multiprocessing import Pool
+import pysam
 import settings
 
 def valid_read(read):
@@ -29,273 +30,192 @@ def get_gender(bam):
     else:
         return "unknown"
 
+def multiprocess_ref(mp_list):
+    action = "module load {renv} && Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
+        renv = settings.r_version,
+        refscript = settings.create_refset_r,
+        folder = mp_list[0],
+        outputid = mp_list[1],
+        targetbed = mp_list[2],
+        refgenome = settings.reference_genome,
+        exonbed = mp_list[3]
+        )
+    os.system(action)
 
-if __name__ == "__main__":
-    parser = OptionParser()
-    group = OptionGroup(parser, "Main options")
-    group.add_option("-r", dest="make_ref",
-                     action = 'store_true', help="Make new reference set")
-    group.add_option("-c", dest = "make_call",
-                     action = 'store_true', help = "Call CNV from BAMs")
-    group.add_option("-i", dest = "input_folder",
-                     metavar = "[PATH]", help = "path to input folder folder")
-    group.add_option("--ib", dest = "input_bam", 
-                     metavar = "[PATH]", help = "path to input bam file")
-    group.add_option("-o", dest = "output_folder",
-                     default = "./", metavar = "[PATH]",
-                     help = "path to output folder [default = ./]")
-    group.add_option("-g", dest = "gender_file",
-                     metavar = "[PATH]",
-                     help = "full path to tab delimited txt file with bam \
-                    + gender (male/female) [default = off]")
-    group.add_option("-p", dest = "prefix", metavar = "[PATH]",
-                     help = "referenceset naming [default = input_folder basename]")
-    group.add_option("-m", dest = "mail", metavar = "[STRING]",
-                     help = "email adress of submitter [default = None]")
-    group.add_option("--refset", default= settings.refset, dest = "refset", metavar = "[STRING]",
-                     help = "reference set to be used [default = reference set in setting.py]")
-    parser.add_option_group(group)
-    (opt, args) = parser.parse_args()
-    
-    if opt.input_folder and opt.input_bam:
-        sys.exit("choose either folder or bam file")
-    
-    if opt.input_folder:
-        wkdir = opt.input_folder.rstrip("/")
-    elif opt.input_bam:
-        wkdir = "/".join(opt.input_bam.split("/")[0-1]).rstrip("/")
-    else:
-        wkdir = commands.getoutput("pwd").rstrip("/")
-    
-    outdir = opt.output_folder.rstrip("/")
-    if not opt.mail and not opt.input_bam:
-        sys.exit("provide email")
-    
-    if not os.path.isdir(outdir):
-        os.system("mkdir -p " + str(outdir))
-    
-    if opt.prefix:
-        prefix = opt.prefix
-    else:
-        prefix = str(wkdir).split("/")[-1]
-  
-    if opt.gender_file:
-        gender_dic = {}
-        gender_file = open(str(opt.gender_file), "r")
-        for line in gender_file:
-            splitline = line.split()
-            if splitline[0] not in gender_dic:
-                gender_dic[splitline[0]] = splitline[1]
-        gender_file.close()
-    
+def make_refset(args):
+
+    """Make new reference set."""
     analysis = settings.analysis
-    ed_r = settings.call_cnv_r
-    refgenome = settings.reference_genome
-    qsub_call = str(settings.qsub_call) + str(opt.mail)
-    qsub_ref = str(settings.qsub_ref) + str(opt.mail)
-    prob = settings.probability
-    gender = settings.gender
-    
+    output_folder = format(os.path.abspath(args.output))
+    bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
+    print("Number of BAM files detected = {0}".format(len(bams)))
+ 
+    """Get gender from chrY read count ratio."""
+    ref_gender_dic = {}  #Dictionary with gender of each sample
+    for bam in bams:
+       gender = get_gender(bam)
+       if gender is not "unknown":
+           if gender not in ref_gender_dic:
+               ref_gender_dic[gender] = [bam]      
+           else:
+               ref_gender_dic[gender] += [bam]
+       else:
+           print("Sample {0} has unknown gender and is removed from analysis".format(bam))
+   
+    """Make folder per gender + analysis, and soflink BAMs in these folders."""
+
+    mp_list=[]
+    for model in analysis:
+        for item in ref_gender_dic:
+            folder = "{0}/{1}_{2}_{3}".format(output_folder, model, item, str(args.output).rstrip("/").split("/")[-1])
+            output_id = "{0}_{1}_{2}.EDref".format(model, item, args.prefix)
+            action = "mkdir -p {0}".format(folder)
+            os.system(action)
+            for bam in ref_gender_dic[item]:
+                os.system("ln -sd " + str(bam) + "* " + str(folder))
+            mp_list+=[[folder, output_id, analysis[model]["target_bed"], analysis[model]["exon_bed"]]]
+
+    with Pool(processes=int(args.simjobs)) as pool:
+        result = pool.map(multiprocess_ref, mp_list, 1)
+
+def multiprocess_call(multiprocess_list):
+
     """Log all settings in setting.log file"""
-    log_dir = str(outdir)+"/logs"
-    os.system("mkdir -p "+str(log_dir))
-    if opt.input_folder:
-        write_file = open(log_dir+"/settings.log", "w")
-    elif opt.input_bam:
-        log_file = "{0}/{1}_settings.log".format(str(log_dir), str(opt.input_bam.split("/")[-1]))
-        write_file = open(log_file, "w") 
-    
-    (options, args) = parser.parse_args()
-    for item in vars(options):
-        write_file.write("{0}\t{1}\n".format(str(item), str(vars(options)[item])))
-    
+    log_file="{output}/{model}_{refset}_{bam}_settings.log".format(
+        output = multiprocess_list[1],
+        model = multiprocess_list[0],
+        refset = args.refset,
+        bam = args.sample
+        )
+    write_file = open(log_file, "w")
+    options = vars(args)
+    for item in options:
+        write_file.write("{0}\t{1}\n".format(str(item), str(options[item])))
     for item in dir(settings):
         if "__" not in item:
             write_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
     write_file.close()
-    
-    if opt.make_ref and not opt.make_call:
-        """Make new reference set."""
-        if opt.input_bam:
-            sys.exit("please provide BAM folder")
-    
-        bams =  commands.getoutput("find -L {0} -iname \"*realigned.bam\" ".format(wkdir)).split()
-        print("Number of BAM files detected = {0}".format(len(bams)))
-    
-        """Get gender from chrY read count ratio."""
-        ref_gender_dic = {}  #Dictionary with gender of each sample
-        for item in gender:
-            if str(item) not in ref_gender_dic:
-                ref_gender_dic[str(item)] = []
-    
-        for bam in bams:
-            gender = get_gender(bam)
-            if gender is not "unknown":
-                ref_gender_dic[get_gender(bam)] += [bam]
-            else:
-                print("Sample {0} has unknown gender and is removed from analysis".format(bam))
-    
-        """Make folder per gender + analysis, and soflink BAMs in these folders."""
-        for target in analysis:
-            for item in ref_gender_dic:
-                folder = "{0}/{1}_{2}_{3}".format(outdir, target, item, str(wkdir).split("/")[-1])  
-                output_id = "{0}_{1}_{2}.EDref".format(target, item, prefix)
-                os.system("mkdir -p {0}".format(folder))
-                for bam in ref_gender_dic[item]:
-                    os.system("ln -sd " + str(bam) + "* " + str(folder))
-                write_file = open(str(folder) + "/make_ref.sh", "w")
-                write_file.write(str(qsub_ref) + "\n")
-                write_file.write("module load {0}\n".format(settings.r_version))
-                write_file.write("cd {0}\n".format(folder))
-                write_file.write("Rscript {0} {1}/ {1}/{2} {3} {4} {5}\n".format(
-                                 settings.create_refset_r,
-                                 folder,
-                                 output_id,
-                                 analysis[target]["target_bed"],
-                                 settings.reference_genome,
-                                 analysis[target]["exon_bed"]
-                                 ))
-                write_file.close()
-                os.chdir(str(folder))
-                os.system("qsub {0}/make_ref.sh".format(folder))
-    
-    elif opt.make_call and not opt.make_ref:  # Call CNV from BAMs
-        """Make CNV call on sample(s)."""
-    
-        if opt.input_bam:
-            bams = [str(opt.input_bam)]
+
+    """Perform ExomeDepth analysis"""
+    refset_R = "{refset_dir}/{model}_{gender}_{refset}.EDref".format(
+        refset_dir = settings.refset_dir,
+        model = multiprocess_list[0],
+        gender = multiprocess_list[2],
+        refset = args.refset
+        )
+
+    action = "module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected}".format(
+        rversion = settings.r_version,
+        ed_r = settings.call_cnv_r,
+        refset_R = refset_R,
+        target_bed = multiprocess_list[3],
+        refgenome = settings.reference_genome,
+        exon_bed = multiprocess_list[4],
+        prob = settings.probability[str(multiprocess_list[0])],
+        bam =  multiprocess_list[5],
+        model =  multiprocess_list[0],
+        refset = args.refset,
+        expected = args.expectedCNVlength
+        )
+    os.system(action)
+
+    """Perform csv to vcf conversion """
+    action = "python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template}".format(
+        csv2vcf = settings.csv2vcf,
+        inputcsv = "{0}/{1}_{2}_{3}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.inputbam),
+        refset = args.refset,
+        model = multiprocess_list[0],
+        gender = multiprocess_list[2],
+        sampleid = args.sample,
+        template = settings.vcf_template
+        )
+    os.system(action)
+
+def call_cnv(args):
+
+    """Call CNV from BAMs"""
+    bam = format(os.path.abspath(args.inputbam))
+    output_folder = format(os.path.abspath(args.output))
+    analysis = settings.analysis
+    prob = settings.probability
+    if not os.path.isdir(output_folder):
+         os.system("mkdir -p " + str(output_folder)) 
+
+    """Determine gender"""
+    gender = get_gender(bam)
+    if args.genderfile:  # overrule gender as given in gender_file
+       gender_dic = gender_file(args.genderfile)
+       for item in gender_dic:
+            if str(item) in str(bam):
+               gender = gender_dic[item]
+    if gender == "unknown":  # try to determine gender on BAM ID annotation
+        if re.search('[C|P]M', bam.split("/")[-1]):
+            print("Sample {0} has a unknown gender based on chrY reads, but resolved as male based on sampleID".format(bam.split("/")[-1]))
+            gender = "male"
+        elif re.search('[C|P]F', bam.split("/")[-1]):
+            print("Sample {0} has a unknown gender based on chrY reads, but resolved as female based on sampleID".format(bam.split("/")[-1]))
+            gender = "female"
         else:
-            bams = commands.getoutput("find -L {0} -iname \"*realigned.bam\"".format(wkdir)).split()
-        print("Number of BAM files detected = {0}".format(len(bams)))
-        if not bams:
-            sys.exit("no bams detected")
-    
-        for bam in bams:
-            """Get gender from chrY read count ratio."""
-            gender = get_gender(bam)
-            if opt.gender_file:  # overrule gender as given in gender_file
-                for item in gender_dic:
-                    if str(item) in str(bam):
-                        gender = gender_dic[item]
-            if gender == "unknown":  # try to determine gender on BAM ID annotation
-                if re.search('[C|P]M', bam.split("/")[-1]):
-                    print("Sample {0} has a unknown gender based on chrY reads, but resolved as male based on sampleID".format(bam.split("/")[-1]))
-                    gender = "male"
-                elif re.search('[C|P]F', bam.split("/")[-1]):
-                    print("Sample {0} has a unknown gender based on chrY reads, but resolved as female based on sampleID".format(bam.split("/")[-1]))
-                    gender = "female"
-                else:
-                    print("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))
-                    continue
-    
-            for item in analysis:
-                print("Submitting {0} jobs".format(item))
-                sampleid = bam.split("/")[-1].split("_")[0]
-                outfolder = "{0}/{1}/{1}_{2}".format(outdir, item, bam.split("/")[-1])
-                os.system("mkdir -p {0}".format(outfolder))
-                if opt.input_bam:  #Single BAM processing in serial
-                    os.chdir(outfolder)
-                    os.system("module load {0} && Rscript {1} {2} {3} {4} {5} {6} {7}".format(
-                              settings.r_version,
-                              ed_r,
-                              analysis[item]["refset"][gender],
-                              analysis[item]["target_bed"],
-                              refgenome,
-                              analysis[item]["exon_bed"],
-                              str(prob[str(item)]),
-                              bam
-                             ))
-                    os.system("rename {0} {1}_{2}_{3} *".format(
-                              bam.split("/")[-1],
-                              item,
-                              opt.refset,
-                              bam.split("/")[-1]
-                              ))
-                    os.system("python {0} -i {1} -t {2} -m {3} --id={4}".format(
-                              settings.csv2vcf,
-                              outfolder,
-                              settings.vcf_template,
-                              analysis[item]["refset"][gender],
-                              sampleid
-                             ))
-                    os.system("cp {0}/*vcf {1}/{2}".format(
-                              outfolder,
-                              outdir,
-                              item
-                             ))
-                else:  # multiple BAM processing for all BAMs in folder (SGE)
-                    write_file = open("{0}/{1}_{2}_{3}.sh".format(
-                                    outfolder,
-                                    item,
-                                    gender,
-                                    bam.split("/")[-1][:-4]		#[:-4] easier for renaming before csv2vcf
-                                    ), "w")  
-                    write_file.write(str(qsub_call) + "\n")
-                    write_file.write("module load {0}\n".format(settings.r_version))
-                    write_file.write("cd {0}\n".format(outfolder))
-                    write_file.write("Rscript {0} {1} {2} {3} {4} {5} {6}\n".format(
-                                     ed_r,
-                                     analysis[item]["refset"][gender],
-                                     analysis[item]["target_bed"],
-                                     refgenome,
-                                     analysis[item]["exon_bed"],
-                                     str(prob[str(item)]),
-                                     bam
-                                     ))
-                    write_file.close()
-                    """Submit jobs."""
-                    os.chdir(outfolder)
-                    command = "qsub {0}/{1}_{2}_{3}.sh ".format(
-                             outfolder,
-                             item,
-                             gender,
-                             bam.split("/")[-1][:-4]
-                             ) 
-                    job_id = commands.getoutput(command).split()[2]
-                    """Make VCF per sample here with ed_csv_to_vcf.py."""
-                    write_file = open("{0}/{1}_{2}_csv_2_vcf.sh".format(
-                                      outfolder,
-                                      item,
-                                      gender
-                                     ),"w")
-                    write_file.write(str(qsub_call) + "\n")
-                    write_file.write("#$ -hold_jid {0}\n".format(job_id))
-                    write_file.write("cd {0}\n".format(outfolder))
-                    write_file.write("rename {0} {1}_{2}_{3} *\n".format(
-                                     bam.split("/")[-1],
-                                     item,
-                                     opt.refset,
-                                     bam.split("/")[-1]
-                                     ))
-                    write_file.write("python {0} -i {1} -t {2} -m {3} --id={4}\n".format(
-                                     settings.csv2vcf,
-                                     outfolder,
-                                     settings.vcf_template,
-                                     analysis[item]["refset"][gender],
-                                     sampleid
-                                     ))
-                    write_file.write("cp {0}/*vcf {1}/{2} \n".format(
-                                     outfolder,
-                                     outdir,
-                                     item
-                                     ))
-                    write_file.close()
-                    os.system("qsub {0}/{1}_{2}_csv_2_vcf.sh".format(outfolder, item, gender))
+            sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))
 
-            if opt.input_bam:  #Make IGV session. Note this is only possible for single sample processing.
-                sampleid = bam.split("/")[-1].split("_")[0]
-                bam_file = bam.split("/")[-1]
-                os.system("python {0} -b {1} -o {2} -i {3} -t {4} -m {5}".format(
-                          settings.igv_xml,
-                          bam_file,
-                          outdir,
-                          sampleid,
-                          settings.igv_xml,
-                          analysis[item]["refset"][gender],
-                          )
-                         )                
 
-            """Touch done file is loop is completed"""
-            os.system("touch {0}/{1}.done".format(log_dir, bam.split("/")[-1]))
+    multiprocess_list=[]
+    for model in analysis:
+        multiprocess_list += [[model, output_folder, gender, analysis[model]["target_bed"], analysis[model]["exon_bed"], bam, output_folder]] 
+    
+    with Pool(processes=int(args.simjobs)) as pool:
+        result = pool.map(multiprocess_call, multiprocess_list, 1)
+
+    """Make IGV session xml """
+    action = "python {igv_xml} {bam} {output} {sampleid} {template} {refdate} {runid}".format(
+        igv_xml = settings.igv_xml,
+        bam = args.inputbam,
+        output = args.output,
+        sampleid = args.sample,
+        template = settings.template_xml,
+        refdate = args.refset,
+        runid = args.run
+        )
+    if args.batch: #For re-analysis IAP
+        action += " --batch"
+        os.system(action)
     else:
-        sys.exit("Choose either make_ref or make_call")
+        os.system(action)
+
+def gender_file(genderfile):
+    gender_dic = {}
+    gender_file = open(str(genderfile), "r")
+    for line in gender_file:
+        splitline = line.split()
+        if splitline[0] not in gender_dic:
+            gender_dic[splitline[0]] = splitline[1]
+    gender_file.close()
+    return gender_dic
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    subparser = parser.add_subparsers()
+    
+    parser_refset = subparser.add_parser('makeref', help='Make ExomeDepth reference set')
+    parser_refset.add_argument('output', help='Output folder for reference set files')
+    parser_refset.add_argument('inputfolder', help='Input folder containing BAM files')
+    parser_refset.add_argument('prefix', help='Prefix for reference set (e.g. Jan2020)')
+    parser_refset.add_argument('--simjobs', default=4, help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session! [default = 4]')
+    parser_refset.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
+    parser_refset.set_defaults(func = make_refset)
+
+    parser_cnv = subparser.add_parser('callcnv', help='Call CNV with ExomeDepth basedon BAM file')
+    parser_cnv.add_argument('output', help='output folder for CNV calling')
+    parser_cnv.add_argument('inputbam', help='Input BAM file')
+    parser_cnv.add_argument('run', help='Name of the run')
+    parser_cnv.add_argument('sample', help='Sample name')
+    parser_cnv.add_argument('refset', help='Reference set to be used (e.g. Jan2020)')
+    parser_cnv.add_argument('--simjobs', default=2, help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
+    parser_cnv.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
+    parser_cnv.add_argument('--batch', action='store_true', help='option for batch processing')
+    parser_cnv.add_argument('--expectedCNVlength',default=50000, help='expected CNV length (basepairs) taken into account by ExomeDepth [default = 50000]')
+    parser_cnv.set_defaults(func = call_cnv)
+
+    args = parser.parse_args()
+    args.func(args)
+
