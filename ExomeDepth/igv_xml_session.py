@@ -1,7 +1,6 @@
 #! /usr/bin/env python
+import argparse
 from string import Template
-from optparse import OptionParser
-from optparse import OptionGroup
 import settings
 
 def make_igvsession(igv_ed_umcu, igv_ed_hc, bam, vcf_hc, sample_id, vcf_SNV, axis, statistic):
@@ -17,42 +16,36 @@ def make_igvsession(igv_ed_umcu, igv_ed_hc, bam, vcf_hc, sample_id, vcf_SNV, axi
     substitute_dic={'session_var' : new_session, 'igv_ed_umcu' : igv_ed_umcu, 'igv_ed_hc' : igv_ed_hc, 
                     'bam':bam, 'vcf_hc' : vcf_hc, 'sample_id' : sample_id, 'igv_ed_hc_test' : igv_ed_hc_test,
                     'igv_ed_umcu_test' : igv_ed_umcu_test, 'bam_coverage' : bam_coverage, 'bam_junctions' : bam_junctions, 
-                    'vcf_SNV' : vcf_SNV, 'min_axis' : min_axis, 'mid_axis' : mid_axis,'max_axis' : max_axis,
+                    'vcf_SNV' : vcf_SNV, 'min_axis' : min_axis, 'mid_axis' : mid_axis, 'max_axis' : max_axis,
                     'ratioid_UMCU' : ratioid_UMCU, 'ratioid_HC': ratioid_HC 
                    }
     new_file = template_file.substitute(substitute_dic)
     return new_file
 
 if __name__ == "__main__":
-    parser = OptionParser()
-    group = OptionGroup(parser, "Main options")
-    group.add_option("-b", dest = "bam", metavar = "[PATH]",
-                     help = "bam file name"
-                     )
-    group.add_option("-o", dest = "output", metavar = "[PATH]",
-                     help = "output_folder"
-                     )
-    group.add_option("-i", dest = "sample_id", metavar = "[STRING]",
-                     help = "sampleid name"
-                     )
-    group.add_option("-t", dest = "template", metavar = "[STRING]",
-                     help = "Path to template XML"
-                     )
-    group.add_option("-m", dest = "callmodel", metavar = "[STRING]",
-                     help = "Name of calling model used (order: [Model]_[Gender]_[Date].EDRef)"
-                     )
-    parser.add_option_group(group)
-    (opt, args) = parser.parse_args()
 
-    output_folder = opt.output
-    refdate = opt.callmodel.split("/")[-1].split("_")[2].split(".")[0]
-    igv_ed_umcu = "UMCU/UMCU_{0}/UMCU_{1}_{0}_ref.igv".format(opt.bam, refdate)
-    igv_ed_hc = "HC/HC_{0}/HC_{1}_{0}_ref.igv".format(opt.bam, refdate)
-    bam_id = "../{0}/mapping/{1}".format(opt.sample_id,opt.bam)
-    vcf_hc = "HC/HC_{0}_{1}exome_calls.vcf".format(refdate, opt.bam)
-    vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(opt.sample_id)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('bam', help='BAM file')
+    parser.add_argument('output', help='Output folder')
+    parser.add_argument('sampleid', help='Sample ID')
+    parser.add_argument('template', help='Full path to template XML')
+    parser.add_argument('refdate', help='Date of the used reference set')
+    parser.add_argument('runid', help='Run ID')
+    parser.add_argument('--batch', action='store_true', help='option for batch processing')
+    args = parser.parse_args()
+
     igv_settings = settings.igv_settings
+    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_ref.igv".format(args.refdate, args.bam)
+    igv_ed_hc = "igv_tracks/HC_{0}_{1}_ref.igv".format(args.refdate, args.bam)
+    vcf_hc = "HC/HC_{0}_{1}_exome_calls.vcf".format(args.refdate, args.bam)
+    if args.batch: #For re-analysis based on IAP
+        bam_id = "../{0}/mapping/{1}".format(args.sampleid, args.bam)
+        vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(args.sampleid)
+    else: #For NF pipeline.
+        bam_id = "../bam_files/{0}.bam".format(args.sampleid)
+        vcf_SNV = "../single_sample_vcf/{0}_{1}.vcf".format(args.sampleid, args.runid)
+ 
     for statistic in igv_settings:
-        write_file = open("{0}/{1}_{2}_igv.xml".format(opt.output, opt.sample_id, statistic), "w")
-        write_file.write(make_igvsession(igv_ed_umcu, igv_ed_hc, bam_id, vcf_hc, opt.sample_id, vcf_SNV, igv_settings[statistic], statistic))
+        write_file = open("{0}/{1}_{2}_igv.xml".format(args.output, args.sampleid, statistic), "w")
+        write_file.write(make_igvsession(igv_ed_umcu, igv_ed_hc, bam_id, vcf_hc, args.sampleid, vcf_SNV, igv_settings[statistic], statistic))
         write_file.close()
