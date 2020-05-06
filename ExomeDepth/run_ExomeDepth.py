@@ -31,7 +31,7 @@ def get_gender(bam):
         return "unknown"
 
 def multiprocess_ref(mp_list):
-    action = ("module load {renv} && Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
+    action = "module load {renv} && Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
         renv = settings.r_version,
         refscript = settings.create_refset_r,
         folder = mp_list[0],
@@ -39,7 +39,7 @@ def multiprocess_ref(mp_list):
         targetbed = mp_list[2],
         refgenome = settings.reference_genome,
         exonbed = mp_list[3]
-        ))
+        )
     os.system(action)
 
 def make_refset(args):
@@ -104,7 +104,7 @@ def multiprocess_call(multiprocess_list):
         refset = args.refset
         )
 
-    action = ("module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected}".format(
+    action = "module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected}".format(
         rversion = settings.r_version,
         ed_r = settings.call_cnv_r,
         refset_R = refset_R,
@@ -116,11 +116,11 @@ def multiprocess_call(multiprocess_list):
         model =  multiprocess_list[0],
         refset = args.refset,
         expected = args.expectedCNVlength
-        ))
+        )
     os.system(action)
 
     """Perform csv to vcf conversion """
-    action = ("python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template}".format(
+    action = "python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template}".format(
         csv2vcf = settings.csv2vcf,
         inputcsv = "{0}/{1}_{2}_{3}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.inputbam),
         refset = args.refset,
@@ -128,7 +128,7 @@ def multiprocess_call(multiprocess_list):
         gender = multiprocess_list[2],
         sampleid = args.sample,
         template = settings.vcf_template
-        ))
+        )
     os.system(action)
 
 def call_cnv(args):
@@ -167,7 +167,7 @@ def call_cnv(args):
         result = pool.map(multiprocess_call, multiprocess_list, 1)
 
     """Make IGV session xml """
-    action = ("python {igv_xml} {bam} {output} {sampleid} {template} {refdate} {runid}".format(
+    action = "python {igv_xml} {bam} {output} {sampleid} {template} {refdate} {runid}".format(
         igv_xml = settings.igv_xml,
         bam = args.inputbam,
         output = args.output,
@@ -175,7 +175,7 @@ def call_cnv(args):
         template = settings.template_xml,
         refdate = args.refset,
         runid = args.run
-        ))
+        )
     if args.batch: #For re-analysis IAP
         action += " --batch"
         os.system(action)
