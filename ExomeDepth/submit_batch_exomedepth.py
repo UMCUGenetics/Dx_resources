@@ -12,15 +12,15 @@ def process(bam):
     os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
     os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
     os.chdir("{output}/{sample}".format(output = args.outputfolder, sample = sampleid))
-    action = ("python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} {refset} --expectedCNVlength {length} --batch".format(
-            exomedepth = args.exomedepth,
-            output = args.outputfolder,
-            inputbam = bamfile,
-            run = args.inputfolder.rstrip("/").split("/")[-1],
-            sample = bam.split("/")[-1].split("_")[0],
-            refset = args.refset,
-            length = args.expectedCNVlength
-        ))
+    action = "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} {refset} --expectedCNVlength {length} --batch".format(
+        exomedepth = args.exomedepth,
+        output = args.outputfolder,
+        inputbam = bamfile,
+        run = args.inputfolder.rstrip("/").split("/")[-1],
+        sample = bam.split("/")[-1].split("_")[0],
+        refset = args.refset,
+        length = args.expectedCNVlength
+        )
     os.system(action)
 
     os.chdir("{output}".format(output = args.outputfolder))
