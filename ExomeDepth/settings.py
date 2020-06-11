@@ -37,11 +37,13 @@ analysis = {"HC":
 # Parameters transition.probability
 probability = {"HC": 0.0001, "UMCU": 0.5}
 
-# Settings for GT, CN, and gender determination
+# General settings
 ratio_threshold_del = 0.25
 par1 = [60001,2699520]
 par2 = [154931044,155260560]
 normal_CN = {"female":{"auto":2,"chrX":2,"chrXpar":2,"chrY":0},"male":{"auto":2,"chrX":1,"chrXpar":2,"chrY":1}}
+expectedCNVlength = 1000000
+
 
 # IGV session settings:
 template_xml = str(cwd)+"igv_session_template.xml"
