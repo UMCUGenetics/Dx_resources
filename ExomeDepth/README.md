@@ -2,11 +2,12 @@
 
 All script are made tested using Python 3.6.8
 ## Make virtual python enviroment
+``` bash
 virtualenv -p python3 venv
 . venv/bin/activate
 easy_install pip
 pip install -r requirements.txt
-
+```
 
 ## run_ExomeDepth.py
 Main wrapper script for the ExomeDepth analysis\
