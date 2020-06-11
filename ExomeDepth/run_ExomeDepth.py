@@ -213,7 +213,7 @@ if __name__ == "__main__":
     parser_cnv.add_argument('--simjobs', default=2, help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
     parser_cnv.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
     parser_cnv.add_argument('--batch', action='store_true', help='option for batch processing')
-    parser_cnv.add_argument('--expectedCNVlength',default=50000, help='expected CNV length (basepairs) taken into account by ExomeDepth [default = 50000]')
+    parser_cnv.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default = 50000]')
     parser_cnv.set_defaults(func = call_cnv)
 
     args = parser.parse_args()
