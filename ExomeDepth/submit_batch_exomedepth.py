@@ -47,7 +47,7 @@ if __name__ == "__main__":
     parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default = 50000]')
     args = parser.parse_args()
 
-    bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
+    bams = subprocess.getoutput("find -L {0} \( -ipath \'exomedepth*\' \) -prune -o -type f -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
     print("Number of BAM files = "+str(len(bams)))
     with Pool(processes=int(args.simjobs)) as pool:
         result = pool.map(process, bams, 1)
