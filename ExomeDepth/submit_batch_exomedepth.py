@@ -44,7 +44,7 @@ if __name__ == "__main__":
     parser.add_argument('simjobs', help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session!')
     parser.add_argument('--refset', default = settings.refset, help='Reference set to be used')
     parser.add_argument('--exomedepth', default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py", help='Full path to exomedepth script')
-    parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default = 50000]')
+    parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
     args = parser.parse_args()
 
     bams = subprocess.getoutput("find -L {0} \( -ipath \'exomedepth*\' \) -prune -o -type f -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
