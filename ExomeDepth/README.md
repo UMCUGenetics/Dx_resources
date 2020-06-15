@@ -51,11 +51,11 @@ python submit_batch_exomedepth.py {input folder} {output folder} {samples(/threa
 ```
 
 2) Make new HC BED file for two populations. Each consisting of minimal 50 males and 50 females.
-Make a folder for each population, and add BAM files into male and female specific folders.
-E.g.
-Population1/male
-Population1/female
-Population2/male
+Make a folder for each population, and add BAM files into male and female specific folders.\
+E.g.\
+Population1/male\
+Population1/female\
+Population2/male\
 Population2/female
 
 
