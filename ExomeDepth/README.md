@@ -34,7 +34,7 @@ python run_ExomeDepth.py callcnv  {output folder} {input bam} {run id} {sample i
 CNV calling will result in a folder with a VCF file containing the significant CNV calls. For both the HC and UMCU target files seperately
 
 Multisample (e.g. re-analysis of old run):\
-NOTE: Use 2 threads for each sample. Thus to process 4 samples simulatnious use 8 threads
+NOTE: Use 2 threads for each sample. Thus to process 4 samples simultaneous use 8 threads
 
 ``` bash
 . {path_to_repo}/venv/bin/activate
@@ -51,7 +51,14 @@ python submit_batch_exomedepth.py {input folder} {output folder} {samples(/threa
 ```
 
 2) Make new HC BED file for two populations. Each consisting of minimal 50 males and 50 females.
-Make a folder for each population, and add BAM files into male and female folders.
+Make a folder for each population, and add BAM files into male and female specific folders.
+E.g.
+Population1/male
+Population1/female
+Population2/male
+Population2/female
+
+
 
 Calculate coverage stats for each male/female folder for each population
 ``` bash
@@ -79,13 +86,13 @@ cat  {population}_male_output_all |sed 's/inf/99999/g'| awk '($1 == "Y")' | sort
 cat {population}_female_auto_chrX {population}_male_chrY > {bed_file}_{population}
 ```
 
-5) Calculate overlap bewteen the two populations. This should be minimal 99%.
+5) Calculate overlap bewteen the two populations. At the moment this should be >=99%.
 ``` bash
 cat {bed_file}_{population1} {bed_file}_{population2} | cut -f1,2,3 | sort | uniq -c | awk '($1==2)' |wc -l  # Overlap
 cat {bed_file}_{population1} | wc -l  # total targets (similar in both populations)
 ```
 Divide overlap/total targets. 
-Optional: if this is <99% step 3 can be repeated with decreasing the 95%, for example, 94%, etc.
+Optional: if this is <99% step 4 can be repeated with decreasing the 95%, for example, 94%, etc. 
 
 
 6) Make final BED and Exomedepth exon.tsv 
@@ -95,7 +102,7 @@ cat {final_bed_file} |awk '{OFS="\t"; print $1,$2,$3,$1":"$2"-"$3 }' > exons.hg1
 ```
 
 Copy the final_bed_file and exons.hg19.full.tsv to a repository/location of choice.\
-Include in setting.py if these file are needed in the ExomeDepth analysis.\
+Include in setting.py if these file are needed in the ExomeDepth analysis.
 
 
 
