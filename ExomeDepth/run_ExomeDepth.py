@@ -47,7 +47,11 @@ def make_refset(args):
     """Make new reference set."""
     analysis = settings.analysis
     output_folder = format(os.path.abspath(args.output))
-    bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
+    if args.bamtype == "realigned":
+        bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
+    elif args.bamtype == "bam":
+        bams = subprocess.getoutput("find -L {0} -iname \"*.bam\"".format(args.inputfolder)).split()
+
     print("Number of BAM files detected = {0}".format(len(bams)))
  
     """Get gender from chrY read count ratio."""
@@ -81,11 +85,12 @@ def make_refset(args):
 def multiprocess_call(multiprocess_list):
 
     """Log all settings in setting.log file"""
-    log_file="{output}/{model}_{refset}_{bam}_settings.log".format(
+    log_file="{output}/{model}_{refset}_{bam}_{run}_settings.log".format(
         output = multiprocess_list[1],
         model = multiprocess_list[0],
         refset = args.refset,
-        bam = args.sample
+        bam = args.sample,
+        run = args.run
         )
     write_file = open(log_file, "w")
     options = vars(args)
@@ -104,7 +109,7 @@ def multiprocess_call(multiprocess_list):
         refset = args.refset
         )
 
-    action = "module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected}".format(
+    action = "module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected} {run}".format(
         rversion = settings.r_version,
         ed_r = settings.call_cnv_r,
         refset_R = refset_R,
@@ -115,14 +120,15 @@ def multiprocess_call(multiprocess_list):
         bam =  multiprocess_list[5],
         model =  multiprocess_list[0],
         refset = args.refset,
-        expected = args.expectedCNVlength
+        expected = args.expectedCNVlength,
+        run = args.run 
         )
     os.system(action)
 
     """Perform csv to vcf conversion """
     action = "python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template}".format(
         csv2vcf = settings.csv2vcf,
-        inputcsv = "{0}/{1}_{2}_{3}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.inputbam),
+        inputcsv = "{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.inputbam,args.run),
         refset = args.refset,
         model = multiprocess_list[0],
         gender = multiprocess_list[2],
@@ -202,6 +208,7 @@ if __name__ == "__main__":
     parser_refset.add_argument('prefix', help='Prefix for reference set (e.g. Jan2020)')
     parser_refset.add_argument('--simjobs', default=4, help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session! [default = 4]')
     parser_refset.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
+    parser_refset.add_argument('--bamtype', default='bam', choices=['bam', 'realigned'], help='type of BAM to be searched bam = all bam (default), realigned = realigned.bam specific')
     parser_refset.set_defaults(func = make_refset)
 
     parser_cnv = subparser.add_parser('callcnv', help='Call CNV with ExomeDepth basedon BAM file')
