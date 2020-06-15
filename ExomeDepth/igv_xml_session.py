@@ -6,8 +6,8 @@ import settings
 def make_igvsession(igv_ed_umcu, igv_ed_hc, bam, vcf_hc, sample_id, vcf_SNV, axis, statistic):
     template_file = Template(open(settings.template_xml).read())
     new_session = "{0}_{1}_{2}_igv.xml".format(sample_id, statistic, args.runid)
-    igv_ed_hc_test = "{0}_{1}_{2}_test".format(igv_ed_hc, statistic, args.runid)
-    igv_ed_umcu_test = "{0}_{1}_{2}_test".format(igv_ed_umcu, statistic, args.runid)
+    igv_ed_hc_test = "{0}_{1}_test".format(igv_ed_hc, statistic)
+    igv_ed_umcu_test = "{0}_{1}_test".format(igv_ed_umcu, statistic)
     bam_coverage = "{0}_coverage".format(bam)
     bam_junctions = "{0}_junctions".format(bam)
     min_axis, mid_axis, max_axis = axis
