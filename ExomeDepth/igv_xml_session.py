@@ -31,17 +31,17 @@ if __name__ == "__main__":
     parser.add_argument('template', help='Full path to template XML')
     parser.add_argument('refdate', help='Date of the used reference set')
     parser.add_argument('runid', help='Run ID')
-    parser.add_argument('--batch', action='store_true', help='option for batch processing')
+    parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
     args = parser.parse_args()
 
     igv_settings = settings.igv_settings
     igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_ref.igv".format(args.refdate, args.bam, args.runid)
     igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_ref.igv".format(args.refdate, args.bam, args.runid)
     vcf_hc = "HC/HC_{0}_{1}_{2}_exome_calls.vcf".format(args.refdate, args.bam, args.runid)
-    if args.batch: #For re-analysis based on IAP
+    if args.pipeline == "iap": #For analysis based on IAP
         bam_id = "../{0}/mapping/{1}".format(args.sampleid, args.bam)
         vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(args.sampleid)
-    else: #For NF pipeline.
+    elif args.pipeline == "nf": #For NF pipeline.
         bam_id = "../bam_files/{0}.bam".format(args.sampleid)
         vcf_SNV = "../single_sample_vcf/{0}_{1}.vcf".format(args.sampleid, args.runid)
  
