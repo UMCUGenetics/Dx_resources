@@ -22,7 +22,8 @@ refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
 reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
 
 #Reference set
-refset = "Jan2020"
+refset = "May2020v2"
+
 analysis = {
     "HC":
         {"target_bed":str(reffile_dir)+"High_confident_SureSelect_CREv2_elidS30409818_Covered_300bp_95_overlap_v2.bed",
