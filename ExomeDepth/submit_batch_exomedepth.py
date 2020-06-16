@@ -7,7 +7,10 @@ import settings
 
 def process(bam):
     bamfile = bam.rstrip("/").split("/")[-1]
-    sampleid = bamfile.split("_")[0]
+    if args.pipeline == "iap":
+        sampleid = bamfile.split("_")[0]
+    elif args.pipeline == "nf":
+        sampleid = bamfile.split(".")[0]
     os.system("mkdir -p {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
     os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
     os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
@@ -19,7 +22,7 @@ def process(bam):
             output = args.outputfolder,
             inputbam = bamfile,
             run = args.inputfolder.rstrip("/").split("/")[-1],
-            sample = bam.split("/")[-1].split("_")[0],
+            sample = sampleid,
             refset = args.refset,
             length = args.expectedCNVlength
         )
@@ -29,7 +32,7 @@ def process(bam):
             output = args.outputfolder,
             inputbam = bamfile,
             run = args.inputfolder.rstrip("/").split("/")[-1],
-            sample = bam.split("/")[-1].split("_")[0],
+            sample = sampleid,
             refset = args.refset,
             length = args.expectedCNVlength
         )
