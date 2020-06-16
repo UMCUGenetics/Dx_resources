@@ -42,12 +42,18 @@ if __name__ == "__main__":
     parser.add_argument('inputfolder', help='Path to input folder containing BAM files to process')
     parser.add_argument('outputfolder', help='Path to output folder')
     parser.add_argument('simjobs', help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session!')
+    parser.add_argument('--bamtype', default='realigned', choices=['bam', 'realigned'], help='type of BAM to be searched bam = all bam (default), realigned = realigned.bam specific')
     parser.add_argument('--refset', default = settings.refset, help='Reference set to be used')
     parser.add_argument('--exomedepth', default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py", help='Full path to exomedepth script')
     parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
     args = parser.parse_args()
 
-    bams = subprocess.getoutput("find -L {0} \( -ipath \'exomedepth*\' \) -prune -o -type f -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
+
+    if args.bamtype == "realigned":
+        bams = subprocess.getoutput("find -L {0} -type f -name \"*.realigned.bam\" -not -ipath \"*exomedepth*\"".format(args.inputfolder)).split()
+    elif args.bamtype == "bam":
+        bams = subprocess.getoutput("find -L {0} -type f -name \"*.bam\" -not -ipath \"*exomedepth*\"".format(args.inputfolder)).split()
+
     print("Number of BAM files = "+str(len(bams)))
     with Pool(processes=int(args.simjobs)) as pool:
         result = pool.map(process, bams, 1)
