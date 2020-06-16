@@ -42,6 +42,8 @@ def process(bam):
     os.chdir("{output}".format(output = args.outputfolder))
     os.system("mkdir -p {output}/logs".format(output = args.outputfolder))
     os.system("mkdir -p {output}/igv_tracks".format(output = args.outputfolder))
+    os.system("mkdir -p {output}/UMCU/".format(output = args.outputfolder))
+    os.system("mkdir -p {output}/HC/".format(output = args.outputfolder))
     os.system("mv {output}/{sampleid}/*.xml {output}/".format(sampleid = sampleid, output = args.outputfolder)) 
     os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid = sampleid, output = args.outputfolder))
     os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid = sampleid, output = args.outputfolder))
