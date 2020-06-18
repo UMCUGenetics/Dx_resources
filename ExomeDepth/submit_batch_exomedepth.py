@@ -2,6 +2,7 @@
 import os
 import argparse
 import subprocess
+import glob
 from multiprocessing import Pool
 import settings
 
@@ -62,12 +63,11 @@ if __name__ == "__main__":
     parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
     args = parser.parse_args()
 
-
     if args.pipeline == "iap":
-        bams = subprocess.getoutput("find -L {0} -type f -name \"*.realigned.bam\" -not -ipath \"*exomedepth*\"".format(args.inputfolder)).split()
+        bams = set(glob.glob("{}/**/*.realigned.bam".format(args.inputfolder), recursive=True)) - set(glob.glob("{}/[eE]xome[dD]epth*/**/*.realigned.bam".format(args.inputfolder), recursive=True))
     elif args.pipeline == "nf":
-        bams = subprocess.getoutput("find -L {0} -type f -name \"*.bam\" -not -ipath \"*exomedepth*\"".format(args.inputfolder)).split()
-
+        bams = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)  
     print("Number of BAM files = "+str(len(bams)))
+
     with Pool(processes=int(args.simjobs)) as pool:
         result = pool.map(process, bams, 1)
