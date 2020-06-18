@@ -55,7 +55,7 @@ python submit_batch_exomedepth.py {input folder} {output folder} {samples(/threa
           ```
         * remove 'chr' from chromsome names, if needed
 
-2) Optional: slice the stripped BED in fragments of x bp. This is done to chop up larger exons
+2) Optional: slice the stripped BED in fragments of (minimal) x bp. This is done to chop up large exons.
 ``` bash
 ./slice_bed_file.py {bed_file} {length} > {bed_file_sliced}
 ```
