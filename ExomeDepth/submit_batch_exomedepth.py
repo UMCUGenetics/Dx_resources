@@ -55,7 +55,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputfolder', help='Path to input folder containing BAM files to process')
     parser.add_argument('outputfolder', help='Path to output folder')
-    parser.add_argument('simjobs', help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session!')
+    parser.add_argument('simjobs', help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session!')
     parser.add_argument('--pipeline', default='iap', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
     parser.add_argument('--refset', default = settings.refset, help='Reference set to be used')
     parser.add_argument('--exomedepth', default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py", help='Full path to exomedepth script')
