@@ -26,13 +26,13 @@ refset = "May2020v2"
 
 analysis = {
     "HC":
-        {"target_bed":str(reffile_dir)+"High_confident_SureSelect_CREv2_elidS30409818_Covered_300bp_95_overlap_v2.bed",
-        "exon_bed":str(reffile_dir)+"exons.hg19.full_300bp_95_overlap_v2.tsv"
+        {"target_bed":str(reffile_dir)+"HC_target.bed",
+        "exon_bed":str(reffile_dir)+"HC_exon.tsv"
         },
 
     "UMCU":
-        {"target_bed":str(reffile_dir)+"ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank_flat_v1.bed",
-        "exon_bed":str(reffile_dir)+"exons.hg19.full_UMCU20bp_v1.tsv"
+        {"target_bed":str(reffile_dir)+"UMCU_target.bed",
+        "exon_bed":str(reffile_dir)+"UMCU_exon.tsv"
         }
     }
 
