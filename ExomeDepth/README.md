@@ -2,11 +2,12 @@
 
 All script are made tested using Python 3.6.8
 ## Make virtual python enviroment
+``` bash
 virtualenv -p python3 venv
 . venv/bin/activate
 easy_install pip
 pip install -r requirements.txt
-
+```
 
 ## run_ExomeDepth.py
 Main wrapper script for the ExomeDepth analysis\
@@ -33,82 +34,92 @@ python run_ExomeDepth.py callcnv  {output folder} {input bam} {run id} {sample i
 CNV calling will result in a folder with a VCF file containing the significant CNV calls. For both the HC and UMCU target files seperately
 
 Multisample (e.g. re-analysis of old run):\
-NOTE: Use 2 threads for each sample. Thus to process 4 samples simulatnious use 8 threads
+NOTE: Use 2 threads for each sample. Thus to process 4 samples simultaneously use 8 threads
 
 ``` bash
 . {path_to_repo}/venv/bin/activate
 python submit_batch_exomedepth.py {input folder} {output folder} {samples(/threads)}
 ```
 
+
+
+
 ## How to make a HC file
-Make seperate folders for male and female, and sotflink/copy minimum of 50 BAM files (each) into these folders.\
-  Calculate coverage statistics for target BED file (e.g. SureSelect_CREv2_elidS30409818_Covered.bed) of each BAM using Sambamba:
-  ``` bash
-  sh run_sambamba.sh {input_folder} {enrichment bed file}
-  ```
-  This step will result in a .bam_coverage file for each BAM.
+1) Start by making a stipped version of the original enrichment BED file:
+	* remove headers
+	* only include 3 columns: chromosome, start, stop
+        * make sure no overlapping targets are present in the BED file (if present, merge overlapping fragments)
+          This can be done with bedtools, for example: 
+          ``` bash
+          cat {original_bed} | sort -k 1V -k 2n -k 3n |   bedtools merge -i - > {flat_bed}
+          ```
+        * remove 'chr' from chromsome names, if needed
 
-  Next, filter variable, low or high coverage region in both the female and male folders:
-  ``` bash
-  . {path_to_repo}/venv/bin/activate
-  python filter_probe_file.py {input_folder} {min coverage} {max coverage} {max coefficient of variation} > {output_filtering}
-  ```
-  e.g.
-  ``` bash
-       . {path_to_repo}/venv/bin/activate
-       python ./filter_probe_file.py ./males/ 30 500 20 > male_output_30-500_20
-       python ./filter_probe_file.py ./females/ 30 500 20 > female_output_30-500_20
-  ```
+2) Optional: slice the stripped BED in fragments of (minimal) x bp. This is done to chop up large exons.
+``` bash
+./slice_bed_file.py {bed_file} {length} > {bed_file_sliced}
+```
 
-  Calculate overlapping regions in male and female:
+3) Make new HC BED file for two populations. Each consisting of minimal 50 males and 50 females.
+Make a folder for each population, and add BAM files into male and female specific folders.\
+E.g.\
+Population1/male\
+Population1/female\
+Population2/male\
+Population2/female
 
-  Make autosomal High_confident file:
-  ``` bash
-  cat {output_filtering_female} {output_filtering_male} | cut -f1,2,3 |sort |uniq -c | awk '($1==2)'| sed 's/ /\t/g' | sed 's/\t\t/\t/g' |cut -f5,6,7 | awk '($1 != "X" && $1 != "Y")' |sort -nk1 -nk2 > {output_autosomal}
-  ```
-  e.g.
-  ``` bash
-  cat female_output_30-500_20 male_output_30-500_20| cut -f1,2,3 |sort |uniq -c | awk '($1==2)'| sed 's/ /\t/g' | sed 's/\t\t/\t/g' |cut -f5,6,7 | awk '($1 != "X" && $1 != "Y")' |sort -nk1 -nk2 > High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20_noSex.bed
-  ```
 
-  Make chrX and chrY high confident based on males only:
-  ``` bash
-  cat {output_filtering_male} | sed 's/ //g' | awk '( $1== "X" || $1=="Y")' |cut -f1,2,3 > {output_sexchromosome}
-  ```
-  e.g.
-  ``` bash
-  cat male_output_30-500_20 | sed 's/ //g' | awk '( $1== "X" || $1=="Y")' |cut -f1,2,3 > High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20_male.bed
-  ```
-  Note: threshold for coverage are similar to autosomal which might result in overfiltering on chrX and chrY becaus males are cn = 1.
- 
-  Make final High confident bed file:
-  ``` bash
-  cat {output_autosomal} {output_sexchromosome} > {output_final_bed}
-  ```
-  e.g.
-  ``` bash
-  cat High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20_noSex.bed High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20_male.bed > High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20.bed
-  ``` 
+Calculate coverage stats for each male/female folder for each population
+``` bash
+sh run_sambamba.sh {folder} {bed_file} {email}
+```
+Calculate coverage stats overview for each male/female folder for each population
+``` bash
+./filter_probe_file.py {folder} > {population}_{male/female}_output_all
+```
 
-  Finally, as Exomdepth requires a slightly different format for targets, we need to make an 'exon.hg19' file:
-  ``` bash
-  echo -e "chromosome\tstart\tend\tname" > header
-  cat {output_final_bed} | awk '{OFS="\t"; print $1,$2,$3,$1":"$2"-"$3}' > {output_final_bed_4kol}
-  cat header {output_final_bed_4kol} > {exon.hg19_file}
-  ```
-  e.g.
-  ``` bash
-  echo -e "chromosome\tstart\tend\tname" > header
-  cat High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20.bed | awk '{OFS="\t"; print $1,$2,$3,$1":"$2"-"$3}' > High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20_4kol.bed
-  cat header High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20_4kol.bed > exons.hg19.full_HC_CREv2_elidS30409818.tsv
-  ```
+4) Select least variable regions: 95% of chr1-22+chrX (female), and 33% of chrY (male)
+Calculate number of targets chr1-22+chrX
+``` bash
+cat {bed_file} | awk '($1 != "Y")' | wc -l
+```
+Calculate number of targets chrY
+``` bash
+cat {bed_file} | awk '($1 == "Y")' | wc -l
+```
 
-  Copy the HC bed file {output_final_bed} and exon.h19 {exon.hg19_file} to a repository/location of choice.\
-  Include in setting.py if these file are needed in the ExomeDepth analysis.\
+5) Slice  95%/33% least variable regions
+``` bash
+cat  {population}_female_output_all |sed 's/inf/99999/g'| awk '($1 != "Y")' | sort -nk6 | head -n {95% of chr1-22+chrX count} |sed 's/X/999999999/g' | sort -nk1 -nk2 |sed 's/999999999/X/g' | awk '{OFS="\t"; print $1,$2,$3,$4"_"$5"_"$6}' > {population}_female_auto_chrX
+cat  {population}_male_output_all |sed 's/inf/99999/g'| awk '($1 == "Y")' | sort -nk6 | head -n {33% of chrY count} | sort -nk1 -nk2 |awk '{OFS="\t"; print $1,$2,$3,$4"_"$5"_"$6}'> {population}_male_chrY
+cat {population}_female_auto_chrX {population}_male_chrY > {bed_file}_{population}
+```
+
+6) Calculate overlap bewteen the two populations. At the moment this should be >=99%.
+``` bash
+cat {bed_file}_{population1} {bed_file}_{population2} | cut -f1,2,3 | sort | uniq -c | awk '($1==2)' |wc -l  # Overlap
+cat {bed_file}_{population1} | wc -l  # total targets (similar in both populations)
+```
+Divide overlap/total targets. 
+Optional: if this is <99% step 4 can be repeated with decreasing the 95%, for example, 94%, etc. 
+
+
+7) Make final BED and Exomedepth exon.tsv 
+``` bash
+cat {bed_file}_{population1} {bed_file}_{population2} | cut -f1,2,3 | sort | uniq -c | awk '($1==2)' |  sed 's/ \+/\t/g'  |cut -f 3,4,5 | sed 's/X/999999999/g'| sed 's/Y/9999999999/g' | sort -nk1 -nk2 |sed 's/9999999999/Y/g' | sed 's/999999999/X/g' > {final_bed_file}
+cat {final_bed_file} |awk '{OFS="\t"; print $1,$2,$3,$1":"$2"-"$3 }' > exons.hg19.full.tsv
+```
+
+Copy the final_bed_file and exons.hg19.full.tsv to a repository/location of choice.\
+Include in setting.py if these file are needed in the ExomeDepth analysis.
+
 
 ## Other scripts in this repository 
 #### ed_csv_to_vcf.py
 Converts ExomeDepth csv file to VCF using pyvcf
+
+#### filter_probe_file.py
+Collected Sambamba coverage stats, and calculate mean, stdev, and CV.
 
 #### igv_xml_session.py
 Makes IGV session xml files

@@ -4,6 +4,7 @@ import sys
 import subprocess
 import re
 import argparse
+import glob
 from multiprocessing import Pool
 import pysam
 import settings
@@ -31,6 +32,8 @@ def get_gender(bam):
         return "unknown"
 
 def multiprocess_ref(mp_list):
+
+
     action = "module load {renv} && Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
         renv = settings.r_version,
         refscript = settings.create_refset_r,
@@ -44,12 +47,27 @@ def multiprocess_ref(mp_list):
 
 def make_refset(args):
 
+    """Log all settings in setting.log file"""
+    log_file="{output}/settings.log".format(
+        output = args.output
+        )
+    write_file = open(log_file, "w")
+    options = vars(args)
+    for item in options:
+        write_file.write("{0}\t{1}\n".format(str(item), str(options[item])))
+    for item in dir(settings):
+        if "__" not in item:
+            write_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
+    write_file.close()
+
+
     """Make new reference set."""
     analysis = settings.analysis
     output_folder = format(os.path.abspath(args.output))
-    bams = subprocess.getoutput("find -L {0} -iname \"*.realigned.bam\"".format(args.inputfolder)).split()
+
+    bams = glob.glob("{}/**/*.bam".format(args.inputfolder), recursive=True)
     print("Number of BAM files detected = {0}".format(len(bams)))
- 
+
     """Get gender from chrY read count ratio."""
     ref_gender_dic = {}  #Dictionary with gender of each sample
     for bam in bams:
@@ -81,11 +99,12 @@ def make_refset(args):
 def multiprocess_call(multiprocess_list):
 
     """Log all settings in setting.log file"""
-    log_file="{output}/{model}_{refset}_{bam}_settings.log".format(
+    log_file="{output}/{model}_{refset}_{bam}_{run}_settings.log".format(
         output = multiprocess_list[1],
         model = multiprocess_list[0],
         refset = args.refset,
-        bam = args.sample
+        bam = args.sample,
+        run = args.run
         )
     write_file = open(log_file, "w")
     options = vars(args)
@@ -104,7 +123,7 @@ def multiprocess_call(multiprocess_list):
         refset = args.refset
         )
 
-    action = "module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected}".format(
+    action = "module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected} {run}".format(
         rversion = settings.r_version,
         ed_r = settings.call_cnv_r,
         refset_R = refset_R,
@@ -115,14 +134,15 @@ def multiprocess_call(multiprocess_list):
         bam =  multiprocess_list[5],
         model =  multiprocess_list[0],
         refset = args.refset,
-        expected = args.expectedCNVlength
+        expected = args.expectedCNVlength,
+        run = args.run 
         )
     os.system(action)
 
     """Perform csv to vcf conversion """
     action = "python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template}".format(
         csv2vcf = settings.csv2vcf,
-        inputcsv = "{0}/{1}_{2}_{3}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.inputbam),
+        inputcsv = "{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.inputbam,args.run),
         refset = args.refset,
         model = multiprocess_list[0],
         gender = multiprocess_list[2],
@@ -167,20 +187,17 @@ def call_cnv(args):
         result = pool.map(multiprocess_call, multiprocess_list, 1)
 
     """Make IGV session xml """
-    action = "python {igv_xml} {bam} {output} {sampleid} {template} {refdate} {runid}".format(
+    action = "python {igv_xml} {bam} {output} {sampleid} {template} {refdate} {runid} --pipeline {pipeline}".format(
         igv_xml = settings.igv_xml,
         bam = args.inputbam,
         output = args.output,
         sampleid = args.sample,
         template = settings.template_xml,
         refdate = args.refset,
-        runid = args.run
+        runid = args.run,
+        pipeline = args.pipeline
         )
-    if args.batch: #For re-analysis IAP
-        action += " --batch"
-        os.system(action)
-    else:
-        os.system(action)
+    os.system(action)
 
 def gender_file(genderfile):
     gender_dic = {}
@@ -200,7 +217,7 @@ if __name__ == "__main__":
     parser_refset.add_argument('output', help='Output folder for reference set files')
     parser_refset.add_argument('inputfolder', help='Input folder containing BAM files')
     parser_refset.add_argument('prefix', help='Prefix for reference set (e.g. Jan2020)')
-    parser_refset.add_argument('--simjobs', default=4, help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session! [default = 4]')
+    parser_refset.add_argument('--simjobs', default=4, help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 4]')
     parser_refset.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
     parser_refset.set_defaults(func = make_refset)
 
@@ -210,10 +227,10 @@ if __name__ == "__main__":
     parser_cnv.add_argument('run', help='Name of the run')
     parser_cnv.add_argument('sample', help='Sample name')
     parser_cnv.add_argument('refset', help='Reference set to be used (e.g. Jan2020)')
-    parser_cnv.add_argument('--simjobs', default=2, help='number of simultanious samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
+    parser_cnv.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline')
+    parser_cnv.add_argument('--simjobs', default=2, help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
     parser_cnv.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
-    parser_cnv.add_argument('--batch', action='store_true', help='option for batch processing')
-    parser_cnv.add_argument('--expectedCNVlength',default=50000, help='expected CNV length (basepairs) taken into account by ExomeDepth [default = 50000]')
+    parser_cnv.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
     parser_cnv.set_defaults(func = call_cnv)
 
     args = parser.parse_args()
