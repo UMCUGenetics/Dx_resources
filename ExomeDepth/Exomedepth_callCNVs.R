@@ -4,19 +4,19 @@ library(ExomeDepth)
 library(methods)
 library(stringr)
 
+options(scipen = 50)
+
 args = commandArgs(trailingOnly=TRUE)
 auto_ref_file=args[1]					# argument ExomeDepth reference file 
 target.file=args[2]					# argument target BED file
 reference.file=args[3]					# argument Reference genome
 input_exon.hg19=paste(args[4],sep="") 			# argument target Exon file
 probability = as.numeric(args[5])		        # argument transition probability
-
-options(scipen = 50)
-
-bam.files <- args[6]					# input bam file (compelte path)
+bam.files <- args[6]					# input bam file (including full path)
 model <- args[7]					# used calling model (eg HC/UMCU)
 refset <- args[8] 					# used reference set (eg Jan2020)
-expectedCNVLength <- as.numeric(args[9])			# expected length CNV (eg 50000)
+expectedCNVLength <- as.numeric(args[9])		# expected length CNV (eg 50000)
+run_id <- args[10]					# runID. 
 
 exons.hg19= read.table(input_exon.hg19,sep="\t", header=TRUE)
 data(Conrad.hg19)
@@ -62,7 +62,7 @@ for (i in 1:nsamples) {
       n.bins.reduced = 10000
   )
 
-  file_name=paste(model, refset, my.current.samplename, "CNV.log",sep="_")
+  file_name=paste(model, refset, my.current.samplename, run_id, "CNV.log",sep="_")
   write_file = file(file_name,"w")
   line1=paste("Number of selected reference samples ",toString(length(my.choice[[1]])),sep="\t")
   write(line1,write_file,append=T)
@@ -96,9 +96,11 @@ for (i in 1:nsamples) {
   )
 
   str(all.exons)
-  output.file <- paste(model, refset, my.current.samplename,'exome_calls.csv',sep = "_")
+  output.file <- paste(model, refset, my.current.samplename, run_id,'exome_calls.csv',sep = "_")
 
-  save(all.exons,file=paste(model, refset, my.current.samplename,"all.exons",sep = "_"))
+
+
+  save(all.exons,file=paste(model, refset, my.current.samplename, run_id, "all.exons",sep = "_"))
   refsize <- toString(length(my.choice[[1]]))
   correlation <- all.exons@refcorrelation
   print_array <- cbind(all.exons@CNV.calls,correlation,refsize)
@@ -150,5 +152,5 @@ correl <- all.exons@refcorrelation
 
 ref_df = data.frame(chroms, starts, ends,name, observed,log2ratio,freq, expected, min, max, correl)
 colnames(ref_df) <- c("chr","start", "end","locusID","ratio_test","log2ratio_test","frequency_test","ratio_expected","ref_min.ratio", "ref_max.ratio","refset_correlation")
-write.table(ref_df,paste(model, refset, my.current.samplename,'ref.igv',sep = "_"),sep="\t",row.names=FALSE, quote=FALSE)
+write.table(ref_df,paste(model, refset, my.current.samplename, run_id,'ref.igv',sep = "_"),sep="\t",row.names=FALSE, quote=FALSE)
 

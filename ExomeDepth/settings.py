@@ -22,26 +22,30 @@ refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
 reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
 
 #Reference set
-refset = "Jan2020"
-analysis = {"HC":
-              {"target_bed":str(reffile_dir)+"High_confident_SureSelect_CREv2_elidS30409818_Covered_dp30_500_cv20.bed",
-               "exon_bed":str(reffile_dir)+"exons.hg19.full_HC_CREv2_elidS30409818.tsv"
-               },
+refset = "May2020v2"
 
-          "UMCU":
-               {"target_bed":str(reffile_dir)+"ENSEMBL_UCSC_merged_collapsed_sorted_v3_20bpflank_flat.bed",
-               "exon_bed":str(reffile_dir)+"exons.hg19.full_UMCU20bp.tsv"
-               }
-         }
+analysis = {
+    "HC":
+        {"target_bed":str(reffile_dir)+"HC_target.bed",
+        "exon_bed":str(reffile_dir)+"HC_exon.tsv"
+        },
+
+    "UMCU":
+        {"target_bed":str(reffile_dir)+"UMCU_target.bed",
+        "exon_bed":str(reffile_dir)+"UMCU_exon.tsv"
+        }
+    }
+
 
 # Parameters transition.probability
 probability = {"HC": 0.0001, "UMCU": 0.5}
 
-# Settings for GT, CN, and gender determination
+# General settings
 ratio_threshold_del = 0.25
 par1 = [60001,2699520]
 par2 = [154931044,155260560]
 normal_CN = {"female":{"auto":2,"chrX":2,"chrXpar":2,"chrY":0},"male":{"auto":2,"chrX":1,"chrXpar":2,"chrY":1}}
+expectedCNVlength = 1000000
 
 # IGV session settings:
 template_xml = str(cwd)+"igv_session_template.xml"

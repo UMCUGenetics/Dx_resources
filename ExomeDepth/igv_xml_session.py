@@ -5,7 +5,7 @@ import settings
 
 def make_igvsession(igv_ed_umcu, igv_ed_hc, bam, vcf_hc, sample_id, vcf_SNV, axis, statistic):
     template_file = Template(open(settings.template_xml).read())
-    new_session = "{0}_{1}_igv.xml".format(sample_id, statistic)
+    new_session = "{0}_{1}_{2}_igv.xml".format(sample_id, statistic, args.runid)
     igv_ed_hc_test = "{0}_{1}_test".format(igv_ed_hc, statistic)
     igv_ed_umcu_test = "{0}_{1}_test".format(igv_ed_umcu, statistic)
     bam_coverage = "{0}_coverage".format(bam)
@@ -31,21 +31,21 @@ if __name__ == "__main__":
     parser.add_argument('template', help='Full path to template XML')
     parser.add_argument('refdate', help='Date of the used reference set')
     parser.add_argument('runid', help='Run ID')
-    parser.add_argument('--batch', action='store_true', help='option for batch processing')
+    parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
     args = parser.parse_args()
 
     igv_settings = settings.igv_settings
-    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_ref.igv".format(args.refdate, args.bam)
-    igv_ed_hc = "igv_tracks/HC_{0}_{1}_ref.igv".format(args.refdate, args.bam)
-    vcf_hc = "HC/HC_{0}_{1}_exome_calls.vcf".format(args.refdate, args.bam)
-    if args.batch: #For re-analysis based on IAP
+    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_ref.igv".format(args.refdate, args.bam, args.runid)
+    igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_ref.igv".format(args.refdate, args.bam, args.runid)
+    vcf_hc = "HC/HC_{0}_{1}_{2}_exome_calls.vcf".format(args.refdate, args.bam, args.runid)
+    if args.pipeline == "iap": #For analysis based on IAP
         bam_id = "../{0}/mapping/{1}".format(args.sampleid, args.bam)
         vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(args.sampleid)
-    else: #For NF pipeline.
+    elif args.pipeline == "nf": #For NF pipeline.
         bam_id = "../bam_files/{0}.bam".format(args.sampleid)
         vcf_SNV = "../single_sample_vcf/{0}_{1}.vcf".format(args.sampleid, args.runid)
  
     for statistic in igv_settings:
-        write_file = open("{0}/{1}_{2}_igv.xml".format(args.output, args.sampleid, statistic), "w")
+        write_file = open("{0}/{1}_{2}_{3}_igv.xml".format(args.output, args.sampleid, statistic, args.runid), "w")
         write_file.write(make_igvsession(igv_ed_umcu, igv_ed_hc, bam_id, vcf_hc, args.sampleid, vcf_SNV, igv_settings[statistic], statistic))
         write_file.close()
