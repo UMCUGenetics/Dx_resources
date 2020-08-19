@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 import os
-import sys
-import glob
 from datetime import date
 import os.path
 import argparse
@@ -32,13 +30,13 @@ def reanalyse(args):
 
         """Perform new ExomeDepth analysis """
 	os.chdir("{output_folder}/".format(output_folder=output_folder))
-        action = "sbatch -t 6:0:00 --mem=80G -c 20 --mail-type=FAIL --mail-user=m.elferink@umcutrecht.nl --wrap=\"source /hpc/diaggen/software/production/Dx_resources/ExomeDepth/venv/bin/activate && /hpc/diaggen/software/production/Dx_resources/ExomeDepth/submit_batch_exomedepth.py {input_folder}/ {output_folder} 8 --pipeline {pipeline} --refset {refset}\"".format(input_folder=input_folder, output_folder=output_folder, pipeline=args.pipeline, refset=splitline[1])
+        action = "sbatch -t 6:0:00 --mem=80G -c 16 --mail-type=FAIL --mail-user=m.elferink@umcutrecht.nl --wrap=\"source /hpc/diaggen/software/production/Dx_resources/ExomeDepth/venv/bin/activate && /hpc/diaggen/software/production/Dx_resources/ExomeDepth/submit_batch_exomedepth.py {input_folder}/ {output_folder} 7 --pipeline {pipeline} --refset {refset}\"".format(input_folder=input_folder, output_folder=output_folder, pipeline=args.pipeline, refset=splitline[1])
         os.system(action)
 
         """Copy logbook.txt to new folder, and add new analysis"""
         if os.path.isfile("{input_folder}/logbook.txt".format(input_folder=input_folder)):
             os.system("rsync -rahuL --progress {input_folder}/logbook.txt {output_folder}/{run}/".format(input_folder=input_folder, output_folder=args.outputfolder, run=splitline[0]))
-        os.system("echo \"ME {today}\tExomeDepth reanalysis using refset {refset}\" >> {output_path}/{run}/logbook.txt".format(today=today, refset=splitline[1], output_path=args.outputfolder, run=splitline[0]))
+        os.system("echo \"{user} {today}\tExomeDepth reanalysis using refset {refset}\" >> {output_path}/{run}/logbook.txt".format(user=args.user, today=today, refset=splitline[1], output_path=args.outputfolder, run=splitline[0]))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -46,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument('outputfolder', help='Output folder for new analysis')
     parser.add_argument('run_file', help='Tab delimited file with analysisID + reference set to be used')
     parser.add_argument('pipeline', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, iap = illumina analysis pipeline')
+    parser.add_argument('user', help='user abbreviation. Will be mentioned in logbook.txt')
     parser.set_defaults(func = reanalyse)
     args = parser.parse_args()
     args.func(args)
