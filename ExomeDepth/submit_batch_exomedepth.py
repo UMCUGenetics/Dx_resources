@@ -5,6 +5,9 @@ import subprocess
 import glob
 from multiprocessing import Pool
 import settings
+from datetime import date
+
+import sys
 
 def process(bam):
     bamfile = bam.rstrip("/").split("/")[-1]
@@ -12,6 +15,12 @@ def process(bam):
         sampleid = bamfile.split("_")[0]
     elif args.pipeline == "nf":
         sampleid = bamfile.split(".")[0]
+
+    if sampleid in refset_dic:
+        refset = refset_dic[sampleid]
+    else:
+        refset = args.refset
+
     os.system("mkdir -p {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
     os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
     os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
@@ -24,7 +33,7 @@ def process(bam):
             inputbam = bamfile,
             run = args.inputfolder.rstrip("/").split("/")[-1],
             sample = sampleid,
-            refset = args.refset,
+            refset = refset,
             length = args.expectedCNVlength
         )
     elif args.pipeline == "nf":
@@ -34,7 +43,7 @@ def process(bam):
             inputbam = bamfile,
             run = args.inputfolder.rstrip("/").split("/")[-1],
             sample = sampleid,
-            refset = args.refset,
+            refset = refset,
             length = args.expectedCNVlength
         )
 
@@ -54,20 +63,57 @@ def process(bam):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('inputfolder', help='Path to input folder containing BAM files to process')
+    parser.add_argument('inputfolder', help='Path to root folder of analysis')
     parser.add_argument('outputfolder', help='Path to output folder')
     parser.add_argument('simjobs', help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session!')
-    parser.add_argument('--pipeline', default='iap', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
+    parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
     parser.add_argument('--refset', default = settings.refset, help='Reference set to be used')
+    parser.add_argument('--refsetlist', help='Tab delimited file with SampleID and RefsetID to be used. If samples are not present in the file, default refset is used')
     parser.add_argument('--exomedepth', default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py", help='Full path to exomedepth script')
     parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
     args = parser.parse_args()
 
+    today = date.today().strftime("%d%m%y")
+    user = subprocess.getoutput("whoami") 
+
+    """ Check if previous exomedepth analysis is already present """
+    if os.path.isdir(args.outputfolder):
+        print("Run folder not empty: assuming exomedepth has been runned. Current exomedepth folder will be archived")
+        """Check is archive folder exists. If this is the case, relative path in IGV session should not be changed."""
+        archivefolder = False
+        if os.path.isdir("{outputfolder}/archive_{today}/exomedepth".format(outputfolder=args.outputfolder, today=today)):
+            archivefolder = True
+        """ Make archive folder"""
+        os.system("mkdir -p {outputfolder}/archive_{today}/exomedepth".format(outputfolder=args.outputfolder, today=today))
+        """ Move original data to archive folder """
+        os.system("mv {outputfolder}/* {outputfolder}/archive_{today}/exomedepth/".format(outputfolder=args.outputfolder, today=today))
+        """ Rename relative paths in IGV sessions"""
+        if archivefolder == False:
+            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\/\.\.\//g' {outputfolder}/archive_{today}/*/*xml".format(outputfolder=args.outputfolder, today=today))
+        """ Check if archive folder were already present in archived folder, and move the to the correct location."""
+        if glob.glob("{outputfolder}/archive_{today}/exomedepth/archive*".format(outputfolder=args.outputfolder, today=today)):
+            os.system("mv {outputfolder}/archive_{today}/exomedepth/archive* {outputfolder}/".format(outputfolder=args.outputfolder, today=today))       
+
+    """Find BAM files to be processed"""
     if args.pipeline == "iap":
         bams = set(glob.glob("{}/**/*.realigned.bam".format(args.inputfolder), recursive=True)) - set(glob.glob("{}/[eE]xome[dD]epth*/**/*.realigned.bam".format(args.inputfolder), recursive=True))
     elif args.pipeline == "nf":
         bams = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)  
     print("Number of BAM files = "+str(len(bams)))
 
+    if len(bams) > 0: 
+        os.system("echo \"{user} {today}\tExomeDepth reanalysis performed\" >> {inputfolder}/logbook.txt".format(user=user, today=today, inputfolder=args.inputfolder))
+    else:
+        sys.exit("no bam files detected")
+
+    if args.refsetlist:
+        refset_dic = {}
+        refset_lines = open (args.refsetlist,"r").readlines()
+        for line in refset_lines:
+           splitline = line.split()
+           if splitline[0] not in refset_dic:
+               refset_dic[splitline[0]] = splitline[1]
+
+    """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
         result = pool.map(process, bams, 1)
