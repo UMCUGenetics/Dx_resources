@@ -16,8 +16,11 @@ def process(bam):
     elif args.pipeline == "nf":
         sampleid = bamfile.split(".")[0]
 
-    if sampleid in refset_dic:
-        refset = refset_dic[sampleid]
+    if args.refsetlist:
+        if sampleid in refset_dic:
+            refset = refset_dic[sampleid]
+        else:
+            refset = args.refset
     else:
         refset = args.refset
 
