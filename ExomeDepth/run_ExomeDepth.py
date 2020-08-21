@@ -31,6 +31,16 @@ def get_gender(bam):
     else:
         return "unknown"
 
+def get_pu(bam, runid):
+    """Get platform unit (PU) from bam file """
+    merge = False
+    workfile = pysam.AlignmentFile(bam, "rb")
+    for readgroup in workfile.header['RG']:
+        """ If one of the PU in all readgroups is not in the runID, the sample is considered to be a merge sample """
+        if readgroup['PU'] not in runid:
+             merge = True
+    return merge
+
 def multiprocess_ref(mp_list):
 
 
@@ -186,6 +196,41 @@ def call_cnv(args):
     with Pool(processes=int(args.simjobs)) as pool:
         result = pool.map(multiprocess_call, multiprocess_list, 1)
 
+    """Make log for stats of each model """
+    merge = (get_pu(bam, args.run))
+    for model in analysis:
+        write_file = open("{output}/logs/{model}_{sample}_stats.log".format(output=args.output, model=model, sample=args.sample),"w")
+        """ Get stats from VCF """
+        vcf = "{output}/{model}/{model}_{refset}_{bam}_{run}_exome_calls.vcf".format(
+            output=args.output,
+            model=model,
+            refset=args.refset,
+            bam=bam.split("/")[-1],
+            run=args.run
+            )
+        stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
+        correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), float(stats[9])
+
+        printline = ("{sample}\t{model}\t{correlation}\t{del_dup_ratio}\t{number_calls}".format(
+            sample=args.sample,
+            model=model,
+            correlation=correlation,
+            del_dup_ratio=del_dup_ratio,
+            number_calls=int(number_calls)
+            ))
+
+        if args.qc_stats:
+            failed = False
+            if correlation < settings.correlation or number_calls > settings.number_calls or del_dup_ratio < settings.del_dup_ratio[0] or del_dup_ratio > settings.del_dup_ratio[1]:
+                failed = True
+                printline += "\tFAIL"
+            else:
+                printline += "\tOK"
+
+        write_file.write(printline + "\n")
+        write_file.close()    
+
+
     """Make IGV session xml """
     action = "python {igv_xml} {bam} {output} {sampleid} {template} {refdate} {runid} --pipeline {pipeline}".format(
         igv_xml = settings.igv_xml,
@@ -198,6 +243,7 @@ def call_cnv(args):
         pipeline = args.pipeline
         )
     os.system(action)
+
 
 def gender_file(genderfile):
     gender_dic = {}
@@ -231,6 +277,7 @@ if __name__ == "__main__":
     parser_cnv.add_argument('--simjobs', default=2, help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
     parser_cnv.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
     parser_cnv.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
+    parser_cnv.add_argument('--qc_stats', action='store_true', help='switch on QC check for exomedepth VCF stats (default = off)')
     parser_cnv.set_defaults(func = call_cnv)
 
     args = parser.parse_args()
