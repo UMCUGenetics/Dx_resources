@@ -43,7 +43,6 @@ def get_pu(bam, runid):
 
 def multiprocess_ref(mp_list):
 
-
     action = "module load {renv} && Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
         renv = settings.r_version,
         refscript = settings.create_refset_r,
@@ -199,9 +198,9 @@ def call_cnv(args):
     """Make log for stats of each model """
     merge = (get_pu(bam, args.run))
     for model in analysis:
-        write_file = open("{output}/logs/{model}_{sample}_stats.log".format(output=args.output, model=model, sample=args.sample),"w")
+        write_file = open("{output}/{model}_{sample}_stats.log".format(output=args.output, model=model, sample=args.sample),"w")
         """ Get stats from VCF """
-        vcf = "{output}/{model}/{model}_{refset}_{bam}_{run}_exome_calls.vcf".format(
+        vcf = "{output}/{model}_{refset}_{bam}_{run}_exome_calls.vcf".format(
             output=args.output,
             model=model,
             refset=args.refset,
