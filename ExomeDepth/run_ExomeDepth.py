@@ -271,7 +271,7 @@ if __name__ == "__main__":
     parser_cnv.add_argument('inputbam', help='Input BAM file')
     parser_cnv.add_argument('run', help='Name of the run')
     parser_cnv.add_argument('sample', help='Sample name')
-    parser_cnv.add_argument('refset', help='Reference set to be used (e.g. Jan2020)')
+    parser_cnv.add_argument('--refset', default=settings.refset, help='Reference set to be used (e.g. Jan2020). Default = refset in settings.py')
     parser_cnv.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline')
     parser_cnv.add_argument('--simjobs', default=2, help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
     parser_cnv.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
