@@ -30,7 +30,7 @@ def process(bam):
     os.chdir("{output}/{sample}".format(output = args.outputfolder, sample = sampleid))
 
     if args.pipeline == "iap":
-        action = "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} {refset} --expectedCNVlength {length} --pipeline iap".format(
+        action = "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} --refset {refset} --expectedCNVlength {length} --pipeline iap".format(
             exomedepth = args.exomedepth,
             output = args.outputfolder,
             inputbam = bamfile,
@@ -40,7 +40,7 @@ def process(bam):
             length = args.expectedCNVlength
         )
     elif args.pipeline == "nf":
-        action = "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} {refset} --expectedCNVlength {length} --pipeline nf".format(
+        action = "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} --refset {refset} --expectedCNVlength {length} --pipeline nf".format(
             exomedepth = args.exomedepth,
             output = args.outputfolder,
             inputbam = bamfile,
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     parser.add_argument('outputfolder', help='Path to output folder')
     parser.add_argument('simjobs', help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session!')
     parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline)')
-    parser.add_argument('--refset', default = settings.refset, help='Reference set to be used')
+    parser.add_argument('--refset', default = settings.refset, help='Reference set to be used. Default = refset in settings.py')
     parser.add_argument('--refsetlist', help='Tab delimited file with SampleID and RefsetID to be used. If samples are not present in the file, default refset is used')
     parser.add_argument('--exomedepth', default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py", help='Full path to exomedepth script')
     parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
