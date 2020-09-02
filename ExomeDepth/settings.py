@@ -22,7 +22,7 @@ refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
 reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
 
 #Reference set
-refset = "May2020v2"
+refset = "Aug2020v2"
 
 analysis = {
     "HC":
