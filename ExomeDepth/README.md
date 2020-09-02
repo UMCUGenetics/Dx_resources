@@ -29,7 +29,7 @@ Include this folder path + the reference set naming (i.e. Jan2020) in settings.p
 Single sample
 ``` bash
 . {path_to_repo}/venv/bin/activate
-python run_ExomeDepth.py callcnv  {output folder} {input bam} {run id} {sample id} {refset prefix: i.e. Jan2020)
+python run_ExomeDepth.py callcnv  {output folder} {input bam} {run id} {sample id} 
 ```
 CNV calling will result in a folder with a VCF file containing the significant CNV calls. For both the HC and UMCU target files seperately
 
