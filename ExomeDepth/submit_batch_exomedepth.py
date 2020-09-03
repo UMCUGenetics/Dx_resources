@@ -51,7 +51,7 @@ def process(bam):
         )
 
     os.system(action)
-
+ 
     os.chdir("{output}".format(output = args.outputfolder))
     os.system("mkdir -p {output}/logs".format(output = args.outputfolder))
     os.system("mkdir -p {output}/igv_tracks".format(output = args.outputfolder))
