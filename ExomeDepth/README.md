@@ -115,6 +115,9 @@ Include in setting.py if these file are needed in the ExomeDepth analysis.
 
 
 ## Other scripts in this repository 
+#### exomedepth_summary.py 
+Creates ExomeDepth summary stats file. This scripts need to be run with python3
+
 #### ed_csv_to_vcf.py
 Converts ExomeDepth csv file to VCF using pyvcf
 
