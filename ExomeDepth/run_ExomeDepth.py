@@ -31,12 +31,13 @@ def get_gender(bam):
     else:
         return "unknown"
 
-def get_pu(bam, runid):
-    """Get platform unit (PU) from bam file """
+def get_merge_status(bam, runid):
+    """Get platform unit (PU) from bam file 
+    If one of the PU in all readgroups is not in the runID, the sample is considered to be a merge sample
+    """
     merge = False
     workfile = pysam.AlignmentFile(bam, "rb")
     for readgroup in workfile.header['RG']:
-        """ If one of the PU in all readgroups is not in the runID, the sample is considered to be a merge sample """
         if readgroup['PU'] not in runid:
              merge = True
     return merge
@@ -196,7 +197,7 @@ def call_cnv(args):
         result = pool.map(multiprocess_call, multiprocess_list, 1)
 
     """Make log for stats of each model """
-    merge = (get_pu(bam, args.run))
+    merge = (get_merge_status(bam, args.run))
     for model in analysis:
         write_file = open("{output}/{model}_{sample}_stats.log".format(output=args.output, model=model, sample=args.sample),"w")
         """ Get stats from VCF """
@@ -208,25 +209,24 @@ def call_cnv(args):
             run=args.run
             )
         stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
-        correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), float(stats[9])
+        correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
 
-        printline = ("{sample}\t{model}\t{correlation}\t{del_dup_ratio}\t{number_calls}".format(
+        qc_status = ""
+        if args.qc_stats:
+            if correlation < float(settings.correlation) or number_calls > int(settings.number_calls) or del_dup_ratio < float(settings.del_dup_ratio[0]) or del_dup_ratio > flaot(settings.del_dup_ratio[1]):
+                qc_status = "\tFAIL"
+            else:
+                qc_status = "\tOK"
+
+        write_file.write("{sample}\t{model}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
             sample=args.sample,
             model=model,
             correlation=correlation,
             del_dup_ratio=del_dup_ratio,
-            number_calls=int(number_calls)
-            ))
+            number_calls=number_calls,
+            qc_status=qc_status
+        ))
 
-        if args.qc_stats:
-            failed = False
-            if correlation < settings.correlation or number_calls > settings.number_calls or del_dup_ratio < settings.del_dup_ratio[0] or del_dup_ratio > settings.del_dup_ratio[1]:
-                failed = True
-                printline += "\tFAIL"
-            else:
-                printline += "\tOK"
-
-        write_file.write(printline + "\n")
         write_file.close()    
 
 
