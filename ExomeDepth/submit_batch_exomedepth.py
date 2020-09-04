@@ -3,26 +3,22 @@ import os
 import argparse
 import subprocess
 import glob
+import sys
 from multiprocessing import Pool
-import settings
 from datetime import date
 
-import sys
+import settings
 
-def process(bam):
+def process(bam, args, refset_dic):
     bamfile = bam.rstrip("/").split("/")[-1]
     if args.pipeline == "iap":
         sampleid = bamfile.split("_")[0]
     elif args.pipeline == "nf":
         sampleid = bamfile.split(".")[0]
 
-    if args.refsetlist:
-        if sampleid in refset_dic:
-            refset = refset_dic[sampleid]
-        else:
-            refset = args.refset
-    else:
-        refset = args.refset
+    refset = args.refset
+    if args.refsetlist and sampleid in refset_dic:
+         refset = refset_dic[sampleid]
 
     os.system("mkdir -p {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
     os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
@@ -82,12 +78,13 @@ if __name__ == "__main__":
     """ Check if previous exomedepth analysis is already present """
     if os.path.isdir(args.outputfolder):
         print("Run folder not empty: assuming exomedepth has been runned. Current exomedepth folder will be archived")
-        """Check is archive folder exists. If this is the case, relative path in IGV session should not be changed."""
+        """Check if archive folder exists. If this is the case, relative path in IGV session should not be changed."""
         archivefolder = False
         if os.path.isdir("{outputfolder}/archive_{today}/exomedepth".format(outputfolder=args.outputfolder, today=today)):
             archivefolder = True
         """ Make archive folder"""
-        os.system("mkdir -p {outputfolder}/archive_{today}/exomedepth".format(outputfolder=args.outputfolder, today=today))
+        if not os.path.isdir("{outputfolder}/archive_{today}/exomedepth".format(outputfolder=args.outputfolder, today=today)):
+            os.system("mkdir -p {outputfolder}/archive_{today}/exomedepth".format(outputfolder=args.outputfolder, today=today))
         """ Move original data to archive folder """
         os.system("mv {outputfolder}/* {outputfolder}/archive_{today}/exomedepth/".format(outputfolder=args.outputfolder, today=today))
         """ Rename relative paths in IGV sessions"""
@@ -104,19 +101,28 @@ if __name__ == "__main__":
         bams = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)  
     print("Number of BAM files = "+str(len(bams)))
 
-    if len(bams) > 0: 
+    if bams: 
         os.system("echo \"{user} {today}\tExomeDepth reanalysis performed\" >> {inputfolder}/logbook.txt".format(user=user, today=today, inputfolder=args.inputfolder))
     else:
         sys.exit("no bam files detected")
 
+    refset_dic = {}
     if args.refsetlist:
-        refset_dic = {}
-        refset_lines = open (args.refsetlist,"r").readlines()
-        for line in refset_lines:
-           splitline = line.split()
-           if splitline[0] not in refset_dic:
-               refset_dic[splitline[0]] = splitline[1]
+        with open(args.refsetlist) as refset_file:
+            for line in refset_file:
+                splitline = line.split()
+                if splitline[0] not in refset_dic:
+                    refset_dic[splitline[0]] = splitline[1]
+
+        #refset_lines = open(args.refsetlist,"r").readlines()
+        #for line in refset_lines:
+           #splitline = line.split()
+           #if splitline[0] not in refset_dic:
+           #    refset_dic[splitline[0]] = splitline[1]
 
     """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
-        result = pool.map(process, bams, 1)
+        #result = pool.map(process, bams, 1)
+        result = pool.starmap(process, [[bam, args, refset_dic] for bam in bams])
+
+
