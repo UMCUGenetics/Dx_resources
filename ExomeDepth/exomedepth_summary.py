@@ -14,9 +14,9 @@ if __name__ == "__main__":
             deldupratio = float(splitline[3])
             totalcount = float(splitline[4])
 
-            stats_dic["CR"].append([correlation])
-            stats_dic["PD"].append([deldupratio])
-            stats_dic["TC"].append([totalcount])
+            stats_dic["CR"].append(correlation)
+            stats_dic["PD"].append(deldupratio)
+            stats_dic["TC"].append(totalcount)
             print("{sample};CM={model};CR={correl};PD={deldupratio};TC={totalcount}\r".format(
                  sample=splitline[0],
                  model=splitline[1],
