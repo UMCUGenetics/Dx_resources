@@ -60,14 +60,14 @@ def make_refset(args):
     log_file="{output}/settings.log".format(
         output = args.output
         )
-    write_file = open(log_file, "w")
+    log_setting_file = open(log_file, "w")
     options = vars(args)
     for item in options:
-        write_file.write("{0}\t{1}\n".format(str(item), str(options[item])))
+        log_setting_file("{0}\t{1}\n".format(str(item), str(options[item])))
     for item in dir(settings):
         if "__" not in item:
-            write_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
-    write_file.close()
+            log_setting_file("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
+    log_setting_file.close()
 
 
     """Make new reference set."""
@@ -115,14 +115,14 @@ def multiprocess_call(multiprocess_list):
         bam = args.sample,
         run = args.run
         )
-    write_file = open(log_file, "w")
+    log_setting_file = open(log_file, "w")
     options = vars(args)
     for item in options:
-        write_file.write("{0}\t{1}\n".format(str(item), str(options[item])))
+        log_setting_file.write("{0}\t{1}\n".format(str(item), str(options[item])))
     for item in dir(settings):
         if "__" not in item:
-            write_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
-    write_file.close()
+            log_setting_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
+    log_setting_file.close()
 
     """Perform ExomeDepth analysis"""
     refset_R = "{refset_dir}/{model}_{gender}_{refset}.EDref".format(
@@ -196,9 +196,9 @@ def call_cnv(args):
         result = pool.map(multiprocess_call, multiprocess_list, 1)
 
     """Make log for stats of each model """
-    merge = (get_merge_status(bam, args.run))
+    merge = get_merge_status(bam, args.run)
     for model in analysis:
-        write_file = open("{output}/{model}_{sample}_stats.log".format(output=args.output, model=model, sample=args.sample),"w")
+        sample_model_log = open("{output}/{model}_{sample}_stats.log".format(output=args.output, model=model, sample=args.sample),"w")
         """ Get stats from VCF """
         vcf = "{output}/{model}_{refset}_{bam}_{run}_exome_calls.vcf".format(
             output=args.output,
@@ -212,12 +212,12 @@ def call_cnv(args):
 
         qc_status = ""
         if args.qc_stats:
-            if correlation < float(settings.correlation) or number_calls > int(settings.number_calls) or del_dup_ratio < float(settings.del_dup_ratio[0]) or del_dup_ratio > flaot(settings.del_dup_ratio[1]):
+            if correlation < float(settings.correlation) or number_calls > int(settings.number_calls) or del_dup_ratio < float(settings.del_dup_ratio[0]) or del_dup_ratio > float(settings.del_dup_ratio[1]):
                 qc_status = "\tFAIL"
             else:
                 qc_status = "\tOK"
 
-        write_file.write("{sample}\t{model}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
+        sample_model_log.write("{sample}\t{model}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
             sample=args.sample,
             model=model,
             correlation=correlation,
@@ -226,7 +226,7 @@ def call_cnv(args):
             qc_status=qc_status
         ))
 
-        write_file.close()    
+        sample_model_log.close()    
 
 
     """Make IGV session xml """
