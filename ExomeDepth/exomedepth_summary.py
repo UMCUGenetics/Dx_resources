@@ -22,7 +22,7 @@ if __name__ == "__main__":
                  model=splitline[1],
                  correl="%.4f" % correlation,
                  deldupratio="%.2f" % deldupratio,
-                 totalcount="%.2f" % totalcount
+                 totalcount="%.0f" % totalcount
                  )),
      
     print("\r")
