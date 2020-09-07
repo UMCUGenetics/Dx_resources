@@ -35,12 +35,11 @@ def get_merge_status(bam, runid):
     """Get platform unit (PU) from bam file 
     If one of the PU in all readgroups is not in the runID, the sample is considered to be a merge sample
     """
-    merge = False
     workfile = pysam.AlignmentFile(bam, "rb")
     for readgroup in workfile.header['RG']:
         if readgroup['PU'] not in runid:
-             merge = True
-    return merge
+             return True
+    return False
 
 def multiprocess_ref(mp_list):
 
