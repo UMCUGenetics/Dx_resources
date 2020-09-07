@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
         """ Rename relative paths in IGV sessions"""
         if archivefolder == False:
-            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {outputfolder}/archive_{today}/*/*xml".format(outputfolder=args.outputfolder, today=today))
+            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {outputfolder}/archive_{today}/*xml".format(outputfolder=args.outputfolder, today=today))
 
         """ Check if archive folder were already present in archived folder, and move the to the correct location."""
         if glob.glob("{outputfolder}/archive_{today}/archive*".format(outputfolder=args.outputfolder, today=today)):
