@@ -64,6 +64,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputfolder', help='Path to root folder of analysis')
     parser.add_argument('outputfolder', help='Path to output folder')
+    parser.add_argument('runid', help='Run ID')
     parser.add_argument('simjobs', help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session!')
     parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline)')
     parser.add_argument('--refset', default = settings.refset, help='Reference set to be used. Default = refset in settings.py')
@@ -80,19 +81,26 @@ if __name__ == "__main__":
         print("Run folder not empty: assuming exomedepth has been runned. Current exomedepth folder will be archived")
         """Check if archive folder exists. If this is the case, relative path in IGV session should not be changed."""
         archivefolder = False
-        if os.path.isdir("{outputfolder}/archive_{today}/exomedepth".format(outputfolder=args.outputfolder, today=today)):
+        if os.path.isdir("{outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today)):
             archivefolder = True
-        """ Make archive folder"""
-        if not os.path.isdir("{outputfolder}/archive_{today}/exomedepth".format(outputfolder=args.outputfolder, today=today)):
-            os.system("mkdir -p {outputfolder}/archive_{today}/exomedepth".format(outputfolder=args.outputfolder, today=today))
+        else:
+            os.system("mkdir -p {outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today))
+
         """ Move original data to archive folder """
-        os.system("mv {outputfolder}/* {outputfolder}/archive_{today}/exomedepth/".format(outputfolder=args.outputfolder, today=today))
+        os.system("mv {outputfolder}/* {outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today))
+
         """ Rename relative paths in IGV sessions"""
         if archivefolder == False:
-            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\/\.\.\//g' {outputfolder}/archive_{today}/*/*xml".format(outputfolder=args.outputfolder, today=today))
+            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {outputfolder}/archive_{today}/*/*xml".format(outputfolder=args.outputfolder, today=today))
+
         """ Check if archive folder were already present in archived folder, and move the to the correct location."""
-        if glob.glob("{outputfolder}/archive_{today}/exomedepth/archive*".format(outputfolder=args.outputfolder, today=today)):
-            os.system("mv {outputfolder}/archive_{today}/exomedepth/archive* {outputfolder}/".format(outputfolder=args.outputfolder, today=today))       
+        if glob.glob("{outputfolder}/archive_{today}/archive*".format(outputfolder=args.outputfolder, today=today)):
+            os.system("mv {outputfolder}/archive_{today}/archive* {outputfolder}/".format(outputfolder=args.outputfolder, today=today))       
+
+        """ Copy CNV summary file into archive folder """
+        if glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(inputfolder=args.inputfolder, runid=args.runid)):
+            os.system("mkdir -p {inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today))
+            os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, runid=args.runid, today=today))
 
     """Find BAM files to be processed"""
     if args.pipeline == "iap":
@@ -114,15 +122,20 @@ if __name__ == "__main__":
                 if splitline[0] not in refset_dic:
                     refset_dic[splitline[0]] = splitline[1]
 
-        #refset_lines = open(args.refsetlist,"r").readlines()
-        #for line in refset_lines:
-           #splitline = line.split()
-           #if splitline[0] not in refset_dic:
-           #    refset_dic[splitline[0]] = splitline[1]
-
     """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
-        #result = pool.map(process, bams, 1)
         result = pool.starmap(process, [[bam, args, refset_dic] for bam in bams])
+
+    """ Make CNV summary file """
+    logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
+    action = "python {pwd}/exomedepth_summary.py {files} > {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
+        pwd=settings.cwd,
+        inputfolder=args.inputfolder,
+        files=" ".join(logs),
+        runid=args.runid
+    )
+    os.system(action)
+
+
 
 
