@@ -1,4 +1,4 @@
-## Settings used in run_Exomdepth.py ##
+## Settings used in run_Exomedepth.py ##
 
 # Location of repository
 cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/"
@@ -22,7 +22,7 @@ refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
 reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
 
 #Reference set
-refset = "May2020v2"
+refset = "Aug2020v2"
 
 analysis = {
     "HC":
@@ -52,3 +52,7 @@ template_xml = str(cwd)+"igv_session_template.xml"
 igv_xml = str(cwd)+"igv_xml_session.py"
 igv_settings = {"ratio":[0, 1, 2], "log2ratio":[-2.5, 0, 2.5] }
 
+# Check VCF stats criteria
+correlation = 0.98
+number_calls = 250
+del_dup_ratio = [20,80] 
