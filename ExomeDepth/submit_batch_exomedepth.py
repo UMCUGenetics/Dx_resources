@@ -128,8 +128,10 @@ if __name__ == "__main__":
 
     """ Make CNV summary file """
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
-    action = "python {pwd}/exomedepth_summary.py {files} > {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
-        pwd=settings.cwd,
+    if not os.path.isdir("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder, today=today)):
+        os.system("mkdir -p {inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder, today=today))
+    action = "python {cwd}/exomedepth_summary.py {files} > {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
+        cwd=settings.cwd,
         inputfolder=args.inputfolder,
         files=" ".join(logs),
         runid=args.runid
