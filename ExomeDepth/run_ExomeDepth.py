@@ -217,9 +217,10 @@ def call_cnv(args):
             else:
                 qc_status = "\tOK"
 
-        sample_model_log.write("{sample}\t{model}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
+        sample_model_log.write("{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
             sample=args.sample,
             model=model,
+            refset=args.refset,
             correlation=correlation,
             del_dup_ratio=del_dup_ratio,
             number_calls=number_calls,
