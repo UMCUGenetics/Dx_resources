@@ -63,10 +63,10 @@ def make_refset(args):
     log_setting_file = open(log_file, "w")
     options = vars(args)
     for item in options:
-        log_setting_file("{0}\t{1}\n".format(str(item), str(options[item])))
+        log_setting_file.write("{0}\t{1}\n".format(str(item), str(options[item])))
     for item in dir(settings):
         if "__" not in item:
-            log_setting_file("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
+            log_setting_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
     log_setting_file.close()
 
 
