@@ -1,0 +1,116 @@
+<html>
+<style>
+table,th,td{width:50%;border:none;border-collapse:separate;border-spacing:10px;text-align:center;vertical-align:middle;}
+th,td{padding:14px;}
+#t01 tr{background-color:#EBECF0;font-size:18px;font-weight:bold;}
+#t01 td{background-color:white;font-size:14px;}
+#t02 tr{background-color:#EBECF0;font-size:18px;font-weight:bold;}
+#t02 td{background-color:white;font-size:14px;}
+#t03 td{padding:10px;background-color:white;font-size:14px;border:none;}
+</style>
+<head>
+<title>HC WES-CNV detailed information</title>
+</head>
+<body>
+<h1>General sample stats</h1>
+<table id="t01">
+<tr>
+<th></th>
+<th>NumberCalls </th>
+<th colspan="2">Correlations</th>
+<th colspan="2">DelDupRatio</th>
+<th colspan="2">TotalCalls</th>
+</tr>
+<tr>
+<th>Dataset</th>
+<th>Total</th>
+<th>Average</th>
+<th>Stdev</th>
+<th>Average</th>
+<th>Stdev</th>
+<th>Average</th>
+<th>Stdev</th>
+</tr>
+<tr>
+<td>Child</td>
+<td>$total_child</td>
+<td>$cr_avr_child</td>
+<td>$cr_stdev_child</td>
+<td>$deldup_avr_child</td>
+<td>$deldup_stdev_child</td>
+<td>$numbercalls_avr_child</td>
+<td>$numbercalls_stdev_child</td>
+</tr>
+<tr>
+<td>Parent</td>
+<td>$total_parent</td>
+<td>$cr_avr_parent</td>
+<td>$cr_stdev_parent</td>
+<td>$deldup_avr_parent</td>
+<td>$deldup_stdev_parent</td>
+<td>$numbercalls_avr_parent</td>
+<td>$numbercalls_stdev_parent</td>
+</tr>
+</table>
+</body>
+<body><h1>Event specific stats</h1>
+<table id="t02">
+<tr>
+<th></th>
+<th colspan="3">BayesFactor</th>
+<th colspan="3">Ratio</th>
+</tr>
+<tr>
+<th>Dataset</th>
+<th>Average</th>
+<th>Stdev</th>
+<th>BFs</th>
+<th>Average</th>
+<th>Stdev</th>
+<th>RT's</th>
+</tr>
+<tr>
+<td>Child</td>
+<td>$average_bf_child</td>
+<td>$stdev_bf_child</td>
+<td>
+<table id="t03">
+<tr>
+<td>$bfs_child</td>
+</tr>
+</table>
+</td>
+<td>$average_ratio_child</td>
+<td>$stdev_ratio_child</td>
+<td>
+<table id="t03">
+<tr>
+<td>$ratios_child</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>Parent</td>
+<td>$average_bf_parent</td>
+<td>$stdev_bf_parent</td>
+<td>
+<table id="t03">
+<tr>
+<td>$bfs_parent</td>
+</tr>
+</table>
+</td>
+<td>$average_ratio_parent</td>
+<td>$stdev_ratio_parent</td>
+<td>
+<table id="t03">
+<tr>
+<td>$ratios_parent</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
