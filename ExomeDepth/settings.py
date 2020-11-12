@@ -11,6 +11,9 @@ create_refset_r = str(cwd)+"Exomedepth_create_Ref_set.R"
 csv2vcf = str(cwd)+"ed_csv_to_vcf.py"
 vcf_template = str(cwd)+"template.vcf"
 
+# HTML template
+html = str(cwd)+"template.html"
+
 # Reference genome
 reference_genome = "/hpc/diaggen/data/databases/ref_genomes/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta"
 
