@@ -116,16 +116,15 @@ Include in setting.py if these file are needed in the ExomeDepth analysis.
 
 ## Other scripts in this repository 
 ### identify_merge_samples.py
-python identify_merge_samples.py {inputfolder} {output name for list with merge_samples}\ 
-This script will produce a list of merge samples based on slide barcode comparison in BAM and runID. Made specific for UMCU IAP and NF runs.\
-i.e.\
 ``` bash
-python /hpc/diaggen/software/development/Dx_resources_UCSC_bed/ExomeDepth/identify_merge_samples.py /hpc/diaggen/data/processed/exomes/2010 output_oct_2020.txt
+python identify_merge_samples.py {inputfolder} {output name for list with merge_samples} 
 ```
-Will give all merge samples from October 2020 runs.
+This script will produce a list of merge samples based on slide barcode comparison in BAM and runID. Made specific for UMCU IAP and NF runs.
 
 #### make_BEDdetail.py
+``` bash
 python make_BEDdetail.py {inputfolder} {outputfolder} {output bed name} {list with merge_samples}\
+```
 Make a BED detail file for UCSC browser. This BED file is a frequency summary of all events detected in the provided VCF files.\
 WES-CNV files should be present in inputfolder.\
 List with merge_samples is the output file of identify_merge_samples.py or tabseperated file inclusding sampleID and runID, in that order.
