@@ -2,8 +2,8 @@
 import os
 import subprocess
 import argparse
-import statistics
 from string import Template
+import statistics
 import settings
 
 def make_merge_dic(merge_samples):
@@ -17,24 +17,33 @@ def make_merge_dic(merge_samples):
                 merge_dic[splitline[0]].append(splitline[1])
         return merge_dic
 
-def slice_vcf (args, merge_dic):
-    vcf_files = subprocess.getoutput("find {} -type f -iname \"*vcf\"".format(args.inputfolder)).split()
-    event_file = open("{}/{}".format(args.outputfolder,"All_events.txt"),"w")
-    event_file.write("sampleid\tchromsome\tstart\tstop\tgender\tcalltype\tntargets\tsvlen\tratio\tccn\tbf\tcorrelation\tdeldupratio\ttotalcalls\rrefsamples\n")
+def slice_vcf(args, merge_dic):
+    vcf_files = subprocess.getoutput("find {input} -type f -iname \"*vcf\"".format(input=args.inputfolder)).split()
+    all_event_file = open("{output}/{outputfile}_all_events.txt".format(
+        output=args.outputfolder,
+        outputfile=args.outputfile
+        ),"w")
+    all_event_file.write("sampleID\tchromosome\tstart\tstop\tgender\trefset\tcalltype\tntargets\tsvlen\tratio\tccn\tbf\tcorrelation\tdeldupratio\ttotalcalls\trefsamples\n")
     event_dic = {} 
     for vcf in vcf_files:
         exclude = False
         sampleid = vcf.split("/")[-1].split("bam")[0].split("_")[2].rstrip(".")  
         runid = "_".join(vcf.split("/")[-1].split("bam")[1].split("_")[1:-2])
 
-        if sampleid in merge_dic:
+        if sampleid in merge_dic:  # Check if sample in specific run is merge sample. If so, exclude
             for run in merge_dic[sampleid]:
                 if run == runid:
-                    print("Sample {} run {} is excluded being merge sample".format(sampleid,runid))
+                    print("Sample {sampleid} run {runid} is excluded being merge sample".format(
+                        sampleid=sampleid,
+                        runid=runid
+                        ))
                     exclude = True
 
-        if "giab" in sampleid.lower() or "control" in sampleid.lower():
-            print("Sample {} run {} is excluded being GIAB or Control sample".format(sampleid,runid))
+        if "giab" in sampleid.lower() or "control" in sampleid.lower(): # Remove GIAB and Control samples as these should not be included in the results
+            print("Sample {sampleid} run {runid} is excluded being GIAB or Control sample".format(
+                sampleid=sampleid,
+                runid=runid
+                ))
             exclude = True
 
         if exclude == False:
@@ -49,7 +58,11 @@ def slice_vcf (args, merge_dic):
                     elif "#" in line:
                         sampleid_vcf = str(splitline[9].rstrip())
                         if sampleid != sampleid_vcf: # Check if sampleID in VCF is same as sampleID in VCF. If not: report and ignore
-                            print ("Sample {} run {} is excluded as sampleID of VCF file ({}) file is not the same as sampleID within VCF ({})".format(sampleid,runid,sampleid,sampleid_vcf)) 
+                            print ("Sample {sampleid} run {runid} is excluded as sampleID of VCF file ({sampleid}) file is not the same as sampleID within VCF ({sampleid_vcf})".format(
+                                sampleid=sampleid,
+                                runid=runid,
+                                sampleid_vcf=sampleid_vcf
+                                )) 
                             break
                     else:   
                         infofields = splitline[7].split(";")
@@ -61,7 +74,10 @@ def slice_vcf (args, merge_dic):
                         totalcalls = formatfields[9]
                         refsamples = formatfields[5] 
                         if int(totalcalls) < int(args.totalcallsqc_min) or int(totalcalls) > int(args.totalcallsqc_max) or float(correl) < float(args.correlqc) or float(deldupratio) < float(args.deldupratioqc_min) or float(deldupratio) > float(args.deldupratioqc_max):
-                            print("Sample {} run {} is excluded because not all QC are above threshold".format(sampleid,runid))
+                            print("Sample {sampleid} run {runid} is excluded because not all QC are above threshold".format(
+                                sampleid=sampleid,
+                                runid=runid
+                                ))
                             break
 
                         """ Event stats """
@@ -74,34 +90,62 @@ def slice_vcf (args, merge_dic):
                         ratio = formatfields[3]
                         ccn = formatfields[1]
                         bf = formatfields[2]
-                        event_file.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
-                            sampleid, chrom, start, stop, gender, refset, calltype,ntargets,svlen,ratio,ccn,bf,correl,deldupratio,totalcalls,refsamples
+                        all_event_file.write("{sampleid}\t{chrom}\t{start}\t{stop}\t{gender}\t{refset}\t{calltype}\t{ntargets}\t{svlen}\t{ratio}\t{ccn}\t{bf}\t{correl}\t{deldupratio}\t{totalcalls}\t{refsamples}\n".format(
+                            sampleid=sampleid, 
+                            chrom=chrom,
+                            start=start,
+                            stop=stop,
+                            gender=gender,
+                            refset=refset,
+                            calltype=calltype,
+                            ntargets=ntargets,
+                            svlen=svlen,
+                            ratio=ratio,
+                            ccn=ccn,
+                            bf=bf,
+                            correl=correl,
+                            deldupratio=deldupratio,
+                            totalcalls=totalcalls,
+                            refsamples=refsamples
                         ))
-                        event = "{}_{}_{}_{}_{}".format(chrom, start, stop, calltype,ntargets)
+                        event = "{chrom}_{start}_{stop}_{calltype}_{ntargets}".format(
+                            chrom=chrom,
+                            start=start,
+                            stop=stop,
+                            calltype=calltype,
+                            ntargets=ntargets
+                            )
                         if event not in event_dic:
                             event_dic[event] = {"parent":{"count":0, "bf":[],"ratio":[],"correlation":[],"deldupratio":[],"totalcalls":[], "gender":[]}, \
                                             "child":{"count":0, "bf":[],"ratio":[],"correlation":[],"deldupratio":[],"totalcalls":[], "gender":[]}}
 
-                        gender_dic = {"female":"F", "male":"M"}
+                        """ Determine Child or Parent status based on sampleid. There is no other option at the moment"""
+                        childs = 0
+                        parents = 0
                         if "CM" in sampleid or "CF" in sampleid or "CO" in sampleid:
                             sampletype = "child"
+                            childs +=1
                         elif "PM" in sampleid or "PF" in sampleid or "PO" in sampleid:
                             sampletype = "parent"
-                
+                            parents += 1
+               
                         event_dic[event][sampletype]["count"] += 1
                         event_dic[event][sampletype]["bf"].append(bf)
                         event_dic[event][sampletype]["ratio"].append(ratio)
                         event_dic[event][sampletype]["correlation"].append(correl)
                         event_dic[event][sampletype]["deldupratio"].append(deldupratio)
                         event_dic[event][sampletype]["totalcalls"].append(totalcalls)
-                        event_dic[event][sampletype]["gender"].append(gender_dic[gender])
-    event_file.close()
-    return event_dic
+                        event_dic[event][sampletype]["gender"].append(gender)  #  Is not being used in the BED file output at the moment.
+    all_event_file.close()
+    return event_dic, childs, parents
 
-def make_beddetail(args, event_dic):
-    event_file = open("{}/{}".format(args.outputfolder,args.outputfile),"w")
+def make_beddetail(args, event_dic, childs, parents):
+    event_file = open("{outputfolder}/{outputfile}.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
+    event_file_igv = open("{outputfolder}/{outputfile}_IGV.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
+
     """ print header in BED file """
-    event_file.write("track name=\"HC_WES_CNV\" type=\"bedDetail\" description=\"CNVs called by Exomdepth using HC callset\" visibility=3 itemRgb=\"On\"\n") 
+    event_file.write("track name=\"HC_WES_CNV\" type=\"bedDetail\" description=\"CNVs called by Exomdepth using HC callset. #Child={childs} #Partent={parents} \" visibility=3 itemRgb=\"On\"\n".format(childs=childs, parents=parents)) 
+    event_file_igv.write("track name=\"HC_WES_CNV\" type=\"bed\" description=\"CNVs called by Exomdepth using HC callset. #Child={childs} #Partent={parents} \" visibility=3 itemRgb=\"On\"\n".format(childs=childs, parents=parents))
     total_event_list = []
     for item in event_dic:
         chrom, start, stop, calltype, ntargets = item.split("_")
@@ -124,7 +168,12 @@ def make_beddetail(args, event_dic):
         total_bf = [float(i) for i in total_bf]
         median_ratio = "%.2f" % (float(statistics.median(total_ratio)))
         median_bf = "%.0f" % (float(statistics.median(total_bf)))
-        summary = "{}x:RT={}:BF={}:NT={}".format(total_count,median_ratio,median_bf,ntargets)
+        summary = "{total_count}x:RT={median_ratio}:BF={median_bf}:NT={ntargets}".format(
+            total_count=total_count,
+            median_ratio=median_ratio,
+            median_bf=median_bf,
+            ntargets=ntargets
+            )
         event_list.append(summary)  # Name
 
         """ Append unused but necessary columns for bed file """
@@ -279,16 +328,22 @@ def make_beddetail(args, event_dic):
         elif item[0] == 24:
             item[0] = "chrY"
         else:
-            item[0] = "chr{}".format(item[0])
+            item[0] = "chr{original}".format(original=item[0])
+
         joined_item = "\t".join([str(i) for i in item])
-        event_file.write("{}\n".format(joined_item))
+        event_file.write("{joined}\n".format(joined=joined_item))
+      
+        joined_item_igv = "\t".join([str(i) for i in item[0:-1]])
+        event_file_igv.write("{joined}\n".format(joined=joined_item_igv))
+
     event_file.close()
+    event_file_igv.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputfolder', help='Path to folder including VCF files')
     parser.add_argument('outputfolder', help='Path to output folder')
-    parser.add_argument('outputfile', help='output filename of bed file')
+    parser.add_argument('outputfile', help='output prefix filename')
     parser.add_argument('merge_samples', help='Path to file including all merge samples (tab delimited file with column 1 = sampleID, 2 = run/projectID')
     parser.add_argument('--totalcallsqc_min', default=35, help='Threshold for minimum allowed CNV calls (default = 35)')
     parser.add_argument('--totalcallsqc_max', default=200, help='Threshold for maximum allowed CNV calls (default = 200)')
@@ -298,7 +353,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.isdir(args.outputfolder):
-        os.system("mkdir -p {}".format(args.outputfolder))
+        os.system("mkdir -p {outputfolder}".format(outputfolder=args.outputfolder))
     merge_dic = make_merge_dic(args.merge_samples)
-    event_dic = slice_vcf(args, merge_dic)
-    make_beddetail(args, event_dic)
+    event_dic, childs, parents = slice_vcf(args, merge_dic)
+    make_beddetail(args, event_dic, childs, parents)
