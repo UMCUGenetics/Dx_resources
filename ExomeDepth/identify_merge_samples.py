@@ -1,14 +1,13 @@
 #! /usr/bin/env python
-import sys
-import pysam
 import glob 
 import argparse
+import pysam
 
 def detect_merge(arguments):
     write_file = open(arguments.outputfile, "w")
     bams = glob.glob("{}*/**/*.bam".format(arguments.inputfolder), recursive=True)
     for bam in bams:
-        if "tmp" not in bam and "ExomeDepth" not in bam and "exomedepth" not in bam:
+        if "tmp" not in bam and "ExomeDepth" not in bam and "exomedepth" not in bam and "work" not in bam: # Skip files in folder with keywords
             workfile = pysam.AlignmentFile(bam, "rb")
 
             """ Extract sample_ID """
@@ -24,6 +23,7 @@ def detect_merge(arguments):
             """ Removes deck (A/B) from run_barcode ID. This information is not present in BAM file """
             run_barcode = run_id.split("_")[3][1:]
 
+            """ Loop reads in BAM (for maximum max_reads) and check barcode ID in BAM with run barcode ID"""
             itteration = 0
             barcode_list = {}
             for line in workfile:
@@ -34,14 +34,14 @@ def detect_merge(arguments):
                 itteration += 1
                 if itteration == arguments.max_reads:
                     break
-            if len(barcode_list) > 1:  # Sample consisting of multiple sequence runs is considered merge
+            if len(barcode_list) > 1:  # Sample consisting of multiple sequence runs is considered merge sample
                 write_file.write("{sample_id}\t{run_id}\t{reason}\n".format(sample_id=sample_id,run_id=run_id,reason="multiple_runs"))
             else: 
                 for item in barcode_list:
                     sample_barcode = item
                 if run_barcode in barcode_list: # No merge
                     pass
-                else:  # Considered merge
+                else:  # Considered merge sample
                     write_file.write("{sample_id}\t{run_id}\t{reason}\t{sample_barcode}\n".format(sample_id=sample_id,run_id=run_id,reason="different_barcode",sample_barcode=sample_barcode))
     write_file.close()
 
