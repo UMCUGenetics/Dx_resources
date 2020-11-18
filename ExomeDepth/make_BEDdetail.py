@@ -24,6 +24,11 @@ def slice_vcf(args, merge_dic):
         outputfile=args.outputfile
         ),"w")
     all_event_file.write("sampleID\tchromosome\tstart\tstop\tgender\trefset\tcalltype\tntargets\tsvlen\tratio\tccn\tbf\tcorrelation\tdeldupratio\ttotalcalls\trefsamples\n")
+    excluded_samples_file = open("{output}/{outputfile}_excluded_samples.txt".format(
+        output=args.outputfolder,
+        outputfile=args.outputfile
+        ),"w")
+
     event_dic = {} 
     for vcf in vcf_files:
         exclude = False
@@ -33,14 +38,14 @@ def slice_vcf(args, merge_dic):
         if sampleid in merge_dic:  # Check if sample in specific run is merge sample. If so, exclude
             for run in merge_dic[sampleid]:
                 if run == runid:
-                    print("Sample {sampleid} run {runid} is excluded being merge sample".format(
+                    excluded_samples_file.write("Sample {sampleid} run {runid} is excluded being merge sample\n".format(
                         sampleid=sampleid,
                         runid=runid
                         ))
                     exclude = True
 
         if "giab" in sampleid.lower() or "control" in sampleid.lower(): # Remove GIAB and Control samples as these should not be included in the results
-            print("Sample {sampleid} run {runid} is excluded being GIAB or Control sample".format(
+            excluded_samples_file.write("Sample {sampleid} run {runid} is excluded being GIAB or Control sample\n".format(
                 sampleid=sampleid,
                 runid=runid
                 ))
@@ -58,7 +63,7 @@ def slice_vcf(args, merge_dic):
                     elif "#" in line:
                         sampleid_vcf = str(splitline[9].rstrip())
                         if sampleid != sampleid_vcf: # Check if sampleID in VCF is same as sampleID in VCF. If not: report and ignore
-                            print ("Sample {sampleid} run {runid} is excluded as sampleID of VCF file ({sampleid}) file is not the same as sampleID within VCF ({sampleid_vcf})".format(
+                            excluded_samples_file.write("Sample {sampleid} run {runid} is excluded as sampleID of VCF file ({sampleid}) file is not the same as sampleID within VCF ({sampleid_vcf}\n)".format(
                                 sampleid=sampleid,
                                 runid=runid,
                                 sampleid_vcf=sampleid_vcf
@@ -74,7 +79,7 @@ def slice_vcf(args, merge_dic):
                         totalcalls = formatfields[9]
                         refsamples = formatfields[5] 
                         if int(totalcalls) < int(args.totalcallsqc_min) or int(totalcalls) > int(args.totalcallsqc_max) or float(correl) < float(args.correlqc) or float(deldupratio) < float(args.deldupratioqc_min) or float(deldupratio) > float(args.deldupratioqc_max):
-                            print("Sample {sampleid} run {runid} is excluded because not all QC are above threshold".format(
+                            excluded_samples_file.write("Sample {sampleid} run {runid} is excluded because not all QC are above threshold\n".format(
                                 sampleid=sampleid,
                                 runid=runid
                                 ))
@@ -137,6 +142,7 @@ def slice_vcf(args, merge_dic):
                         event_dic[event][sampletype]["totalcalls"].append(totalcalls)
                         event_dic[event][sampletype]["gender"].append(gender)  #  Is not being used in the BED file output at the moment.
     all_event_file.close()
+    excluded_samples_file.close()
     return event_dic, childs, parents
 
 def make_beddetail(args, event_dic, childs, parents):
