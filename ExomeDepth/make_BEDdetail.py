@@ -29,7 +29,9 @@ def slice_vcf(args, merge_dic):
         outputfile=args.outputfile
         ),"w")
 
-    event_dic = {} 
+    event_dic = {}
+    childs = 0
+    parents = 0 
     for vcf in vcf_files:
         exclude = False
         sampleid = vcf.split("/")[-1].split("bam")[0].split("_")[2].rstrip(".")  
@@ -125,8 +127,6 @@ def slice_vcf(args, merge_dic):
                                             "child":{"count":0, "bf":[],"ratio":[],"correlation":[],"deldupratio":[],"totalcalls":[], "gender":[]}}
 
                         """ Determine Child or Parent status based on sampleid. There is no other option at the moment"""
-                        childs = 0
-                        parents = 0
                         if "CM" in sampleid or "CF" in sampleid or "CO" in sampleid:
                             sampletype = "child"
                             childs +=1
@@ -150,8 +150,8 @@ def make_beddetail(args, event_dic, childs, parents):
     event_file_igv = open("{outputfolder}/{outputfile}_IGV.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
 
     """ print header in BED file """
-    event_file.write("track name=\"HC_WES_CNV\" type=\"bedDetail\" description=\"CNVs called by Exomdepth using HC callset. #Child={childs} #Partent={parents} \" visibility=3 itemRgb=\"On\"\n".format(childs=childs, parents=parents)) 
-    event_file_igv.write("track name=\"HC_WES_CNV\" type=\"bed\" description=\"CNVs called by Exomdepth using HC callset. #Child={childs} #Partent={parents} \" visibility=3 itemRgb=\"On\"\n".format(childs=childs, parents=parents))
+    event_file.write("track name=\"HC_WES_CNV\" type=\"bedDetail\" description=\"CNVs called by Exomedepth using HC callset. #Child={childs} #Partent={parents} \" visibility=3 itemRgb=\"On\"\n".format(childs=childs, parents=parents)) 
+    event_file_igv.write("track name=\"HC_WES_CNV\" type=\"bed\" description=\"CNVs called by Exomedepth using HC callset. #Child={childs} #Partent={parents} \" visibility=3 itemRgb=\"On\"\n".format(childs=childs, parents=parents))
     total_event_list = []
     for item in event_dic:
         chrom, start, stop, calltype, ntargets = item.split("_")
