@@ -130,6 +130,7 @@ if __name__ == "__main__":
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
     if not os.path.isdir("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder)):
         os.system("mkdir -p {inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder))
+
     action = "python {cwd}/exomedepth_summary.py {files} > {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
         cwd=settings.cwd,
         inputfolder=args.inputfolder,
