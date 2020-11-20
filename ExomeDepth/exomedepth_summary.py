@@ -10,16 +10,17 @@ if __name__ == "__main__":
     for exomedepth_qc_file in arguments.exomedepth_logs:
         for line in exomedepth_qc_file: 
             splitline = line.split()
-            correlation = float(splitline[2])
-            deldupratio = float(splitline[3])
-            totalcount = float(splitline[4])
+            correlation = float(splitline[3])
+            deldupratio = float(splitline[4])
+            totalcount = float(splitline[5])
 
             stats_dic["CR"].append(correlation)
             stats_dic["PD"].append(deldupratio)
             stats_dic["TC"].append(totalcount)
-            print("{sample};CM={model};CR={correl};PD={deldupratio};TC={totalcount}\r".format(
+            print("{sample};CM={model};REFSET={refset};CR={correl};PD={deldupratio};TC={totalcount}\r".format(
                  sample=splitline[0],
                  model=splitline[1],
+                 refset=splitline[2],
                  correl="%.4f" % correlation,
                  deldupratio="%.2f" % deldupratio,
                  totalcount="%.0f" % totalcount

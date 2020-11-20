@@ -63,10 +63,10 @@ def make_refset(args):
     log_setting_file = open(log_file, "w")
     options = vars(args)
     for item in options:
-        log_setting_file("{0}\t{1}\n".format(str(item), str(options[item])))
+        log_setting_file.write("{0}\t{1}\n".format(str(item), str(options[item])))
     for item in dir(settings):
         if "__" not in item:
-            log_setting_file("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
+            log_setting_file.write("{0}\t{1}\n".format(item, str(repr(eval("settings.%s" % item)))))
     log_setting_file.close()
 
 
@@ -217,9 +217,10 @@ def call_cnv(args):
             else:
                 qc_status = "\tOK"
 
-        sample_model_log.write("{sample}\t{model}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
+        sample_model_log.write("{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
             sample=args.sample,
             model=model,
+            refset=args.refset,
             correlation=correlation,
             del_dup_ratio=del_dup_ratio,
             number_calls=number_calls,
