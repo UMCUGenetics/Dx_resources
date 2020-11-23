@@ -212,7 +212,11 @@ def call_cnv(args):
 
         qc_status = ""
         if args.qc_stats:
-            if correlation < float(settings.correlation) or number_calls > int(settings.number_calls) or del_dup_ratio < float(settings.del_dup_ratio[0]) or del_dup_ratio > float(settings.del_dup_ratio[1]):
+            if (correlation < float(settings.correlation) or 
+                number_calls < int(settings.number_calls[0]) or 
+                number_calls > int(settings.number_calls[1]) or
+                del_dup_ratio < float(settings.del_dup_ratio[0]) or 
+                del_dup_ratio > float(settings.del_dup_ratio[1])):
                 qc_status = "\tFAIL"
             else:
                 qc_status = "\tOK"
