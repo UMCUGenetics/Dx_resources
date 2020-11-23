@@ -115,6 +115,15 @@ Include in setting.py if these file are needed in the ExomeDepth analysis.
 
 
 ## Other scripts in this repository 
+### check_gender_bam.py ###
+Check gender of BAM files in a specific folder.
+Consider male is nonPAR regions of chrY fraction >=0.12 and chrX <= 2.3
+Consider female is nonPAR regions of chrY fraction <=0.06 and chrX >= 4.0
+All other combinations are considerend unknown (these include i.e. XXY and X or sample with mosaik/large CNV, and/or contamination)
+``` bash
+python check_gender_bam.py {inputfolder}
+```
+
 ### identify_merge_samples.py
 ``` bash
 python identify_merge_samples.py {inputfolder} {output name for list with merge_samples} 
