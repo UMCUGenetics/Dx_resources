@@ -124,7 +124,7 @@ Made specific for UMCU IAP and NF runs.
 
 #### make_BEDdetail.py
 ``` bash
-python make_BEDdetail.py {inputfolder} {outputfolder} {output prefix} {list with merge_samples}\
+python make_BEDdetail.py {inputfolder} {outputfolder} {output prefix} {list with merge_samples}
 ```
 Make a BED detail file for UCSC browser. This BED file is a frequency summary of all events detected in the provided VCF files.\
 WES-CNV files should be present in inputfolder.\
