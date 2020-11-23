@@ -22,9 +22,9 @@ def get_gender(bam):
     yratio = float("%.2f" % ((yreads / total) * 100))
     xratio = float("%.2f" % ((xreads / total) * 100))
     print(yratio, xratio)
-    if yratio <= 0.06 and xratio > 4.0:
+    if yratio <= 0.06 and xratio >= 4.0:
         return "female"
-    elif yratio >= 0.12 and xratio < 2.3:
+    elif yratio >= 0.12 and xratio <= 2.3:
         return "male"
     else:
         return "unknown or other sex chromosome combination"
