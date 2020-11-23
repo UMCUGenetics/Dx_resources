@@ -23,11 +23,11 @@ def get_gender(bam):
     xratio = float("%.2f" % ((xreads / total) * 100))
 
     if yratio <= float(settings.yratio[0]) and xratio >= float(settings.xratio[1]):
-        return "female"
+        return "female", yratio, xratio
     elif yratio >= float(settings.yratio[1]) and xratio <= float(settings.xratio[0]):
-        return "male"
+        return "male", yratio, xratio
     else:
-        return "unknown or other sex chromosome combination"
+        return "unknown or other sex chromosome combination", yratio, xratio
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -36,4 +36,4 @@ if __name__ == "__main__":
 
     bams = glob.glob("{}/**/*.bam".format(args.inputfolder), recursive=True)
     for bam in bams:
-        print(bam, get_gender(bam))
+        print(bam, *get_gender(bam))
