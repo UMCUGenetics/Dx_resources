@@ -46,6 +46,14 @@ def slice_vcf(args, merge_dic):
                 excluded_samples_file.write("Sample {sampleid} form run {runid} does not have the same ID in VCF file {vcf_file} and is excluded\n".format(sampleid=sampleid, runid=runid, vcf_file=vcf_file))
                 continue
 
+            """ Determine Child or Parent status based on sampleid. """
+            if "CM" in sampleid or "CF" in sampleid or "CO" in sampleid:
+                sampletype = "child"
+                children +=1
+            elif "PM" in sampleid or "PF" in sampleid or "PO" in sampleid:
+                sampletype = "parent"
+                parents += 1
+
             edreference = vcf_reader.metadata['EDreference'][0]
             gender = edreference.split("_")[1]
             refset = edreference.split("_")[2]
@@ -82,7 +90,6 @@ def slice_vcf(args, merge_dic):
                         excluded_samples_file.write("Sample {sampleid} run {runid} is excluded because not all QC are above threshold\n".format(sampleid=sampleid, runid=runid))
                         break
 
-                all_event_file.write("{sampleid}\t{chrom}\t{start}\t{stop}\t{gender}\t{refset}\t{calltype}\t{ntargets}\t{svlen}\t{ratio}\t{ccn}\t{bf}\t{correl}\t{deldupratio}\t{totalcalls}\t{refsamples}\n".format(sampleid=sampleid,
                     chrom=chrom, start=start, stop=stop,
                     gender=gender, refset=refset, calltype=calltype,
                     ntargets=ntargets, svlen=svlen, ratio=ratio,
@@ -98,14 +105,6 @@ def slice_vcf(args, merge_dic):
                         "child":{"count":0, "bf":[],"ratio":[],"correlation":[],"deldupratio":[],"totalcalls":[], "gender":[]}
                     }
 
-                """ Determine Child or Parent status based on sampleid. There is no other option at the moment """
-                if "CM" in sampleid or "CF" in sampleid or "CO" in sampleid:
-                    sampletype = "child"
-                    children +=1
-                elif "PM" in sampleid or "PF" in sampleid or "PO" in sampleid:
-                    sampletype = "parent"
-                    parents += 1
-               
                 event_dic[event][sampletype]["count"] += 1
                 event_dic[event][sampletype]["bf"].append(bf)
                 event_dic[event][sampletype]["ratio"].append(ratio)
@@ -113,6 +112,7 @@ def slice_vcf(args, merge_dic):
                 event_dic[event][sampletype]["deldupratio"].append(deldupratio)
                 event_dic[event][sampletype]["totalcalls"].append(totalcalls)
                 event_dic[event][sampletype]["gender"].append(gender)  #  Is not being used in the BED file output at the moment.
+
     all_event_file.close()
     excluded_samples_file.close()
     return event_dic, children, parents
