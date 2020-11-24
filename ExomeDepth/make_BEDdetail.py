@@ -90,6 +90,7 @@ def slice_vcf(args, merge_dic):
                         excluded_samples_file.write("Sample {sampleid} run {runid} is excluded because not all QC are above threshold\n".format(sampleid=sampleid, runid=runid))
                         break
 
+                all_event_file.write("{sampleid}\t{chrom}\t{start}\t{stop}\t{gender}\t{refset}\t{calltype}\t{ntargets}\t{svlen}\t{ratio}\t{ccn}\t{bf}\t{correl}\t{deldupratio}\t{totalcalls}\t{refsamples}\n".format(sampleid=sampleid,
                     chrom=chrom, start=start, stop=stop,
                     gender=gender, refset=refset, calltype=calltype,
                     ntargets=ntargets, svlen=svlen, ratio=ratio,
