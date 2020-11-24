@@ -128,7 +128,8 @@ def make_bed_detail(args, event_dic, children, parents):
     for event in event_dic:
         chrom, start, stop, calltype, ntargets = event.split("_")
         """ Make start 0-based for BED file """
-        event_list = [chrom, int(start) - 1, stop]
+        start = int(start) - 1
+        event_list = [chrom, start, stop]
         total_count = int(event_dic[event]["parent"]["count"]) + int(event_dic[event]["child"]["count"])
         all_counts_ratio = event_dic[event]["parent"]["ratio"] + event_dic[event]["child"]["ratio"]
         all_counts_bf = event_dic[event]["parent"]["bf"] + event_dic[event]["child"]["bf"]
