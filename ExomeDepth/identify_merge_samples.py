@@ -16,6 +16,7 @@ def detect_merge(arguments):
             sample_id = re.split('_|\.', bam.split("/")[-1])[0]
 
             """ Extract run ID """
+            run_id = bam.split("/")[-3]
             if run_id == sample_id:  # Run is old IAP run
                 run_id = bam.split("/")[-4] 
 
