@@ -24,9 +24,9 @@ def get_gender(bam):
     yreads = float(sum([valid_read(read) for read in workfile.fetch(region=locusy)]))
     total = float(workfile.mapped)
     yratio = float("%.2f" % ((yreads / total) * 100))
-    if yratio <= float(settings.yratio[0]):
+    if yratio <= float(settings.y_ratio[0]):
         return "female"
-    elif yratio >= float(settings.yratio[1]):
+    elif yratio >= float(settings.y_ratio[1]):
         return "male"
     else:
         return "unknown"
