@@ -195,8 +195,9 @@ def make_bed_detail(args, event_dic, children, parents):
         stdev_ratio_child = "n/a"
 
         if totalcount_child >= 1 :
-            bfs_child_list = sorted(list(map(float, ['%.1f' % elem for elem in bf_child][0:20]))) # Select first 20 BF's
-            ratios_child_list = sorted(list(map(float, ['%.1f' % elem for elem in ratio_child][0:20])))  # Select first 20 Ratios
+            bfs_child_list = list(map(float, ['%.1f' % elem for elem in bf_child][0:20])) # Select first 20 BF's
+            ratios_child_list = list(map(float, ['%.1f' % elem for elem in ratio_child][0:20]))  # Select first 20 Ratios
+            bfs_child_list, ratios_child_list = zip(*sorted(zip(bfs_child_list,ratios_child_list)))
             bfs_child = ' '.join(map(str, bfs_child_list))
             ratios_child = ' '.join(map(str, ratios_child_list))
 
@@ -228,8 +229,9 @@ def make_bed_detail(args, event_dic, children, parents):
         stdev_ratio_parent = "n/a"
 
         if totalcount_parent >= 1:
-            bfs_parent_list = sorted(list(map(float, ['%.1f' % elem for elem in bf_parent][0:20])))   # Select first 20 BFs. 
-            ratios_parent_list = sorted(list(map(float, ['%.1f' % elem for elem in ratio_parent][0:20])))  # Select first 20 Ratios.
+            bfs_parent_list = list(map(float, ['%.1f' % elem for elem in bf_parent][0:20]))   # Select first 20 BFs. 
+            ratios_parent_list = list(map(float, ['%.1f' % elem for elem in ratio_parent][0:20]))  # Select first 20 Ratios.
+            bfs_parent_list, ratios_parent_list = zip(*sorted(zip(bfs_parent_list,ratios_parent_list)))
             bfs_parent = ' '.join(map(str, bfs_parent_list))
             ratios_parent = ' '.join(map(str, ratios_parent_list))
             
