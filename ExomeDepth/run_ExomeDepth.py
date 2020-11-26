@@ -20,9 +20,8 @@ def valid_read(read):
 def get_gender(bam):
     """Determine chrY ratio based on read count in bam (excl PAR)."""
     workfile = pysam.AlignmentFile(bam, "rb")
-    #locus = 'Y:2649520-59034050'
-    locusY = settings.locusY
-    yreads = float(sum([valid_read(read) for read in workfile.fetch(region=locusY)]))
+    locusy = settings.locusy
+    yreads = float(sum([valid_read(read) for read in workfile.fetch(region=locusy)]))
     total = float(workfile.mapped)
     yratio = float("%.2f" % ((yreads / total) * 100))
     if yratio <= float(settings.yratio[0]):
