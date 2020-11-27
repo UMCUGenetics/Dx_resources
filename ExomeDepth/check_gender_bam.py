@@ -24,6 +24,7 @@ def get_gender(bam, arguments):
 
         elif y_ratio >= arguments.gender_determination_y_ratio_male and x_ratio <= arguments.gender_determination_x_ratio_male:
             return "male\t{y_ratio:.2f}\t{x_ratio:.2f}".format(y_ratio=y_ratio, x_ratio=x_ratio)
+
         else:
             return "unknown or other sex chromosome combination\t{y_ratio}\t{x_ratio}".format(y_ratio=y_ratio, x_ratio=x_ratio)
 
