@@ -118,52 +118,45 @@ def slice_vcf(args, merge_dic):
     return event_dic, children, parents
 
 def calculate_statistics(data, status):
-    dic = {}
-    average_correlation = "n/a"
-    average_deldupratio = "n/a"
-    average_totalcalls = "n/a"
-    average_bf = "n/a"
-    average_ratio = "n/a"
-    bfs = "n/a"
-    ratios = "n/a"
-    stdev_correlation = "n/a"
-    stdev_deldupratio = "n/a"
-    stdev_totalcalls = "n/a"
-    stdev_bf = "n/a"
-    stdev_ratio = "n/a"
+
     totalcount = data['count']
-    if totalcount >= 1:
+    stats = {'total_{0}'.format(status) : totalcount, 
+        'correlation_avr_{0}'.format(status) : "n/a",
+        'correlation_stdev_{0}'.format(status) : "n/a",
+        'deldup_avr_{0}'.format(status) : "n/a",
+        'deldup_stdev_{0}'.format(status) : "n/a",
+        'totalcalls_avr_{0}'.format(status) : "n/a",
+        'totalcalls_stdev_{0}'.format(status) : "n/a",
+        'bf_avr_{0}'.format(status) : "n/a",
+        'bf_stdev_{0}'.format(status) : "n/a",
+        'ratio_avr_{0}'.format(status) : "n/a",
+        'ratio_stdev_{0}'.format(status) : "n/a",
+        'bfs_{0}'.format(status) : "n/a",
+        'ratios_{0}'.format(status) : "n/a",
+    }
+
+    if totalcount >= 1: # 1 or more element(s) needed to calculate mean
         bfs_subset, ratios_subset = zip(*sorted(zip(data["bf"][0:20], data["ratio"][0:20])))  # Select first 20 elements of BF and Ratio. Sort on BF and sort Ratio accordingly.
         bfs = ' '.join(['%.1f' % elem for elem in bfs_subset])
         ratios = ' '.join(['%.1f' % elem for elem in ratios_subset])
-        average_correlation = "%.3f" % (statistics.mean(data['correlation']))
-        average_deldupratio = "%.0f" % (statistics.mean(data['deldupratio']))
-        average_totalcalls = "%.0f" % (statistics.mean(data["totalcalls"]))
-        average_bf = "%.1f" % (statistics.mean(data["bf"]))
-        average_ratio = "%.2f" % (statistics.mean(data["ratio"]))
 
-        if totalcount > 1:
-            stdev_correlation = "%.3f" % (statistics.stdev(data["correlation"]))
-            stdev_deldupratio = "%.0f" % (statistics.stdev(data["deldupratio"]))
-            stdev_totalcalls = "%.0f" % (statistics.stdev(data["totalcalls"]))
-            stdev_bf = "%.1f" % (statistics.stdev(data["bf"]))
-            stdev_ratio = "%.2f" % (statistics.stdev(data["ratio"]))
+        stats["bfs_{0}".format(status)] = bfs
+        stats["ratios_{0}".format(status)] = ratios
 
-    dic['total_{status}'.format(status=status)] = totalcount
-    dic['cr_avr_{status}'.format(status=status)] = average_correlation
-    dic['cr_stdev_{status}'.format(status=status)] = stdev_correlation
-    dic['deldup_avr_{status}'.format(status=status)] = average_deldupratio
-    dic['deldup_stdev_{status}'.format(status=status)] = stdev_deldupratio
-    dic['numbercalls_avr_{status}'.format(status=status)] = average_totalcalls
-    dic['numbercalls_stdev_{status}'.format(status=status)] = stdev_totalcalls
-    dic['average_bf_{status}'.format(status=status)] = average_bf
-    dic['stdev_bf_{status}'.format(status=status)] = stdev_bf
-    dic['average_ratio_{status}'.format(status=status)] = average_ratio
-    dic['stdev_ratio_{status}'.format(status=status)] = stdev_ratio
-    dic['bfs_{status}'.format(status=status)] = bfs
-    dic['ratios_{status}'.format(status=status)] = ratios
+        stats["correlation_avr_{0}".format(status)] = "%.3f" % (statistics.mean(data['correlation']))
+        stats["deldup_avr_{0}".format(status)] = "%.0f" % (statistics.mean(data['deldupratio']))
+        stats["totalcalls_avr_{0}".format(status)] = "%.0f" % (statistics.mean(data['totalcalls']))
+        stats["bf_avr_{0}".format(status)] = "%.1f" % (statistics.mean(data['bf']))
+        stats["ratio_avr_{0}".format(status)] = "%.2f" % (statistics.mean(data['ratio']))
 
-    return dic
+        if totalcount > 1: # 2 or more elements neede to calculate stdev
+            stats["corellation_stdev_{0}".format(status)] = "%.3f" % (statistics.stdev(data['correlation']))
+            stats["deldup_stdev_{0}".format(status)] = "%.0f" % (statistics.stdev(data['deldupratio']))
+            stats["totalcalls_stdev_{0}".format(status)] = "%.0f" % (statistics.stdev(data['totalcalls']))
+            stats["bf_stdev_{0}".format(status)] = "%.1f" % (statistics.stdev(data['bf']))
+            stats["ratio_stdev_{0}".format(status)] = "%.2f" % (statistics.stdev(data['ratio']))
+
+    return stats
 
 def make_bed_detail(args, event_dic, children, parents):
     event_file = open("{outputfolder}/{outputfile}_UCSC.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
