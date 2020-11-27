@@ -117,6 +117,54 @@ def slice_vcf(args, merge_dic):
     excluded_samples_file.close()
     return event_dic, children, parents
 
+def calculate_statistics(data, status):
+    dic = {}
+    average_correlation = "n/a"
+    average_deldupratio = "n/a"
+    average_totalcalls = "n/a"
+    average_bf = "n/a"
+    average_ratio = "n/a"
+    bfs = "n/a"
+    ratios = "n/a"
+    stdev_correlation = "n/a"
+    stdev_deldupratio = "n/a"
+    stdev_totalcalls = "n/a"
+    stdev_bf = "n/a"
+    stdev_ratio = "n/a"
+    totalcount = data['count']
+    if totalcount >= 1:
+        bfs_subset, ratios_subset = zip(*sorted(zip(data["bf"][0:20], data["ratio"][0:20])))  # Select first 20 elements of BF and Ratio. Sort on BF and sort Ratio accordingly.
+        bfs = ' '.join(['%.1f' % elem for elem in bfs_subset])
+        ratios = ' '.join(['%.1f' % elem for elem in ratios_subset])
+        average_correlation = "%.3f" % (statistics.mean(data['correlation']))
+        average_deldupratio = "%.0f" % (statistics.mean(data['deldupratio']))
+        average_totalcalls = "%.0f" % (statistics.mean(data["totalcalls"]))
+        average_bf = "%.1f" % (statistics.mean(data["bf"]))
+        average_ratio = "%.2f" % (statistics.mean(data["ratio"]))
+
+        if totalcount > 1:
+            stdev_correlation = "%.3f" % (statistics.stdev(data["correlation"]))
+            stdev_deldupratio = "%.0f" % (statistics.stdev(data["deldupratio"]))
+            stdev_totalcalls = "%.0f" % (statistics.stdev(data["totalcalls"]))
+            stdev_bf = "%.1f" % (statistics.stdev(data["bf"]))
+            stdev_ratio = "%.2f" % (statistics.stdev(data["ratio"]))
+
+    dic['total_{status}'.format(status=status)] = totalcount
+    dic['cr_avr_{status}'.format(status=status)] = average_correlation
+    dic['cr_stdev_{status}'.format(status=status)] = stdev_correlation
+    dic['deldup_avr_{status}'.format(status=status)] = average_deldupratio
+    dic['deldup_stdev_{status}'.format(status=status)] = stdev_deldupratio
+    dic['numbercalls_avr_{status}'.format(status=status)] = average_totalcalls
+    dic['numbercalls_stdev_{status}'.format(status=status)] = stdev_totalcalls
+    dic['average_bf_{status}'.format(status=status)] = average_bf
+    dic['stdev_bf_{status}'.format(status=status)] = stdev_bf
+    dic['average_ratio_{status}'.format(status=status)] = average_ratio
+    dic['stdev_ratio_{status}'.format(status=status)] = stdev_ratio
+    dic['bfs_{status}'.format(status=status)] = bfs
+    dic['ratios_{status}'.format(status=status)] = ratios
+
+    return dic
+
 def make_bed_detail(args, event_dic, children, parents):
     event_file = open("{outputfolder}/{outputfile}_UCSC.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
     event_file_igv = open("{outputfolder}/{outputfile}_IGV.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
@@ -157,71 +205,16 @@ def make_bed_detail(args, event_dic, children, parents):
         """ Append blockCount, blockSizes, blockStarts. Note that these are not used for ntargets as start/stop for exons is unknown"""
         event_list.extend([1, int(stop) - int(start), 0]) # Add fields blockCount, blockSizes, and blockStarts
 
-        """ Append custom annotation field in BEDdetail format. 2 additional colums are allowed! """
-        """ custom1 =  sample specific (Correlation and #Calls, split for child and parent). Custom2 = event specific (Ratio and BF) """
-        totalcount_child = event_dic[event]["child"]["count"]
-        totalcount_parent = event_dic[event]["parent"]["count"]
-
-
-            
-        def calculate_statistics(data, status):
-            dic = {}
-            average_correlation = "n/a"
-            average_deldupratio = "n/a"
-            average_totalcalls = "n/a"
-            average_bf = "n/a"
-            average_ratio = "n/a"
-            bfs = "n/a"
-            ratios = "n/a"
-            stdev_correlation = "n/a"
-            stdev_deldupratio = "n/a"
-            stdev_totalcalls = "n/a"
-            stdev_bf = "n/a"
-            stdev_ratio = "n/a"
-
-            totalcount = data['count']
-            if totalcount >= 1:
-                bfs_subset, ratios_subset = zip(*sorted(zip(data["bf"][0:20], data["ratio"][0:20])))  # Select first 20 elements of BF and Ratio. Sort on BF and sort Ratio accordingly.
-                bfs = ' '.join(['%.1f' % elem for elem in bfs_subset])
-                ratios = ' '.join(['%.1f' % elem for elem in ratios_subset])
-                average_correlation = "%.3f" % (statistics.mean(data['correlation']))
-                average_deldupratio = "%.0f" % (statistics.mean(data['deldupratio']))
-                average_totalcalls = "%.0f" % (statistics.mean(data["totalcalls"]))
-                average_bf = "%.1f" % (statistics.mean(data["bf"]))
-                average_ratio = "%.2f" % (statistics.mean(data["ratio"]))
-                
-                if totalcount > 1:
-                    stdev_correlation = "%.3f" % (statistics.stdev(data["correlation"]))
-                    stdev_deldupratio = "%.0f" % (statistics.stdev(data["deldupratio"]))
-                    stdev_totalcalls = "%.0f" % (statistics.stdev(data["totalcalls"]))
-                    stdev_bf = "%.1f" % (statistics.stdev(data["bf"]))
-                    stdev_ratio = "%.2f" % (statistics.stdev(data["ratio"]))
-                      
-            dic['total_{status}'.format(status=status)] = totalcount
-            dic['cr_avr_{status}'.format(status=status)] = average_correlation
-            dic['cr_stdev_{status}'.format(status=status)] = stdev_correlation
-            dic['deldup_avr_{status}'.format(status=status)] = average_deldupratio
-            dic['deldup_stdev_{status}'.format(status=status)] = stdev_deldupratio
-            dic['numbercalls_avr_{status}'.format(status=status)] = average_totalcalls
-            dic['numbercalls_stdev_{status}'.format(status=status)] = stdev_totalcalls
-            dic['average_bf_{status}'.format(status=status)] = average_bf
-            dic['stdev_bf_{status}'.format(status=status)] = stdev_bf
-            dic['average_ratio_{status}'.format(status=status)] = average_ratio
-            dic['stdev_ratio_{status}'.format(status=status)] = stdev_ratio
-            dic['bfs_{status}'.format(status=status)] = bfs
-            dic['ratios_{status}'.format(status=status)] = ratios
-
-            return dic
-
+        """ Append custom annotation field as html in BEDdetail format """
         """ calculate statistics for children """
         substitute_dic = calculate_statistics(event_dic[event]["child"], 'child')
         """ calculate statistics for parents """
         substitute_dic.update(calculate_statistics(event_dic[event]["parent"], 'parent'))
-
         template_file = Template(open(settings.html).read())
         new_file = template_file.substitute(substitute_dic)       
         event_list.append("".join(new_file.split("\n")))
         total_event_list.append(event_list)
+
     total_event_list.sort(key=lambda x:(settings.chromosome_order[x[0]], int(x[1])))
       
     for event in total_event_list:
