@@ -33,10 +33,9 @@ def slice_vcf(args, merge_dic):
             sampleid = vcf_reader.samples[0]
             runid = "_".join(vcf_file.split("/")[-1].split("bam")[1].split("_")[1:-2])
 
-            if sampleid in merge_dic:  # Check if sample in specific run is merge sample. If so, exclude
-                if runid in merge_dic[sampleid]:
-                    excluded_samples_file.write("Sample {sampleid} run {runid} is excluded being merge sample\n".format(sampleid=sampleid, runid=runid))
-                    continue
+            if sampleid in merge_dic and runid in merge_dic[sampleid]: # Check if sample in specific run is merge sample. If so, exclude
+                excluded_samples_file.write("Sample {sampleid} run {runid} is excluded being merge sample\n".format(sampleid=sampleid, runid=runid))
+                continue
 
             if "giab" in sampleid.lower() or "control" in sampleid.lower(): # Remove GIAB and Control samples as these should not be included in the results
                 excluded_samples_file.write("Sample {sampleid} run {runid} is excluded being GIAB or Control sample\n".format(sampleid=sampleid, runid=runid))
@@ -44,6 +43,10 @@ def slice_vcf(args, merge_dic):
 
             if sampleid not in vcf_file:
                 excluded_samples_file.write("Sample {sampleid} form run {runid} does not have the same ID in VCF file {vcf_file} and is excluded\n".format(sampleid=sampleid, runid=runid, vcf_file=vcf_file))
+                continue
+
+            if len(vcf_reader.samples) > 1:  # multisample VCF
+                excluded_samples_file.write("VCF {vcf_file} from run {runid} is excluded because vcf was a multisample VCF\n".format(vcf_file=vcf_file, runid=runid))
                 continue
 
             """ Determine Child or Parent status based on sampleid. """
@@ -57,10 +60,6 @@ def slice_vcf(args, merge_dic):
             edreference = vcf_reader.metadata['EDreference'][0]
             gender = edreference.split("_")[1]
             refset = edreference.split("_")[2]
-
-            if len(vcf_reader.samples) > 1:  # multisample VCF
-                excluded_samples_file.write("VCF {vcf_file} from run {runid} is excluded because vcf was a multisample VCF\n".format(vcf_file=vcf_file, runid=runid))
-                continue
 
             for record in vcf_reader:
                 """ General fields """
@@ -77,10 +76,10 @@ def slice_vcf(args, merge_dic):
                 correl = float(record.genotype(sampleid)['CR'])
                 deldupratio = float(record.genotype(sampleid)['PD'])
                 totalcalls = int(record.genotype(sampleid)['TC'])
-                refsamples = record.genotype(sampleid)['RS']
-                ratio = record.genotype(sampleid)['RT']
-                ccn = record.genotype(sampleid)['CCN']
-                bf = record.genotype(sampleid)['BF']
+                refsamples = int(record.genotype(sampleid)['RS'])
+                ratio = float(record.genotype(sampleid)['RT'])
+                ccn = float(record.genotype(sampleid)['CCN'])
+                bf = float(record.genotype(sampleid)['BF'])
 
                 if (totalcalls < args.totalcallsqc_min or
                     totalcalls > args.totalcallsqc_max or
@@ -130,14 +129,12 @@ def make_bed_detail(args, event_dic, children, parents):
         chrom, start, stop, calltype, ntargets = event.split("_")
         """ Make start 0-based for BED file """
         start = int(start) - 1
-        event_list = [chrom, start, stop]
+        event_list = [chrom, start, stop]  # Add fields Chromosome, start, stop 
         total_count = int(event_dic[event]["parent"]["count"]) + int(event_dic[event]["child"]["count"])
         all_counts_ratio = event_dic[event]["parent"]["ratio"] + event_dic[event]["child"]["ratio"]
         all_counts_bf = event_dic[event]["parent"]["bf"] + event_dic[event]["child"]["bf"]
-        total_ratio = [float(i) for i in all_counts_ratio]
-        total_bf = [float(i) for i in all_counts_bf]
-        median_ratio = statistics.median(total_ratio)
-        median_bf = statistics.median(total_bf)
+        median_ratio = statistics.median(all_counts_ratio)
+        median_bf = statistics.median(all_counts_bf)
 
         summary = "{total_count}x:RT={median_ratio:.2f}:BF={median_bf:.0f}:NT={ntargets}".format(total_count=total_count, 
             median_ratio=median_ratio, 
@@ -145,125 +142,83 @@ def make_bed_detail(args, event_dic, children, parents):
             ntargets=ntargets
         )
 
-        event_list.append(summary)  # Name
+        event_list.append(summary)  # Add field 'name'
 
         """ Append unused but necessary columns for bed file """
-        event_list.append(0)  # Score
-        event_list.append(".")  # Strand
-        event_list.append(start)  # thickStart
-        event_list.append(stop)  # thickEnd
+        event_list.extend([0, '.', start, stop]) # Add fields Score, Strand, thickStart, thickEnd
 
         """ Append color code based on DEL (red) or DUP (blue) """
         if median_ratio >= 1:
-            color = "0,0,255"  # itemRgb
-        else:  # Assumed DEL
-            color = "255,0,0"  # itemRgb
+            color = "0,0,255"  # Add field itemRgb for duplication
+        else:  
+            color = "255,0,0"  # Add field itemRgb for deletion
         event_list.append(color)
 
         """ Append blockCount, blockSizes, blockStarts. Note that these are not used for ntargets as start/stop for exons is unknown"""
-        event_list.append(1)  # blockCount
-        event_list.append(int(stop) - int(start))  # blockSizes
-        event_list.append(0)  # blockStarts.
+        event_list.extend([1, int(stop) - int(start), 0]) # Add fields blockCount, blockSizes, and blockStarts
 
         """ Append custom annotation field in BEDdetail format. 2 additional colums are allowed! """
         """ custom1 =  sample specific (Correlation and #Calls, split for child and parent). Custom2 = event specific (Ratio and BF) """
-        correlation_child = event_dic[event]["child"]["correlation"]
-        correlation_parent = event_dic[event]["parent"]["correlation"]
-        deldupratio_child = event_dic[event]["child"]["deldupratio"]
-        deldupratio_parent = event_dic[event]["parent"]["deldupratio"]
-        totalcalls_child = [float(i) for i in event_dic[event]["child"]["totalcalls"]]
-        totalcalls_parent = [float(i) for i in event_dic[event]["parent"]["totalcalls"]]
-        bf_child = [float(i) for i in event_dic[event]["child"]["bf"]]
-        bf_parent = [float(i) for i in event_dic[event]["parent"]["bf"]]
-        ratio_child = [float(i) for i in event_dic[event]["child"]["ratio"]]
-        ratio_parent = [float(i) for i in event_dic[event]["parent"]["ratio"]]
         totalcount_child = event_dic[event]["child"]["count"]
         totalcount_parent = event_dic[event]["parent"]["count"]
 
-        """ Calculate Child specific stats """
-        average_correlation_child = "n/a"
-        average_deldupratio_child = "n/a"
-        average_totalcalls_child = "n/a"
-        average_bf_child = "n/a"
-        average_ratio_child = "n/a"
-        bfs_child = "n/a"
-        ratios_child = "n/a"
-        stdev_correlation_child = "n/a"
-        stdev_deldupratio_child = "n/a"
-        stdev_totalcalls_child = "n/a"
-        stdev_bf_child = "n/a"
-        stdev_ratio_child = "n/a"
 
-        if totalcount_child >= 1 :
-            bfs_child_list = list(map(float, ['%.1f' % elem for elem in bf_child][0:20])) # Select first 20 BF's
-            ratios_child_list = list(map(float, ['%.1f' % elem for elem in ratio_child][0:20]))  # Select first 20 Ratios
-            bfs_child_list, ratios_child_list = zip(*sorted(zip(bfs_child_list,ratios_child_list)))
-            bfs_child = ' '.join(map(str, bfs_child_list))
-            ratios_child = ' '.join(map(str, ratios_child_list))
-
-            average_correlation_child = "%.3f" % (float(statistics.mean(correlation_child)))
-            average_deldupratio_child = "%.0f" % (float(statistics.mean(deldupratio_child)))
-            average_totalcalls_child = "%.0f" % (float(statistics.mean(totalcalls_child)))
-            average_bf_child = "%.1f" % (float(statistics.mean(bf_child)))
-            average_ratio_child = "%.2f" % (float(statistics.mean(ratio_child)))
             
-            if totalcount_child > 1:
-                stdev_correlation_child = "%.3f" % (float(statistics.stdev(correlation_child)))
-                stdev_deldupratio_child = "%.0f" % (float(statistics.stdev(deldupratio_child)))
-                stdev_totalcalls_child = "%.0f" % (float(statistics.stdev(totalcalls_child)))
-                stdev_bf_child = "%.1f" % (float(statistics.stdev(bf_child)))
-                stdev_ratio_child = "%.2f" % (float(statistics.stdev(ratio_child)))
+        def calculate_statistics(data, status):
+            dic = {}
+            average_correlation = "n/a"
+            average_deldupratio = "n/a"
+            average_totalcalls = "n/a"
+            average_bf = "n/a"
+            average_ratio = "n/a"
+            bfs = "n/a"
+            ratios = "n/a"
+            stdev_correlation = "n/a"
+            stdev_deldupratio = "n/a"
+            stdev_totalcalls = "n/a"
+            stdev_bf = "n/a"
+            stdev_ratio = "n/a"
 
-        """ Calculate Parent specific stats """
-        average_correlation_parent = "n/a"
-        average_deldupratio_parent = "n/a"
-        average_totalcalls_parent = "n/a"
-        average_bf_parent = "n/a"
-        average_ratio_parent = "n/a"
-        bfs_parent = "n/a"
-        ratios_parent = "n/a"
-        stdev_correlation_parent = "n/a"
-        stdev_deldupratio_parent = "n/a"
-        stdev_totalcalls_parent = "n/a"
-        stdev_bf_parent = "n/a"
-        stdev_ratio_parent = "n/a"
+            totalcount = data['count']
+            if totalcount >= 1:
+                bfs_subset, ratios_subset = zip(*sorted(zip(data["bf"][0:20], data["ratio"][0:20])))  # Select first 20 elements of BF and Ratio. Sort on BF and sort Ratio accordingly.
+                bfs = ' '.join(['%.1f' % elem for elem in bfs_subset])
+                ratios = ' '.join(['%.1f' % elem for elem in ratios_subset])
+                average_correlation = "%.3f" % (statistics.mean(data['correlation']))
+                average_deldupratio = "%.0f" % (statistics.mean(data['deldupratio']))
+                average_totalcalls = "%.0f" % (statistics.mean(data["totalcalls"]))
+                average_bf = "%.1f" % (statistics.mean(data["bf"]))
+                average_ratio = "%.2f" % (statistics.mean(data["ratio"]))
+                
+                if totalcount > 1:
+                    stdev_correlation = "%.3f" % (statistics.stdev(data["correlation"]))
+                    stdev_deldupratio = "%.0f" % (statistics.stdev(data["deldupratio"]))
+                    stdev_totalcalls = "%.0f" % (statistics.stdev(data["totalcalls"]))
+                    stdev_bf = "%.1f" % (statistics.stdev(data["bf"]))
+                    stdev_ratio = "%.2f" % (statistics.stdev(data["ratio"]))
+                      
+            dic['total_{status}'.format(status=status)] = totalcount
+            dic['cr_avr_{status}'.format(status=status)] = average_correlation
+            dic['cr_stdev_{status}'.format(status=status)] = stdev_correlation
+            dic['deldup_avr_{status}'.format(status=status)] = average_deldupratio
+            dic['deldup_stdev_{status}'.format(status=status)] = stdev_deldupratio
+            dic['numbercalls_avr_{status}'.format(status=status)] = average_totalcalls
+            dic['numbercalls_stdev_{status}'.format(status=status)] = stdev_totalcalls
+            dic['average_bf_{status}'.format(status=status)] = average_bf
+            dic['stdev_bf_{status}'.format(status=status)] = stdev_bf
+            dic['average_ratio_{status}'.format(status=status)] = average_ratio
+            dic['stdev_ratio_{status}'.format(status=status)] = stdev_ratio
+            dic['bfs_{status}'.format(status=status)] = bfs
+            dic['ratios_{status}'.format(status=status)] = ratios
 
-        if totalcount_parent >= 1:
-            bfs_parent_list = list(map(float, ['%.1f' % elem for elem in bf_parent][0:20]))   # Select first 20 BFs. 
-            ratios_parent_list = list(map(float, ['%.1f' % elem for elem in ratio_parent][0:20]))  # Select first 20 Ratios.
-            bfs_parent_list, ratios_parent_list = zip(*sorted(zip(bfs_parent_list,ratios_parent_list)))
-            bfs_parent = ' '.join(map(str, bfs_parent_list))
-            ratios_parent = ' '.join(map(str, ratios_parent_list))
-            
-            average_correlation_parent = "%.3f" % (float(statistics.mean(correlation_parent)))
-            average_deldupratio_parent = "%.0f" % (float(statistics.mean(deldupratio_parent)))
-            average_totalcalls_parent = "%.0f" % (float(statistics.mean(totalcalls_parent)))
-            average_bf_parent = "%.1f" % (float(statistics.mean(bf_parent)))
-            average_ratio_parent = "%.2f" % (float(statistics.mean(ratio_parent)))
-            
-            if totalcount_parent > 1:
-                stdev_correlation_parent = "%.3f" % (float(statistics.stdev(correlation_parent)))
-                stdev_deldupratio_parent = "%.0f" % (float(statistics.stdev(deldupratio_parent)))
-                stdev_totalcalls_parent = "%.0f" % (float(statistics.stdev(totalcalls_parent)))
-                stdev_bf_parent = "%.1f" % (float(statistics.stdev(bf_parent)))
-                stdev_ratio_parent = "%.2f" % (float(statistics.stdev(ratio_parent)))
+            return dic
+
+        """ calculate statistics for children """
+        substitute_dic = calculate_statistics(event_dic[event]["child"], 'child')
+        """ calculate statistics for parents """
+        substitute_dic.update(calculate_statistics(event_dic[event]["parent"], 'parent'))
 
         template_file = Template(open(settings.html).read())
-        substitute_dic = {'total_child' : totalcount_child, 
-            'cr_avr_child' : average_correlation_child, 'cr_stdev_child' : stdev_correlation_child,
-            'deldup_avr_child': average_deldupratio_child, 'deldup_stdev_child' : stdev_deldupratio_child, 
-            'numbercalls_avr_child' : average_totalcalls_child, 'numbercalls_stdev_child' : stdev_totalcalls_child,
-            'total_parent' : totalcount_parent, 
-            'cr_avr_parent' : average_correlation_parent, 'cr_stdev_parent' : stdev_correlation_parent, 
-            'deldup_avr_parent': average_deldupratio_parent, 'deldup_stdev_parent' : stdev_deldupratio_parent, 
-            'numbercalls_avr_parent' : average_totalcalls_parent, 'numbercalls_stdev_parent' : stdev_totalcalls_parent,
-            'average_bf_child': average_bf_child,  'stdev_bf_child': stdev_bf_child,
-            'average_ratio_child': average_ratio_child, 'stdev_ratio_child': stdev_ratio_child,
-            'average_bf_parent': average_bf_parent, 'stdev_bf_parent': stdev_bf_parent,
-            'average_ratio_parent': average_ratio_parent, 'stdev_ratio_parent': stdev_ratio_parent,
-            'bfs_child' : bfs_child, 'ratios_child': ratios_child,
-            'bfs_parent' : bfs_parent, 'ratios_parent': ratios_parent
-        }
         new_file = template_file.substitute(substitute_dic)       
         event_list.append("".join(new_file.split("\n")))
         total_event_list.append(event_list)
