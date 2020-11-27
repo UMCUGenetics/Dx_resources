@@ -115,6 +115,30 @@ Include in setting.py if these file are needed in the ExomeDepth analysis.
 
 
 ## Other scripts in this repository 
+### check_gender_bam.py ###
+Check gender of BAM files in a specific folder.
+Consider male is nonPAR regions of chrY fraction >=0.12 and chrX <= 2.3
+Consider female is nonPAR regions of chrY fraction <=0.06 and chrX >= 4.0
+All other combinations are considerend unknown (these include i.e. XXY and X or sample with mosaik/large CNV, and/or contamination)
+``` bash
+python check_gender_bam.py {inputfolder}
+```
+
+### identify_merge_samples.py
+``` bash
+python identify_merge_samples.py {inputfolder} {output name for list with merge_samples} 
+```
+This script will produce a list of merge samples based on slide barcode comparison in BAM and runID.\
+Made specific for UMCU IAP and NF runs.
+
+#### make_BEDdetail.py
+``` bash
+python make_BEDdetail.py {inputfolder} {outputfolder} {output prefix} {list with merge_samples}
+```
+Make a BED detail file for UCSC browser. This BED file is a frequency summary of all events detected in the provided VCF files.\
+WES-CNV files should be present in inputfolder.\
+List with merge_samples is the output file of identify_merge_samples.py or tabseperated file inclusding sampleID and runID, in that order.
+
 #### exomedepth_summary.py 
 Creates ExomeDepth summary stats file. This scripts need to be run with python3
 

@@ -20,13 +20,12 @@ def valid_read(read):
 def get_gender(bam):
     """Determine chrY ratio based on read count in bam (excl PAR)."""
     workfile = pysam.AlignmentFile(bam, "rb")
-    locus = 'Y:2649520-59034050'
-    yreads = float(sum([valid_read(read) for read in workfile.fetch(region=locus)]))
+    yreads = float(sum([valid_read(read) for read in workfile.fetch(region=settings.gender_determination_locus_y)]))
     total = float(workfile.mapped)
     yratio = float("%.2f" % ((yreads / total) * 100))
-    if yratio <= 0.06:
+    if yratio <= float(settings.gender_determination_y_ratio[0]):
         return "female"
-    elif yratio >= 0.12:
+    elif yratio >= float(settings.gender_determination_y_ratio[1]):
         return "male"
     else:
         return "unknown"
@@ -212,7 +211,11 @@ def call_cnv(args):
 
         qc_status = ""
         if args.qc_stats:
-            if correlation < float(settings.correlation) or number_calls > int(settings.number_calls) or del_dup_ratio < float(settings.del_dup_ratio[0]) or del_dup_ratio > float(settings.del_dup_ratio[1]):
+            if (correlation < float(settings.correlation) or 
+                number_calls < int(settings.number_calls[0]) or 
+                number_calls > int(settings.number_calls[1]) or
+                del_dup_ratio < float(settings.del_dup_ratio[0]) or 
+                del_dup_ratio > float(settings.del_dup_ratio[1])):
                 qc_status = "\tFAIL"
             else:
                 qc_status = "\tOK"
