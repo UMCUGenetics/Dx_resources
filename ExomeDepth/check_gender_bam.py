@@ -13,14 +13,15 @@ def is_valid_read(read):
 def get_gender(bam, arguments):
     """Determine chrY ratio based on read count in bam (excl PAR)."""
     with pysam.AlignmentFile(bam, "rb") as bam_file:
-        y_reads = float(sum([valid_read(read) for read in bam_file.fetch(region=arguments.gender_determination_locus_y)]))
-        x_reads = float(sum([valid_read(read) for read in bam_file.fetch(region=arguments.gender_determination_locus_x)]))
-        total_reads = float(workfile.mapped)
+        y_reads = float(sum([is_valid_read(read) for read in bam_file.fetch(region=arguments.gender_determination_locus_y)]))
+        x_reads = float(sum([is_valid_read(read) for read in bam_file.fetch(region=arguments.gender_determination_locus_x)]))
+        total_reads = float(bam_file.mapped)
         y_ratio = (y_reads / total_reads) * 100
         x_ratio = (x_reads / total_reads) * 100
     
         if y_ratio <= arguments.gender_determination_y_ratio_female and x_ratio >= arguments.gender_determination_x_ratio_female:
             return "female\t{y_ratio:.2f}\t{x_ratio:.2f}".format(y_ratio=y_ratio, x_ratio=x_ratio)
+
         elif y_ratio >= arguments.gender_determination_y_ratio_male and x_ratio <= arguments.gender_determination_x_ratio_male:
             return "male\t{y_ratio:.2f}\t{x_ratio:.2f}".format(y_ratio=y_ratio, x_ratio=x_ratio)
         else:
