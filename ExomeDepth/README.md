@@ -1,12 +1,30 @@
 # Wrapper scripts for ExomeDepth (UMCU version)
 
 All script are made tested using Python 3.6.8
-## Make virtual python enviroment
-``` bash
-virtualenv -p python3 venv
-. venv/bin/activate
+## Installation 
+To run the ExomeDepth wrapper scripts we need to create a virtual python environment and folder with all the required R packages.
+
+### Make virtual python enviroment
+```bash
+python3 -m venv venv
+source venv/bin/activate
 easy_install pip
 pip install -r requirements.txt
+```
+
+### Install R packages in custom library location
+Start a singularity shell with the [rocker tidyverse](https://hub.docker.com/layers/rocker/tidyverse/3.5.1/images/sha256-916d4e919fbac9ee1f06db7622b4731268dff0cb17998b3db6f629a3e58f73a7?context=explore) docker container, set R_LIBS location and open R.
+```bash
+singularity shell -B /path:/path docker://rocker/tidyverse:3.5.1
+export R_LIBS=/path/to/R_libs/3.5.1
+R
+```
+Install R packages.
+```R
+library(devtools)
+BiocManager::install(c("Biostrings","Rsamtools","GenomicRanges","VGAM","zlibbioc","bitops","BiocGenerics","BiocParallel","S4Vectors","IRanges","GenomeInfoDb","RCurl","GenomeInfoDbData","XVector","GenomicAlignments","Biobase","DelayedArray","matrixStats","Matrix","lattice","aod","stringr","stringi","dplyr","rlang","Rcpp","assertthat","glue","pkgconfig","tibble","pillar","crayon","vctrs","tidyselect","purrr","SummarizedExperiment","R6"))
+
+install_github("UMCUGenetics/ExomeDepth")
 ```
 
 ## run_ExomeDepth.py

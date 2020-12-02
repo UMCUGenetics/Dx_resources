@@ -18,7 +18,9 @@ html = str(cwd)+"template.html"
 reference_genome = "/hpc/diaggen/data/databases/ref_genomes/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta"
 
 #Used R version
-r_version = "R/3.5.1"
+r_library_path = "/data/software/tools/R_libs/3.5.1"
+singularity_r_container = "docker://rocker/tidyverse:3.5.1"
+singularity_mount_path = "/hpc/diaggen:/hpc/diaggen"
 
 # Location of target files
 refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
