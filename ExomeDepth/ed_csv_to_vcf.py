@@ -50,8 +50,14 @@ if __name__ == "__main__":
 
     df_csv = pd.read_csv(args.inputcsv)
     vcf_reader.samples = [args.sampleid]  # Change template sampleid in sampleid
-    """Add metadata ED reference set used."""
+    
+    """Add reference and ED reference set metadata."""
     vcf_reader.metadata['EDreference'] = ["{0}_{1}_{2}".format(args.model,args.gender,args.refset)]
+    vcf_reader.metadata['reference'] = settings.reference_genome.split('/')[-1]
+
+    """Open reference genome fasta file"""
+    reference_fasta = pysam.Fastafile(settings.reference_genome)
+ 
     with open(args.inputcsv[0:-4]+".vcf", 'w') as vcf_output_file:
         vcf_writer = vcf.Writer(vcf_output_file, vcf_reader)
 
@@ -74,10 +80,8 @@ if __name__ == "__main__":
             row_type = str(row['type'])
 
             """Include reference genome base"""
-            ref_file = vcf_reader.metadata['reference']
-            fasta_open = pysam.Fastafile(ref_file)
-            seq_fasta = fasta_open.fetch(str(row['chromosome']), int(row['start']-1), int(row['start']))  # 0-based coordinates
-            new_record.REF = seq_fasta
+            reference_base = reference_fasta.fetch(str(row['chromosome']), int(row['start']-1), int(row['start']))  # 0-based coordinates
+            new_record.REF = reference_base
  
             """Write type of call."""
             if row_type == "duplication":
@@ -180,3 +184,4 @@ if __name__ == "__main__":
             vcf_writer.write_record(new_record)
 
         vcf_writer.flush()
+   reference_fasta.close()
