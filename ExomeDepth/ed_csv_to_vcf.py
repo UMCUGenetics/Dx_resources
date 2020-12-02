@@ -67,7 +67,7 @@ if __name__ == "__main__":
         for index, row in df_csv.iterrows():
             if row['type'] == "deletion":
                 dels += 1
-            if row['type'] == "duplication":
+            elif row['type'] == "duplication":
                  dups += 1
         perc_del = "%.2f" % ((float(dels) / (float(dels) + float(dups))) * 100)
         total_calls = dels + dups
