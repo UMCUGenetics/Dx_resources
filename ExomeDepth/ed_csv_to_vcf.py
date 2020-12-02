@@ -184,4 +184,4 @@ if __name__ == "__main__":
             vcf_writer.write_record(new_record)
 
         vcf_writer.flush()
-   reference_fasta.close()
+    reference_fasta.close()
