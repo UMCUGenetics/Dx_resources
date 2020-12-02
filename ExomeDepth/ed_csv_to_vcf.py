@@ -93,6 +93,8 @@ if __name__ == "__main__":
             else:
                 new_record.ALT = ["NaN"]
                 new_record.INFO['SVTYPE'] = "NaN"
+            
+            """Add QUAL and Filter fields """
             new_record.QUAL = "1000"  # as STRING
             new_record.FILTER = "PASS"
 
@@ -102,7 +104,7 @@ if __name__ == "__main__":
                 ratio = 99
 
             """Consider homozygous genotype only for deletion and with ratio <0.25."""
-            if str(row['type']).lower() == "deletion" and float(ratio) < float(settings.ratio_threshold_del):
+            if row_type.lower() == "deletion" and float(ratio) < float(settings.ratio_threshold_del):
                 genotype = "1/1"
             else:  # Always het for duplication, and het for deletion if not < settings.ratio_threshold_del
                 genotype = "0/1"
