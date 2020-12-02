@@ -1,5 +1,3 @@
-.libPaths("/hpc/diaggen/software/production/R_libs/ExomeDepthv2.0.0/3.5.1/")
-
 library(ExomeDepth)
 library(methods)
 library(stringr)
