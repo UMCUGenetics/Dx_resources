@@ -18,7 +18,7 @@ html = str(cwd)+"template.html"
 reference_genome = "/hpc/diaggen/data/databases/ref_genomes/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta"
 
 #Used R version
-r_library_path = "/data/software/tools/R_libs/3.5.1"
+r_library_path = "/hpc/diaggen/software/production/R_libs/ExomeDepthv2.0.0/3.5.1_singularity/"
 singularity_r_container = "docker://rocker/tidyverse:3.5.1"
 singularity_mount_path = "/hpc/diaggen:/hpc/diaggen"
 
