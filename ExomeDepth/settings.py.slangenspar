@@ -1,7 +1,7 @@
 ## Settings used in run_Exomedepth.py ##
 
 # Location of repository
-cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/"
+cwd = "/data/software/development/Dx_resources/ExomeDepth/"
 
 # R script for RefSet and CNV calling
 call_cnv_r = str(cwd)+"Exomedepth_callCNVs.R"
@@ -15,16 +15,16 @@ vcf_template = str(cwd)+"template.vcf"
 html = str(cwd)+"template.html"
 
 # Reference genome
-reference_genome = "/hpc/diaggen/data/databases/ref_genomes/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta"
+reference_genome = "/data/databases/ref_genomes/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta"
 
 #Used R version
-r_library_path = "/hpc/diaggen/software/production/R_libs/ExomeDepthv2.0.0/3.5.1_singularity/"
+r_library_path = "/data/software/tools/R_libs/3.5.1"
 singularity_r_container = "docker://rocker/tidyverse:3.5.1"
-singularity_mount_path = "/hpc/diaggen:/hpc/diaggen"
+singularity_mount_path = "/data:/data"
 
 # Location of target files
-refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
-reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
+refset_dir = "/data/databases/ExomeDepth_refset/"
+reffile_dir = "/data/software/production/Dx_tracks/ExomeDepth/"
 
 #Reference set
 refset = "Aug2020v2"

@@ -42,8 +42,10 @@ def get_merge_status(bam, runid):
 
 def multiprocess_ref(mp_list):
 
-    action = "module load {renv} && Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
-        renv = settings.r_version,
+    action = "export SINGULARITYENV_R_LIBS={r_libs} && singularity exec -B {singularity_mnt} {singularity_container} Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
+        r_libs=settings.r_library_path,
+        singularity_mnt=settings.singularity_mount_path,
+        singularity_container=settings.singularity_r_container,
         refscript = settings.create_refset_r,
         folder = mp_list[0],
         outputid = mp_list[1],
@@ -131,8 +133,10 @@ def multiprocess_call(multiprocess_list):
         refset = args.refset
         )
 
-    action = "module load {rversion} && Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected} {run}".format(
-        rversion = settings.r_version,
+    action = "export SINGULARITYENV_R_LIBS={r_libs} && singularity exec -B {singularity_mnt} {singularity_container} Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected} {run}".format(
+        r_libs=settings.r_library_path,
+        singularity_mnt=settings.singularity_mount_path,
+        singularity_container=settings.singularity_r_container,
         ed_r = settings.call_cnv_r,
         refset_R = refset_R,
         target_bed = multiprocess_list[3],
