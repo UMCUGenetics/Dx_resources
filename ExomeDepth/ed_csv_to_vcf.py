@@ -50,8 +50,14 @@ if __name__ == "__main__":
 
     df_csv = pd.read_csv(args.inputcsv)
     vcf_reader.samples = [args.sampleid]  # Change template sampleid in sampleid
-    """Add metadata ED reference set used."""
+    
+    """Add reference and ED reference set metadata."""
     vcf_reader.metadata['EDreference'] = ["{0}_{1}_{2}".format(args.model,args.gender,args.refset)]
+    vcf_reader.metadata['reference'] = settings.reference_genome.split('/')[-1]
+
+    """Open reference genome fasta file"""
+    reference_fasta = pysam.Fastafile(settings.reference_genome)
+ 
     with open(args.inputcsv[0:-4]+".vcf", 'w') as vcf_output_file:
         vcf_writer = vcf.Writer(vcf_output_file, vcf_reader)
 
@@ -61,7 +67,7 @@ if __name__ == "__main__":
         for index, row in df_csv.iterrows():
             if row['type'] == "deletion":
                 dels += 1
-            if row['type'] == "duplication":
+            elif row['type'] == "duplication":
                  dups += 1
         perc_del = "%.2f" % ((float(dels) / (float(dels) + float(dups))) * 100)
         total_calls = dels + dups
@@ -74,10 +80,8 @@ if __name__ == "__main__":
             row_type = str(row['type'])
 
             """Include reference genome base"""
-            ref_file = vcf_reader.metadata['reference']
-            fasta_open = pysam.Fastafile(ref_file)
-            seq_fasta = fasta_open.fetch(str(row['chromosome']), int(row['start']-1), int(row['start']))  # 0-based coordinates
-            new_record.REF = seq_fasta
+            reference_base = reference_fasta.fetch(str(row['chromosome']), int(row['start']-1), int(row['start']))  # 0-based coordinates
+            new_record.REF = reference_base
  
             """Write type of call."""
             if row_type == "duplication":
@@ -89,6 +93,8 @@ if __name__ == "__main__":
             else:
                 new_record.ALT = ["NaN"]
                 new_record.INFO['SVTYPE'] = "NaN"
+            
+            """Add QUAL and Filter fields """
             new_record.QUAL = "1000"  # as STRING
             new_record.FILTER = "PASS"
 
@@ -98,7 +104,7 @@ if __name__ == "__main__":
                 ratio = 99
 
             """Consider homozygous genotype only for deletion and with ratio <0.25."""
-            if str(row['type']).lower() == "deletion" and float(ratio) < float(settings.ratio_threshold_del):
+            if row_type.lower() == "deletion" and float(ratio) < float(settings.ratio_threshold_del):
                 genotype = "1/1"
             else:  # Always het for duplication, and het for deletion if not < settings.ratio_threshold_del
                 genotype = "0/1"
@@ -180,3 +186,4 @@ if __name__ == "__main__":
             vcf_writer.write_record(new_record)
 
         vcf_writer.flush()
+    reference_fasta.close()
