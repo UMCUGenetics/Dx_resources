@@ -12,10 +12,16 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Install R packages in custom library location
-Start a singularity shell with the [rocker tidyverse](https://hub.docker.com/layers/rocker/tidyverse/3.5.1/images/sha256-916d4e919fbac9ee1f06db7622b4731268dff0cb17998b3db6f629a3e58f73a7?context=explore) docker container, set R_LIBS location and open R. Make sure to change -B (root path for all required analysis files) and R_LIBS paths (location of R modules). 
+### Build singularity R image 
+Build a singularity container image from the [rocker tidyverse](https://hub.docker.com/layers/rocker/tidyverse/3.5.1/images/sha256-916d4e919fbac9ee1f06db7622b4731268dff0cb17998b3db6f629a3e58f73a7?context=explore) docker container.
 ```bash
-singularity shell -B </change/this/path>:</change/this/path> docker://rocker/tidyverse:3.5.1
+singularity build rocker-tidyverse-3.5.1.img docker://rocker/tidyverse:3.5.1
+```
+
+### Install R packages in custom library location
+Start a singularity shell using the [rocker tidyverse](https://hub.docker.com/layers/rocker/tidyverse/3.5.1/images/sha256-916d4e919fbac9ee1f06db7622b4731268dff0cb17998b3db6f629a3e58f73a7?context=explore) singularity image container, set R_LIBS location and open R. Make sure to change -B (root path for all required analysis files) and R_LIBS paths (location of R modules). 
+```bash
+singularity shell -B </change/this/path>:</change/this/path> /change/path/to/rocker-tidyverse-3.5.1.img
 export R_LIBS=</change/path/to/R_libs/3.5.1>
 R
 ```
