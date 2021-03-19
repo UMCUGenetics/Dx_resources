@@ -55,7 +55,7 @@ python run_ExomeDepth.py callcnv  <output folder> <input bam> <run id> <sample i
 Use 2 threads for each sample. Thus to process 4 samples simultaneously use 8 threads.
 ``` bash
 . </path/to/repo>/venv/bin/activate
-python submit_batch_exomedepth.py <input folder> <output folder> <samples(/threads)>
+python submit_batch_exomedepth.py <input folder> <output folder> <runid> <samples(/threads)>
 ```
 
 ## How to make a HC file
@@ -84,7 +84,7 @@ python submit_batch_exomedepth.py <input folder> <output folder> <samples(/threa
 
     Calculate coverage stats for each male/female folder for each population
     ``` bash
-    sh run_sambamba.sh <folder> <bed_file> <email>
+    sh run_sambamba.sh <path to sambamba executable> <folder> <bed_file> <email>
     ```
 
     Calculate coverage stats overview for each male/female folder for each population
@@ -122,6 +122,9 @@ python submit_batch_exomedepth.py <input folder> <output folder> <samples(/threa
     cat <bed_file>_<population1> <bed_file>_<population2> | cut -f1,2,3 | sort | uniq -c | awk '($1==2)' |  sed 's/ \+/\t/g'  |cut -f 3,4,5 | sed 's/X/999999999/g'| sed 's/Y/9999999999/g' | sort -nk1 -nk2 |sed 's/9999999999/Y/g' | sed 's/999999999/X/g' > <final_bed_file>
     cat <final_bed_file> |awk '{OFS="\t"; print $1,$2,$3,$1":"$2"-"$3 }' > exons.hg19.full.tsv
     ```
+    Note: a tab-seperated header should be included in exons.hg19.full.tsv:
+    chromosome	start	end	name
+
     Copy the final_bed_file and exons.hg19.full.tsv to a repository/location of choice.\
     Include in `setting.py` if these file are needed in the ExomeDepth analysis.
 
