@@ -57,9 +57,8 @@ def slice_vcf(args, merge_dic):
                 sampletype = "parent"
                 parents += 1
 
-            edreference = vcf_reader.metadata['EDreference'][0]
-            gender = edreference.split("_")[1]
-            refset = edreference.split("_")[2]
+            gender = vcf_reader.metadata['gender_refset'][0]
+            refset = vcf_reader.metadata['exomedepth_reference'][0]
 
             for record in vcf_reader:
                 """ General fields """
