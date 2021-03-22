@@ -32,12 +32,22 @@ if __name__ == "__main__":
     parser.add_argument('refdate', help='Date of the used reference set')
     parser.add_argument('runid', help='Run ID')
     parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
+    parser.add_argument('--warning', help='add warning flag if VCF name includes warning flag')
     args = parser.parse_args()
 
     igv_settings = settings.igv_settings
-    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_ref.igv".format(args.refdate, args.bam, args.runid)
-    igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_ref.igv".format(args.refdate, args.bam, args.runid)
-    vcf_hc = "HC/HC_{0}_{1}_{2}_exome_calls.vcf".format(args.refdate, args.bam, args.runid)
+  
+    igv_extension = "ref.igv"
+    if args.warning:
+        igv_extension = "{}_ref.igv".format(args.warning)
+
+    vcf_extension = "_exome_calls.vcf"
+    if args.warning:
+        vcf_extension = "_exome_calls_{}.vcf".format(args.warning)
+
+    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_{3}".format(args.refdate, args.sample, args.runid, igv_extension)
+    igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sample, args.runid, igv_extension)
+    vcf_hc = "HC/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sample, args.runid, vcf_extension)
     if args.pipeline == "iap": #For analysis based on IAP
         bam_id = "../{0}/mapping/{1}".format(args.sampleid, args.bam)
         vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(args.sampleid)
