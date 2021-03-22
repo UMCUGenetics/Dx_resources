@@ -15,6 +15,9 @@ model <- args[7]					# used calling model (eg HC/UMCU)
 refset <- args[8] 					# used reference set (eg Jan2020)
 expectedCNVLength <- as.numeric(args[9])		# expected length CNV (eg 50000)
 run_id <- args[10]					# runID. 
+log_extension <- args[11]				# extension for CNV log file 
+igv_extension <- args[12]                               # extension for igv file
+sampleid <- args[13]                               	# SampleID
 
 exons.hg19= read.table(input_exon.hg19,sep="\t", header=TRUE)
 data(Conrad.hg19)
@@ -60,7 +63,7 @@ for (i in 1:nsamples) {
       n.bins.reduced = 10000
   )
 
-  file_name=paste(model, refset, my.current.samplename, run_id, "CNV.log",sep="_")
+  file_name=paste(model, refset, sampleid, run_id, log_extension, sep="_")
   write_file = file(file_name,"w")
   line1=paste("Number of selected reference samples ",toString(length(my.choice[[1]])),sep="\t")
   write(line1,write_file,append=T)
@@ -94,11 +97,10 @@ for (i in 1:nsamples) {
   )
 
   str(all.exons)
-  output.file <- paste(model, refset, my.current.samplename, run_id,'exome_calls.csv',sep = "_")
+  output.file <- paste(model, refset, sampleid, run_id,'exome_calls.csv',sep = "_")
 
 
-
-  save(all.exons,file=paste(model, refset, my.current.samplename, run_id, "all.exons",sep = "_"))
+  save(all.exons,file=paste(model, refset, sampleid, run_id, "all.exons",sep = "_"))
   refsize <- toString(length(my.choice[[1]]))
   correlation <- all.exons@refcorrelation
   print_array <- cbind(all.exons@CNV.calls,correlation,refsize)
@@ -150,5 +152,4 @@ correl <- all.exons@refcorrelation
 
 ref_df = data.frame(chroms, starts, ends,name, observed,log2ratio,freq, expected, min, max, correl)
 colnames(ref_df) <- c("chr","start", "end","locusID","ratio_test","log2ratio_test","frequency_test","ratio_expected","ref_min.ratio", "ref_max.ratio","refset_correlation")
-write.table(ref_df,paste(model, refset, my.current.samplename, run_id,'ref.igv',sep = "_"),sep="\t",row.names=FALSE, quote=FALSE)
-
+write.table(ref_df,paste(model, refset, sampleid, run_id, igv_extension, sep = "_"),sep="\t",row.names=FALSE, quote=FALSE)
