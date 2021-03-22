@@ -31,9 +31,10 @@ if __name__ == "__main__":
     parser.add_argument('inputcsv', help='Full path to input CSV file')    
     parser.add_argument('refset', help='Used reference set ID')
     parser.add_argument('model', help='Used model ID')
-    parser.add_argument('gender', help='Used gender')
+    parser.add_argument('gender', choices=['male', 'female'], help='Used gender')
     parser.add_argument('sampleid', help='sampleid name to be included in VCF')
     parser.add_argument('template', help='Full path to template VCF')
+    parser.add_argument('--warning', help='Warning message to be included in VCF filename')
     args = parser.parse_args()
 
     vcf_reader = vcf.Reader(open(args.template, 'r'))
@@ -52,13 +53,22 @@ if __name__ == "__main__":
     vcf_reader.samples = [args.sampleid]  # Change template sampleid in sampleid
     
     """Add reference and ED reference set metadata."""
-    vcf_reader.metadata['EDreference'] = ["{0}_{1}_{2}".format(args.model,args.gender,args.refset)]
-    vcf_reader.metadata['reference'] = settings.reference_genome.split('/')[-1]
+    vcf_reader.metadata['exomedepth_reference'] = [args.refset]
+    vcf_reader.metadata['calling_model'] = [args.model]
+    vcf_reader.metadata['gender_refset'] = [args.gender]
+    vcf_reader.metadata['reference'] = "file:{}".format(settings.reference_genome)
+
+    dx_track_git = subprocess.getoutput("git --git-dir={repo}/.git log --pretty=oneline --decorate -n 1".format(repo=settings.reffile_repo))
+    vcf_reader.metadata['track_repository'] = [dx_track_git]
 
     """Open reference genome fasta file"""
     reference_fasta = pysam.Fastafile(settings.reference_genome)
- 
-    with open(args.inputcsv[0:-4]+".vcf", 'w') as vcf_output_file:
+
+    if args.warning:
+        warning = "_{}".format(args.warning)
+    else:
+        warning = ""
+    with open("{input}{warning}.vcf".format(input=args.inputcsv[0:-4], warning=warning), 'w') as vcf_output_file:
         vcf_writer = vcf.Writer(vcf_output_file, vcf_reader)
 
         """Determine percentage DEL/(DEL+DUP) for all calls in VCF."""
