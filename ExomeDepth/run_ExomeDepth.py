@@ -109,12 +109,18 @@ def make_refset(args):
 def multiprocess_call(multiprocess_list):
 
     """Log all settings in setting.log file"""
-    log_file="{output}/{model}_{refset}_{bam}_{run}_settings.log".format(
-        output = multiprocess_list[1],
-        model = multiprocess_list[0],
-        refset = args.refset,
-        bam = args.sample,
-        run = args.run
+
+    setting_log_extension = "settings.log"
+    if args.warning:
+        setting_log_extension = "{}_settings.log".format(args.warning)
+
+    log_file="{output}/{model}_{refset}_{bam}_{run}_{setting_log_extension}".format(
+        output=multiprocess_list[1],
+        model=multiprocess_list[0],
+        refset=args.refset,
+        bam=args.sample,
+        run=args.run,
+        setting_log_extension=setting_log_extension
         )
     log_setting_file = open(log_file, "w")
     options = vars(args)
@@ -127,40 +133,54 @@ def multiprocess_call(multiprocess_list):
 
     """Perform ExomeDepth analysis"""
     refset_R = "{refset_dir}/{model}_{gender}_{refset}.EDref".format(
-        refset_dir = settings.refset_dir,
-        model = multiprocess_list[0],
-        gender = multiprocess_list[2],
-        refset = args.refset
+        refset_dir=settings.refset_dir,
+        model=multiprocess_list[0],
+        gender=multiprocess_list[2],
+        refset=args.refset
         )
 
-    action = "export SINGULARITYENV_R_LIBS={r_libs} && singularity exec -B {singularity_mnt} {singularity_container} Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected} {run}".format(
+    r_log_extension = "CNV.log"
+    if args.warning:
+        r_log_extension = "{warning}_CNV.log".format(warning=args.warning)
+
+    r_igv_extension = "ref.igv"
+    if args.warning:
+        r_igv_extension = "{warning}_ref.igv".format(warning=args.warning)
+
+    action = "export SINGULARITYENV_R_LIBS={r_libs} && singularity exec -B {singularity_mnt} {singularity_container} Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} {prob} {bam} {model} {refset} {expected} {run} {r_log_extension} {r_igv_extension} {sampleid}".format(
         r_libs=settings.r_library_path,
         singularity_mnt=settings.singularity_mount_path,
         singularity_container=settings.singularity_r_container,
-        ed_r = settings.call_cnv_r,
-        refset_R = refset_R,
-        target_bed = multiprocess_list[3],
-        refgenome = settings.reference_genome,
-        exon_bed = multiprocess_list[4],
-        prob = settings.probability[str(multiprocess_list[0])],
-        bam =  multiprocess_list[5],
-        model =  multiprocess_list[0],
-        refset = args.refset,
-        expected = args.expectedCNVlength,
-        run = args.run 
+        ed_r=settings.call_cnv_r,
+        refset_R=refset_R,
+        target_bed=multiprocess_list[3],
+        refgenome=settings.reference_genome,
+        exon_bed=multiprocess_list[4],
+        prob=settings.probability[str(multiprocess_list[0])],
+        bam=multiprocess_list[5],
+        model=multiprocess_list[0],
+        refset=args.refset,
+        expected=args.expectedCNVlength,
+        run=args.run,
+        r_log_extension=r_log_extension,
+        r_igv_extension=r_igv_extension,
+        sampleid=args.sample
         )
     os.system(action)
 
     """Perform csv to vcf conversion """
     action = "python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template}".format(
-        csv2vcf = settings.csv2vcf,
-        inputcsv = "{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.inputbam,args.run),
-        refset = args.refset,
-        model = multiprocess_list[0],
-        gender = multiprocess_list[2],
-        sampleid = args.sample,
-        template = settings.vcf_template
+        csv2vcf=settings.csv2vcf,
+        inputcsv="{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.sample,args.run),
+        refset=args.refset,
+        model=multiprocess_list[0],
+        gender=multiprocess_list[2],
+        sampleid=args.sample,
+        template=settings.vcf_template
         )
+    if args.warning:
+        action = "{action} --warning {warning}".format(action=action, warning=args.warning)
+
     os.system(action)
 
 def call_cnv(args):
@@ -174,12 +194,11 @@ def call_cnv(args):
          os.system("mkdir -p " + str(output_folder)) 
 
     """Determine gender"""
-    gender = get_gender(bam)
-    if args.genderfile:  # overrule gender as given in gender_file
-       gender_dic = gender_file(args.genderfile)
-       for item in gender_dic:
-            if str(item) in str(bam):
-               gender = gender_dic[item]
+    if args.refset_gender:  # Used gender if used as input parameter.
+        gender = args.refset_gender
+    else:  # Otherwise determine based on chrY count
+        gender = get_gender(bam)
+
     if gender == "unknown":  # try to determine gender on BAM ID annotation
         if re.search('[C|P]M', bam.split("/")[-1]):
             print("Sample {0} has a unknown gender based on chrY reads, but resolved as male based on sampleID".format(bam.split("/")[-1]))
@@ -189,7 +208,6 @@ def call_cnv(args):
             gender = "female"
         else:
             sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))
-
 
     multiprocess_list=[]
     for model in analysis:
@@ -201,15 +219,26 @@ def call_cnv(args):
     """Make log for stats of each model """
     merge = get_merge_status(bam, args.run)
     for model in analysis:
-        sample_model_log = open("{output}/{model}_{sample}_stats.log".format(output=args.output, model=model, sample=args.sample),"w")
+        stats_log_extension = "_"
+        if args.warning:
+            stats_log_extension = "_{}_".format(args.warning)
+               
+        sample_model_log = open("{output}/{model}_{sample}{stats_log_extension}stats.log".format(output=args.output, model=model, stats_log_extension=stats_log_extension, sample=args.sample),"w")
+
         """ Get stats from VCF """
-        vcf = "{output}/{model}_{refset}_{bam}_{run}_exome_calls.vcf".format(
+        vcf_extension = "exome_calls.vcf"
+        if args.warning:
+            vcf_extension = "exome_calls_{}.vcf".format(args.warning)
+
+        vcf = "{output}/{model}_{refset}_{sample}_{run}_{vcf_extension}".format(
             output=args.output,
             model=model,
             refset=args.refset,
-            bam=bam.split("/")[-1],
-            run=args.run
+            sample=args.sample,
+            run=args.run,
+            vcf_extension=vcf_extension
             )
+       
         stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
         correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
 
@@ -220,9 +249,11 @@ def call_cnv(args):
                 number_calls > int(settings.number_calls[1]) or
                 del_dup_ratio < float(settings.del_dup_ratio[0]) or 
                 del_dup_ratio > float(settings.del_dup_ratio[1])):
-                qc_status = "\tFAIL"
-            else:
-                qc_status = "\tOK"
+                qc_status = "{qc_status}\tWARNING:QC_FAIL".format(qc_status=qc_status)
+        if merge:
+            qc_status = "{qc_status}\tWARNING:MergeSample".format(qc_status=qc_status)
+        if args.warning:
+            qc_status = "{qc_status}\tWARNING:{warning}".format(qc_status=qc_status, warning=args.warning)        
 
         sample_model_log.write("{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
             sample=args.sample,
@@ -239,27 +270,19 @@ def call_cnv(args):
 
     """Make IGV session xml """
     action = "python {igv_xml} {bam} {output} {sampleid} {template} {refdate} {runid} --pipeline {pipeline}".format(
-        igv_xml = settings.igv_xml,
-        bam = args.inputbam,
-        output = args.output,
-        sampleid = args.sample,
-        template = settings.template_xml,
-        refdate = args.refset,
-        runid = args.run,
-        pipeline = args.pipeline
+        igv_xml=settings.igv_xml,
+        bam=args.inputbam,
+        output=args.output,
+        sampleid=args.sample,
+        template=settings.template_xml,
+        refdate=args.refset,
+        runid=args.run,
+        pipeline=args.pipeline
         )
+    if args.warning:
+        action = "{action} --warning {warning}".format(action=action, warning=args.warning)
+
     os.system(action)
-
-
-def gender_file(genderfile):
-    gender_dic = {}
-    gender_file = open(str(genderfile), "r")
-    for line in gender_file:
-        splitline = line.split()
-        if splitline[0] not in gender_dic:
-            gender_dic[splitline[0]] = splitline[1]
-    gender_file.close()
-    return gender_dic
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -270,7 +293,6 @@ if __name__ == "__main__":
     parser_refset.add_argument('inputfolder', help='Input folder containing BAM files')
     parser_refset.add_argument('prefix', help='Prefix for reference set (e.g. Jan2020)')
     parser_refset.add_argument('--simjobs', default=4, help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 4]')
-    parser_refset.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
     parser_refset.set_defaults(func = make_refset)
 
     parser_cnv = subparser.add_parser('callcnv', help='Call CNV with ExomeDepth basedon BAM file')
@@ -281,7 +303,8 @@ if __name__ == "__main__":
     parser_cnv.add_argument('--refset', default=settings.refset, help='Reference set to be used (e.g. Jan2020). Default = refset in settings.py')
     parser_cnv.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline')
     parser_cnv.add_argument('--simjobs', default=2, help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
-    parser_cnv.add_argument('--genderfile', help='Gender file: tab delimited txt file with bam_id  and gender (as male/female)')
+    parser_cnv.add_argument('--refset_gender', choices=['male', 'female'], help='force specific use of female/male reference set in analysis')
+    parser_cnv.add_argument('--warning', help='add warning flag to QC log file and QC-summary file')
     parser_cnv.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
     parser_cnv.add_argument('--qc_stats', action='store_true', help='switch on QC check for exomedepth VCF stats (default = off)')
     parser_cnv.set_defaults(func = call_cnv)
