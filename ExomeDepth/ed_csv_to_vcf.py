@@ -34,6 +34,7 @@ if __name__ == "__main__":
     parser.add_argument('gender', choices=['male', 'female'], help='Used gender')
     parser.add_argument('sampleid', help='sampleid name to be included in VCF')
     parser.add_argument('template', help='Full path to template VCF')
+    parser.add_argument('runid', help='runid to be added to VCF metadata')
     parser.add_argument('--warning', help='Warning message to be included in VCF filename')
     args = parser.parse_args()
 
@@ -57,9 +58,9 @@ if __name__ == "__main__":
     vcf_reader.metadata['calling_model'] = [args.model]
     vcf_reader.metadata['gender_refset'] = [args.gender]
     vcf_reader.metadata['reference'] = "file:{}".format(settings.reference_genome)
-
     dx_track_git = subprocess.getoutput("git --git-dir={repo}/.git log --pretty=oneline --decorate -n 1".format(repo=settings.reffile_repo))
-    vcf_reader.metadata['track_repository'] = [dx_track_git]
+    vcf_reader.metadata['track_repository'] = ["{0}:{1}".format(settings.reffile_repo, dx_track_git)]
+    vcf_reader.metadata['runid'] = [args.runid]
 
     """Open reference genome fasta file"""
     reference_fasta = pysam.Fastafile(settings.reference_genome)
