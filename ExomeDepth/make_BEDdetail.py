@@ -97,7 +97,8 @@ def slice_vcf(args, merge_dic):
                         excluded_samples_file.write("Sample {sampleid} run {runid} is excluded because not all QC are above threshold\n".format(sampleid=sampleid, runid=runid))
                         break
 
-                all_event_file.write("{sampleid}\t{chrom}\t{start}\t{stop}\t{gender}\t{refset}\t{calltype}\t{ntargets}\t{svlen}\t{ratio}\t{ccn}\t{bf}\t{correl}\t{deldupratio}\t{totalcalls}\t{refsamples}\n".format(sampleid=sampleid,
+                all_event_file.write("{sampleid}\t{chrom}\t{start}\t{stop}\t{gender}\t{refset}\t{calltype}\t{ntargets}\t{svlen}\t{ratio}\t{ccn}\t{bf}\t{correl}\t{deldupratio}\t{totalcalls}\t{refsamples}\n".format(
+                    sampleid=sampleid,
                     chrom=chrom, start=start, stop=stop,
                     gender=gender, refset=refset, calltype=calltype,
                     ntargets=ntargets, svlen=svlen, ratio=ratio,
@@ -169,14 +170,17 @@ def calculate_statistics(data, status):
 def make_bed_detail(args, event_dic, children, parents):
     event_file = open("{outputfolder}/{outputfile}_UCSC.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
     event_file_igv = open("{outputfolder}/{outputfile}_IGV.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
+    event_file_alissa = open("{outputfolder}/{outputfile}_Alissa.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
 
     """ Write header in BED file """
     event_file.write("track name=\"HC_WES_CNV\" type=\"bedDetail\" description=\"CNVs called by Exomedepth using HC callset. #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n".format(children=children, parents=parents)) 
     event_file_igv.write("track name=\"HC_WES_CNV\" type=\"bed\" description=\"CNVs called by Exomedepth using HC callset. #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n".format(children=children, parents=parents))
     total_event_list = []
+    total_alissa_event_list = []
     for event in event_dic:
         chrom, start, stop, calltype, ntargets = event.split("_")
         """ Make start 0-based for BED file """
+        alissa_count_event = [chrom, start, stop] # needs to be 1-based
         start = int(start) - 1
         event_list = [chrom, start, stop]  # Add fields Chromosome, start, stop 
         total_count = int(event_dic[event]["parent"]["count"]) + int(event_dic[event]["child"]["count"])
@@ -185,7 +189,8 @@ def make_bed_detail(args, event_dic, children, parents):
         median_ratio = statistics.median(all_counts_ratio)
         median_bf = statistics.median(all_counts_bf)
 
-        summary = "{total_count}x:RT={median_ratio:.2f}:BF={median_bf:.0f}:NT={ntargets}".format(total_count=total_count, 
+        summary = "{total_count}x:RT={median_ratio:.2f}:BF={median_bf:.0f}:NT={ntargets}".format(
+            total_count=total_count, 
             median_ratio=median_ratio, 
             median_bf=median_bf, 
             ntargets=ntargets
@@ -199,8 +204,10 @@ def make_bed_detail(args, event_dic, children, parents):
         """ Append color code based on DEL (red) or DUP (blue) """
         if median_ratio >= 1:
             color = "0,0,255"  # Add field itemRgb for duplication
+            alissa_count_event.append('DUP')
         else:  
             color = "255,0,0"  # Add field itemRgb for deletion
+            alissa_count_event.append('DEL')
         event_list.append(color)
 
         """ Append blockCount, blockSizes, blockStarts. Note that these are not used for ntargets as start/stop for exons is unknown"""
@@ -216,7 +223,11 @@ def make_bed_detail(args, event_dic, children, parents):
         event_list.append("".join(new_file.split("\n")))
         total_event_list.append(event_list)
 
+        alissa_count_event.append(total_count)
+        total_alissa_event_list.append(alissa_count_event)
+
     total_event_list.sort(key=lambda x:(settings.chromosome_order[x[0]], int(x[1])))
+    total_alissa_event_list.sort(key=lambda x:(settings.chromosome_order[x[0]], int(x[1])))
       
     for event in total_event_list:
         event[0] = "chr{original}".format(original=event[0])
@@ -225,6 +236,11 @@ def make_bed_detail(args, event_dic, children, parents):
       
         joined_event_igv = "\t".join([str(i) for i in event[0:-1]])
         event_file_igv.write("{joined}\n".format(joined=joined_event_igv))
+
+    for event in total_alissa_event_list:
+        joined_event_alissa = "\t".join([str(i) for i in event])
+        event_file_alissa.write("{joined}\n".format(joined=joined_event_alissa))
+
 
     event_file.close()
     event_file_igv.close()
