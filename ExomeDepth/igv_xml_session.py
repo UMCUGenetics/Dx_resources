@@ -41,13 +41,13 @@ if __name__ == "__main__":
     if args.warning:
         igv_extension = "{}_ref.igv".format(args.warning)
 
-    vcf_extension = "_exome_calls.vcf"
+    vcf_extension = "exome_calls.vcf"
     if args.warning:
-        vcf_extension = "_exome_calls_{}.vcf".format(args.warning)
+        vcf_extension = "exome_calls_{}.vcf".format(args.warning)
 
-    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_{3}".format(args.refdate, args.sample, args.runid, igv_extension)
-    igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sample, args.runid, igv_extension)
-    vcf_hc = "HC/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sample, args.runid, vcf_extension)
+    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_{3}".format(args.refdate, args.sampleid, args.runid, igv_extension)
+    igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sampleid, args.runid, igv_extension)
+    vcf_hc = "HC/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sampleid, args.runid, vcf_extension)
     if args.pipeline == "iap": #For analysis based on IAP
         bam_id = "../{0}/mapping/{1}".format(args.sampleid, args.bam)
         vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(args.sampleid)
