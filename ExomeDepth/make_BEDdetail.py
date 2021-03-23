@@ -31,7 +31,11 @@ def slice_vcf(args, merge_dic):
         with open(vcf_file, 'r') as vcf_input_file:
             vcf_reader = vcf.Reader(open(vcf_file, 'r')) 
             sampleid = vcf_reader.samples[0]
-            runid = "_".join(vcf_file.split("/")[-1].split("bam")[1].split("_")[1:-2])
+
+            if 'runid' in vcf_reader.metadata:
+                runid = vcf_reader.metadata['runid'][0]
+            else: ## get runid from sample name (legacy version)
+                runid = "_".join(vcf_file.split("/")[-1].split("bam")[1].split("_")[1:-2])
 
             if sampleid in merge_dic and runid in merge_dic[sampleid]: # Check if sample in specific run is merge sample. If so, exclude
                 excluded_samples_file.write("Sample {sampleid} run {runid} is excluded being merge sample\n".format(sampleid=sampleid, runid=runid))
@@ -57,8 +61,13 @@ def slice_vcf(args, merge_dic):
                 sampletype = "parent"
                 parents += 1
 
-            gender = vcf_reader.metadata['gender_refset'][0]
-            refset = vcf_reader.metadata['exomedepth_reference'][0]
+            if 'gender_refset' in vcf_reader.metadata:
+                gender = vcf_reader.metadata['gender_refset'][0]
+                refset = vcf_reader.metadata['exomedepth_reference'][0]
+            else: ## get gender and refset based on legacy
+                edreference = vcf_reader.metadata['EDreference'][0]
+                gender = edreference.split("_")[1]
+                refset = edreference.split("_")[2]
 
             for record in vcf_reader:
                 """ General fields """
