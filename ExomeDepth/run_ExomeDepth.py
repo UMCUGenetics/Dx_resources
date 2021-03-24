@@ -252,7 +252,7 @@ def call_cnv(args):
                 del_dup_ratio > float(settings.del_dup_ratio[1])):
                 qc_status = "{qc_status}\tWARNING:QC_FAIL".format(qc_status=qc_status)
         if merge:
-            qc_status = "{qc_status}\tWARNING:MergeSample".format(qc_status=qc_status)
+            qc_status = "{qc_status}\tWARNING:{warning}".format(qc_status=qc_status, warning=settings.merge_warning)
         if args.warning:
             qc_status = "{qc_status}\tWARNING:{warning}".format(qc_status=qc_status, warning=args.warning)        
 
