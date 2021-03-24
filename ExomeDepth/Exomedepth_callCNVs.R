@@ -5,19 +5,19 @@ library(stringr)
 options(scipen = 50)
 
 args = commandArgs(trailingOnly=TRUE)
-auto_ref_file=args[1]					# argument ExomeDepth reference file 
-target.file=args[2]					# argument target BED file
-reference.file=args[3]					# argument Reference genome
-input_exon.hg19=paste(args[4],sep="") 			# argument target Exon file
-probability = as.numeric(args[5])		        # argument transition probability
-bam.files <- args[6]					# input bam file (including full path)
-model <- args[7]					# used calling model (eg HC/UMCU)
-refset <- args[8] 					# used reference set (eg Jan2020)
-expectedCNVLength <- as.numeric(args[9])		# expected length CNV (eg 50000)
-run_id <- args[10]					# runID. 
-log_extension <- args[11]				# extension for CNV log file 
-igv_extension <- args[12]                               # extension for igv file
-sampleid <- args[13]                               	# SampleID
+auto_ref_file=args[1]  # argument ExomeDepth reference file 
+target.file=args[2]  # argument target BED file
+reference.file=args[3]  # argument Reference genome
+input_exon.hg19=paste(args[4],sep="")  # argument target Exon file
+probability = as.numeric(args[5])  # argument transition probability
+bam.files <- args[6]  # input bam file (including full path)
+model <- args[7]  # used calling model (eg HC/UMCU)
+refset <- args[8]  # used reference set (eg Jan2020)
+expectedCNVLength <- as.numeric(args[9])  # expected length CNV (eg 50000)
+run_id <- args[10]  # runID. 
+log_extension <- args[11]  # extension for CNV log file 
+igv_extension <- args[12]  # extension for igv file
+sampleid <- args[13]  # SampleID
 
 exons.hg19= read.table(input_exon.hg19,sep="\t", header=TRUE)
 data(Conrad.hg19)
