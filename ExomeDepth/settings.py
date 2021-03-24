@@ -71,8 +71,10 @@ del_dup_ratio = [15,85]
 
 reanalysis_dic = {
     "XXY":["female", "XXYMaleAsFemale"],
-    "X0": ["male", "X0FemaleAsMale"],
+    "X": ["male", "XFemaleAsMale"],
     "asFemale": ["female", "AsFemale"],
     "asMale": ["male", "AsMale"]
     }
+
+merge_warning = "DO_NOT_USE_MergeSample"
 
