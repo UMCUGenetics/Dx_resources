@@ -19,7 +19,8 @@ def make_merge_dic(merge_samples):
     return merge_dic
 
 def slice_vcf(args, merge_dic):
-    vcf_files = subprocess.getoutput("find {input} -type f -iname \"*vcf\"".format(input=args.inputfolder)).split()
+    vcf_files = subprocess.getoutput("find -L {input} -type f -iname \"*vcf\"".format(input=args.inputfolder)).split()
+    print(vcf_files)
     all_event_file = open("{output}/{outputfile}_all_events.txt".format(output=args.outputfolder, outputfile=args.outputfile),"w")
     all_event_file.write("sampleID\tchromosome\tstart\tstop\tgender\trefset\tcalltype\tntargets\tsvlen\tratio\tccn\tbf\tcorrelation\tdeldupratio\ttotalcalls\trefsamples\n")
     excluded_samples_file = open("{output}/{outputfile}_excluded_samples.txt".format(output=args.outputfolder, outputfile=args.outputfile),"w")
@@ -95,6 +96,10 @@ def slice_vcf(args, merge_dic):
                     deldupratio < args.deldupratioqc_min or
                     deldupratio > args.deldupratioqc_max):
                         excluded_samples_file.write("Sample {sampleid} run {runid} is excluded because not all QC are above threshold\n".format(sampleid=sampleid, runid=runid))
+                        if "CM" in sampleid or "CF" in sampleid or "CO" in sampleid:
+                            children -= 1
+                        elif "PM" in sampleid or "PF" in sampleid or "PO" in sampleid:
+                            parents -= 1
                         break
 
                 all_event_file.write("{sampleid}\t{chrom}\t{start}\t{stop}\t{gender}\t{refset}\t{calltype}\t{ntargets}\t{svlen}\t{ratio}\t{ccn}\t{bf}\t{correl}\t{deldupratio}\t{totalcalls}\t{refsamples}\n".format(
