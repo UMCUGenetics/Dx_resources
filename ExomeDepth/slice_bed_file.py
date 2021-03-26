@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import sys
 
-bed_file = open(sys.argv[1],"r")  # BED file
+bed_file = open(sys.argv[1], "r")  # BED file
 tlen = float(sys.argv[2]) # targeted length of target/exons
 
 for line in bed_file:
