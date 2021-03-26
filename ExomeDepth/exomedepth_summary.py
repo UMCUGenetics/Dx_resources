@@ -6,7 +6,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create ExomeDepth Metric summary file')
     parser.add_argument('exomedepth_logs', type=argparse.FileType('r'), nargs='*', help='Exomedepth log files')
     arguments = parser.parse_args()
-    stats_dic = {"CR":[],"PD":[],"TC":[]}
+    stats_dic = {"CR":[], "PD":[], "TC":[]}
     for exomedepth_qc_file in arguments.exomedepth_logs:
         for line in exomedepth_qc_file: 
             splitline = line.split()
