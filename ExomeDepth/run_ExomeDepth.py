@@ -171,7 +171,7 @@ def multiprocess_call(multiprocess_list):
     """Perform csv to vcf conversion """
     action = "python {csv2vcf} {inputcsv} {refset} {model} {gender} {sampleid} {template} {runid} ".format(
         csv2vcf=settings.csv2vcf,
-        inputcsv="{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(multiprocess_list[6],multiprocess_list[0],args.refset,args.sample,args.run),
+        inputcsv="{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(multiprocess_list[6], multiprocess_list[0], args.refset, args.sample, args.run),
         refset=args.refset,
         model=multiprocess_list[0],
         gender=multiprocess_list[2],
