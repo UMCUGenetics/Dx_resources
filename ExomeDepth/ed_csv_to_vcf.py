@@ -35,7 +35,7 @@ if __name__ == "__main__":
     parser.add_argument('sampleid', help='sampleid name to be included in VCF')
     parser.add_argument('template', help='Full path to template VCF')
     parser.add_argument('runid', help='runid to be added to VCF metadata')
-    parser.add_argument('--warning', help='Warning message to be included in VCF filename')
+    parser.add_argument('--vcf_filename_suffix', help='suffix to be included in VCF filename. Do not include spaces or underscores in suffix')
     args = parser.parse_args()
 
     vcf_reader = vcf.Reader(open(args.template, 'r'))
@@ -65,11 +65,12 @@ if __name__ == "__main__":
     """Open reference genome fasta file"""
     reference_fasta = pysam.Fastafile(settings.reference_genome)
 
-    if args.warning:
-        warning = "_{}".format(args.warning)
+    if args.vcf_filename_suffix:
+        vcf_output_filename = "{input}_{vcf_filename_suffix}.vcf".format(input=args.inputcsv[0:-4], vcf_filename_suffix=args.vcf_filename_suffix)
     else:
-        warning = ""
-    with open("{input}{warning}.vcf".format(input=args.inputcsv[0:-4], warning=warning), 'w') as vcf_output_file:
+        vcf_output_filename = "{input}.vcf".format(input=args.inputcsv[0:-4])
+
+    with open(vcf_output_filename, 'w') as vcf_output_file:
         vcf_writer = vcf.Writer(vcf_output_file, vcf_reader)
 
         """Determine percentage DEL/(DEL+DUP) for all calls in VCF."""
