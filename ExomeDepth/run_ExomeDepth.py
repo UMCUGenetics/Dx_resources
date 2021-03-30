@@ -183,6 +183,7 @@ def multiprocess_call(multiprocess_list):
         args.sample, 
         args.run
         )
+
     action = ("python {csv2vcf} {inputcsv} {refset} {model} {gender} "
         " {sampleid} {template} {runid} ").format(
             csv2vcf=settings.csv2vcf,
