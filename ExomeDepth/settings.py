@@ -26,7 +26,7 @@ singularity_mount_path = "/hpc/diaggen:/hpc/diaggen"
 # Location of target files
 refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
 reffile_repo = "/hpc/diaggen/software/production/Dx_tracks/"
-reffile_dir = "{}ExomeDepth/".format(reffile_repo)
+reffile_dir = "{}/ExomeDepth/".format(reffile_repo)
 
 #Reference set
 refset = "Aug2020v2"
