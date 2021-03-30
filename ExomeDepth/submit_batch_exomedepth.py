@@ -119,16 +119,19 @@ if __name__ == "__main__":
         with open(args.reanalysis) as refset_file:
             for line in refset_file:
                 splitline = line.split()
-                if splitline[0] not in refset_dic:
-                    refset_dic[splitline[0]] = splitline[1]
-                if len(splitline)>2:  #Note: make sure reanalysis file must contain sampleid in first column and refset in second column. More elegant way to program here?
-                    if settings.reanalysis_dic[splitline[2]]: 
-                        if splitline[0] not in gender_dic: 
-                            gender_dic[splitline[0]] = settings.reanalysis_dic[splitline[2]][0]
-                        if splitline[0] not in  warning_dic:
-                            warning_dic[splitline[0]] = settings.reanalysis_dic[splitline[2]][1]
+                sampleid = splitline[0]
+                refset = splitline[1]
+                if sampleid not in refset_dic:
+                    refset_dic[sampleid] = refset
+                if len(splitline) > 2: 
+                    tag = splitline[2]
+                    if settings.reanalysis_dic[tag]: 
+                        if sampleid not in gender_dic: 
+                            gender_dic[sampleid] = settings.reanalysis_dic[tag][0]
+                        if sampleid not in  warning_dic:
+                            warning_dic[sampleid] = settings.reanalysis_dic[tag][1]
                     else: 
-                        sys.exit("Warning {} in reanalysis file does not exict".format(splitline[2]))
+                        sys.exit("Warning: reanalysis tag {0} in file {1} is unknown within settings.reanalysis_dic. Please change or add reanalysis tag".format(tag), args.reanalysis)
                     
     """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
