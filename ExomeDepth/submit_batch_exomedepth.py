@@ -9,7 +9,7 @@ from datetime import date
 
 import settings
 
-def process(bam, args, refset_dic, gender_dic, warning_dic):
+def process(bam, args, refset_dic, gender_dic, suffix_dic):
     bamfile = bam.rstrip("/").split("/")[-1]
     if args.pipeline == "iap":
         sampleid = bamfile.split("_")[0]
@@ -40,9 +40,9 @@ def process(bam, args, refset_dic, gender_dic, warning_dic):
         gender = gender_dic[sampleid]
         action = "{action} --refset_gender {gender}".format(action=action, gender=gender)
 
-    if sampleid in warning_dic:
-        warning = warning_dic[sampleid]
-        action = "{action} --warning {warning}".format(action=action, warning=warning)
+    if sampleid in suffix_dic:
+        suffix = suffix_dic[sampleid]
+        action = "{action} --vcf_filename_suffix {suffix}".format(action=action, suffix=suffix)
 
     os.system(action)
  
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     refset_dic = {}
     gender_dic = {}
-    warning_dic = {}
+    suffix_dic = {}
     if args.reanalysis:
         with open(args.reanalysis) as refset_file:
             for line in refset_file:
@@ -128,14 +128,14 @@ if __name__ == "__main__":
                     if settings.reanalysis_dic[tag]: 
                         if sampleid not in gender_dic: 
                             gender_dic[sampleid] = settings.reanalysis_dic[tag][0]
-                        if sampleid not in  warning_dic:
-                            warning_dic[sampleid] = settings.reanalysis_dic[tag][1]
+                        if sampleid not in  suffix_dic:
+                            suffix_dic[sampleid] = settings.reanalysis_dic[tag][1]
                     else: 
                         sys.exit("Warning: reanalysis tag {0} in file {1} is unknown within settings.reanalysis_dic. Please change or add reanalysis tag".format(tag), args.reanalysis)
                     
     """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
-        result = pool.starmap(process, [[bam, args, refset_dic, gender_dic, warning_dic] for bam in bams])
+        result = pool.starmap(process, [[bam, args, refset_dic, gender_dic, suffix_dic] for bam in bams])
 
     """ Make CNV summary file """
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
