@@ -25,7 +25,7 @@ singularity_mount_path = "/data:/data"
 # Location of target files
 refset_dir = "/data/databases/ExomeDepth_refset/"
 reffile_repo = "/data/software/production/Dx_tracks/"
-reffile_dir = "{}ExomeDepth/".format(reffile_repo)
+reffile_dir = "{}/ExomeDepth/".format(reffile_repo)
 
 
 #Reference set
@@ -71,7 +71,7 @@ del_dup_ratio = [15,85]
 
 reanalysis_dic = {
     "XXY":["female", "XXYMaleAsFemale"],
-    "X0": ["male", "X0FemaleAsMale"],
+    "X": ["male", "XFemaleAsMale"],
     "asFemale": ["female", "AsFemale"],
     "asMale": ["male", "AsMale"]
     }
