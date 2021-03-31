@@ -18,13 +18,15 @@ html = str(cwd)+"template.html"
 reference_genome = "/hpc/diaggen/data/databases/ref_genomes/Homo_sapiens.GRCh37.GATK.illumina/Homo_sapiens.GRCh37.GATK.illumina.fasta"
 
 #Used R version
-r_library_path = "/hpc/diaggen/software/production/R_libs/ExomeDepthv2.0.0/3.5.1_singularity/"
-singularity_r_container = "docker://rocker/tidyverse:3.5.1"
+r_library_path = "/hpc/diaggen/software/production/R_libs/ExomeDepthv2.0.1/3.5.1_singularity/"
+singularity_r_container = "/hpc/diaggen/software/singularity_cache/rocker-tidyverse-3.5.1.img"
 singularity_mount_path = "/hpc/diaggen:/hpc/diaggen"
+
 
 # Location of target files
 refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
-reffile_dir = "/hpc/diaggen/software/production/Dx_tracks/ExomeDepth/"
+reffile_repo = "/hpc/diaggen/software/production/Dx_tracks/"
+reffile_dir = "{}/ExomeDepth/".format(reffile_repo)
 
 #Reference set
 refset = "Aug2020v2"
@@ -66,3 +68,13 @@ igv_settings = {"ratio":[0, 1, 2], "log2ratio":[-2.5, 0, 2.5] }
 correlation = 0.98
 number_calls = [35,200]
 del_dup_ratio = [15,85] 
+
+reanalysis_dic = {
+    "XXY":["female", "XXYMaleAsFemale"],
+    "X": ["male", "XFemaleAsMale"],
+    "asFemale": ["female", "AsFemale"],
+    "asMale": ["male", "AsMale"]
+    }
+
+merge_warning = "DO_NOT_USE_MergeSample"
+

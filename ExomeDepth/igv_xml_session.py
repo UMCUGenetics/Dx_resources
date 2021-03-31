@@ -13,11 +13,11 @@ def make_igvsession(igv_ed_umcu, igv_ed_hc, bam, vcf_hc, sample_id, vcf_SNV, axi
     min_axis, mid_axis, max_axis = axis
     ratioid_UMCU = "{0}_UMCU".format(statistic)
     ratioid_HC = "{0}_HC".format(statistic)
-    substitute_dic={'session_var' : new_session, 'igv_ed_umcu' : igv_ed_umcu, 'igv_ed_hc' : igv_ed_hc, 
-                    'bam':bam, 'vcf_hc' : vcf_hc, 'sample_id' : sample_id, 'igv_ed_hc_test' : igv_ed_hc_test,
-                    'igv_ed_umcu_test' : igv_ed_umcu_test, 'bam_coverage' : bam_coverage, 'bam_junctions' : bam_junctions, 
-                    'vcf_SNV' : vcf_SNV, 'min_axis' : min_axis, 'mid_axis' : mid_axis, 'max_axis' : max_axis,
-                    'ratioid_UMCU' : ratioid_UMCU, 'ratioid_HC': ratioid_HC 
+    substitute_dic = {'session_var':new_session, 'igv_ed_umcu':igv_ed_umcu, 'igv_ed_hc':igv_ed_hc, 
+                    'bam':bam, 'vcf_hc':vcf_hc, 'sample_id':sample_id, 'igv_ed_hc_test':igv_ed_hc_test, 
+                    'igv_ed_umcu_test':igv_ed_umcu_test, 'bam_coverage':bam_coverage, 'bam_junctions':bam_junctions,  
+                    'vcf_SNV':vcf_SNV, 'min_axis':min_axis, 'mid_axis':mid_axis, 'max_axis':max_axis, 
+                    'ratioid_UMCU':ratioid_UMCU, 'ratioid_HC':ratioid_HC 
                    }
     new_file = template_file.substitute(substitute_dic)
     return new_file
@@ -32,12 +32,20 @@ if __name__ == "__main__":
     parser.add_argument('refdate', help='Date of the used reference set')
     parser.add_argument('runid', help='Run ID')
     parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
+    parser.add_argument('--vcf_filename_suffix', help='suffix that was included in the VCF filename. Do not include spaces or underscores in suffix')
     args = parser.parse_args()
 
     igv_settings = settings.igv_settings
-    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_ref.igv".format(args.refdate, args.bam, args.runid)
-    igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_ref.igv".format(args.refdate, args.bam, args.runid)
-    vcf_hc = "HC/HC_{0}_{1}_{2}_exome_calls.vcf".format(args.refdate, args.bam, args.runid)
+  
+    igv_extension = "ref.igv"
+    vcf_extension = "exome_calls.vcf"
+    if args.vcf_filename_suffix:
+        igv_extension = "{}_ref.igv".format(args.vcf_filename_suffix)
+        vcf_extension = "exome_calls_{}.vcf".format(args.vcf_filename_suffix)
+
+    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_{3}".format(args.refdate, args.sampleid, args.runid, igv_extension)
+    igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sampleid, args.runid, igv_extension)
+    vcf_hc = "HC/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sampleid, args.runid, vcf_extension)
     if args.pipeline == "iap": #For analysis based on IAP
         bam_id = "../{0}/mapping/{1}".format(args.sampleid, args.bam)
         vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(args.sampleid)
