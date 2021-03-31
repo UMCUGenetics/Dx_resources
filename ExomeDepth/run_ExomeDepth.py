@@ -184,7 +184,8 @@ def multiprocess_call(multiprocess_list):
         args.run
         )
 
-    action = ("python {csv2vcf} {inputcsv} {refset} {model} {gender} "
+    action = (
+        "python {csv2vcf} {inputcsv} {refset} {model} {gender} "
         " {sampleid} {template} {runid} ").format(
             csv2vcf=settings.csv2vcf,
             inputcsv=inputcsv,
@@ -195,6 +196,7 @@ def multiprocess_call(multiprocess_list):
             template=settings.vcf_template,
             runid=args.run
             )
+
     if args.vcf_filename_suffix:
         action = "{action} --vcf_filename_suffix {vcf_filename_suffix}".format(action=action, vcf_filename_suffix=args.vcf_filename_suffix)
 
