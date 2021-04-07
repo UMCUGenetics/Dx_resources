@@ -12,10 +12,16 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Install R packages in custom library location
-Start a singularity shell with the [rocker tidyverse](https://hub.docker.com/layers/rocker/tidyverse/3.5.1/images/sha256-916d4e919fbac9ee1f06db7622b4731268dff0cb17998b3db6f629a3e58f73a7?context=explore) docker container, set R_LIBS location and open R. Make sure to change -B (root path for all required analysis files) and R_LIBS paths (location of R modules). 
+### Build singularity R image 
+Build a singularity container image from the [rocker tidyverse](https://hub.docker.com/layers/rocker/tidyverse/3.5.1/images/sha256-916d4e919fbac9ee1f06db7622b4731268dff0cb17998b3db6f629a3e58f73a7?context=explore) docker container.
 ```bash
-singularity shell -B </change/this/path>:</change/this/path> docker://rocker/tidyverse:3.5.1
+singularity build rocker-tidyverse-3.5.1.img docker://rocker/tidyverse:3.5.1
+```
+
+### Install R packages in custom library location
+Start a singularity shell using the [rocker tidyverse](https://hub.docker.com/layers/rocker/tidyverse/3.5.1/images/sha256-916d4e919fbac9ee1f06db7622b4731268dff0cb17998b3db6f629a3e58f73a7?context=explore) singularity image container, set R_LIBS location and open R. Make sure to change -B (root path for all required analysis files) and R_LIBS paths (location of R modules). 
+```bash
+singularity shell -B </change/this/path>:</change/this/path> /change/path/to/rocker-tidyverse-3.5.1.img
 export R_LIBS=</change/path/to/R_libs/3.5.1>
 R
 ```
@@ -55,7 +61,7 @@ python run_ExomeDepth.py callcnv  <output folder> <input bam> <run id> <sample i
 Use 2 threads for each sample. Thus to process 4 samples simultaneously use 8 threads.
 ``` bash
 . </path/to/repo>/venv/bin/activate
-python submit_batch_exomedepth.py <input folder> <output folder> <samples(/threads)>
+python submit_batch_exomedepth.py <input folder> <output folder> <runid> <sample count>
 ```
 
 ## How to make a HC file
@@ -84,7 +90,7 @@ python submit_batch_exomedepth.py <input folder> <output folder> <samples(/threa
 
     Calculate coverage stats for each male/female folder for each population
     ``` bash
-    sh run_sambamba.sh <folder> <bed_file> <email>
+    sh run_sambamba.sh <full path to sambamba executable> <folder> <bed_file> <email>
     ```
 
     Calculate coverage stats overview for each male/female folder for each population
@@ -121,6 +127,10 @@ python submit_batch_exomedepth.py <input folder> <output folder> <samples(/threa
     ``` bash
     cat <bed_file>_<population1> <bed_file>_<population2> | cut -f1,2,3 | sort | uniq -c | awk '($1==2)' |  sed 's/ \+/\t/g'  |cut -f 3,4,5 | sed 's/X/999999999/g'| sed 's/Y/9999999999/g' | sort -nk1 -nk2 |sed 's/9999999999/Y/g' | sed 's/999999999/X/g' > <final_bed_file>
     cat <final_bed_file> |awk '{OFS="\t"; print $1,$2,$3,$1":"$2"-"$3 }' > exons.hg19.full.tsv
+    ```
+    Note: a tab-seperated header should be included in exons.hg19.full.tsv:
+    ```
+    chromosome	start	end	name
     ```
     Copy the final_bed_file and exons.hg19.full.tsv to a repository/location of choice.\
     Include in `setting.py` if these file are needed in the ExomeDepth analysis.

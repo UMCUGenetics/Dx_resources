@@ -24,10 +24,12 @@ singularity_mount_path = "/data:/data"
 
 # Location of target files
 refset_dir = "/data/databases/ExomeDepth_refset/"
-reffile_dir = "/data/software/production/Dx_tracks/ExomeDepth/"
+reffile_repo = "/data/software/production/Dx_tracks/"
+reffile_dir = "{}/ExomeDepth/".format(reffile_repo)
+
 
 #Reference set
-refset = "Aug2020v2"
+refset = "Jan2021v2"
 
 analysis = {
     "HC":
@@ -66,3 +68,10 @@ igv_settings = {"ratio":[0, 1, 2], "log2ratio":[-2.5, 0, 2.5] }
 correlation = 0.98
 number_calls = [35,200]
 del_dup_ratio = [15,85] 
+
+reanalysis_dic = {
+    "XXY":["female", "XXYMaleAsFemale"],
+    "X": ["male", "XFemaleAsMale"],
+    "asFemale": ["female", "AsFemale"],
+    "asMale": ["male", "AsMale"]
+    }
