@@ -29,7 +29,7 @@ reffile_repo = "/hpc/diaggen/software/production/Dx_tracks/"
 reffile_dir = "{}/ExomeDepth/".format(reffile_repo)
 
 #Reference set
-refset = "CREv2-2021-1"
+refset = "CREv2-2021-2"
 
 analysis = {
     "HC":
