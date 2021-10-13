@@ -29,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument('output', help='Output folder')
     parser.add_argument('sampleid', help='Sample ID')
     parser.add_argument('template', help='Full path to template XML')
-    parser.add_argument('refdate', help='Date of the used reference set')
+    parser.add_argument('refset', help='used refset (i.e. CREv2-2021-2 ')
     parser.add_argument('runid', help='Run ID')
     parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
     parser.add_argument('--vcf_filename_suffix', help='suffix that was included in the VCF filename. Do not include spaces or underscores in suffix')
@@ -43,9 +43,9 @@ if __name__ == "__main__":
         igv_extension = "{}_ref.igv".format(args.vcf_filename_suffix)
         vcf_extension = "exome_calls_{}.vcf".format(args.vcf_filename_suffix)
 
-    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_{3}".format(args.refdate, args.sampleid, args.runid, igv_extension)
-    igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sampleid, args.runid, igv_extension)
-    vcf_hc = "HC/HC_{0}_{1}_{2}_{3}".format(args.refdate, args.sampleid, args.runid, vcf_extension)
+    igv_ed_umcu = "igv_tracks/UMCU_{0}_{1}_{2}_{3}".format(args.refset, args.sampleid, args.runid, igv_extension)
+    igv_ed_hc = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refset, args.sampleid, args.runid, igv_extension)
+    vcf_hc = "HC/HC_{0}_{1}_{2}_{3}".format(args.refset, args.sampleid, args.runid, vcf_extension)
     if args.pipeline == "iap": #For analysis based on IAP
         bam_id = "../{0}/mapping/{1}".format(args.sampleid, args.bam)
         vcf_SNV = "../single_sample_vcf/{0}.filtered_variants.vcf".format(args.sampleid)
