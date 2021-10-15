@@ -284,7 +284,7 @@ def call_cnv(args):
 
 
     """Make IGV session xml """
-    action = "python {igv_xml} {bam} {output} {sampleid} {template} {refset} {runid} --pipeline {pipeline}".format(
+    action = "python {igv_xml} single_igv {bam} {output} {sampleid} {template} {refset} {runid} --pipeline {pipeline}".format(
         igv_xml=settings.igv_xml,
         bam=args.inputbam,
         output=args.output,
