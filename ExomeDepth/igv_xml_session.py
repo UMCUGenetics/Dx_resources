@@ -87,7 +87,8 @@ def make_family_igvsession(args, statistic, igv_extension, vcf_extension):
     hc_ratio_father = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refset, father, args.runid, igv_extension)  #Father CNV igv session with ratios for HC
     hc_ratio_mother = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refset, mother, args.runid, igv_extension)  #Mother CNV igv session with ratios for HC
     igv_hc_ratio = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refset, child, args.runid, igv_extension)  #CNV child igv session with ratios for HC
-    upd_trio = "../upd/{0}".format(args.family_upd_file)  #UPD file trio
+    upd = "../upd/{0}".format(args.family_upd_file)  #UPD file trio
+    upd_track = "{0}_1".format(upd)
     baf_child = "../baf/{0}.igv".format(child)  # BAF file child
  
     # ID XML variables
@@ -108,6 +109,7 @@ def make_family_igvsession(args, statistic, igv_extension, vcf_extension):
     baf_track_child_id = "BAF_child:{0}".format(child)  #BAF track child id in IGV
     bam_coverage = "{0}_coverage".format(bam_child) #BAM coverage track child for BAM
     bam_id = bam_child.split("/")[-1]  #BAM child id
+    upd_track_id = "Mendelian_violations_{0}".format(args.familyid)
 
     # Scale XML variables
     min_axis, mid_axis, max_axis = settings.igv_settings[statistic]  #Get axis values out of settings.py
@@ -124,7 +126,9 @@ def make_family_igvsession(args, statistic, igv_extension, vcf_extension):
                      'hc_ratio_child':hc_ratio_child,
                      'hc_ratio_father':hc_ratio_father,
                      'hc_ratio_mother':hc_ratio_mother,
-                     'upd':upd_trio,
+                     'upd':upd,
+                     'upd_track':upd_track,
+                     'upd_track_id':upd_track_id,
                      'baf':baf_child,
                      'bam':bam_child,
                      'fontsize':fontsize,
