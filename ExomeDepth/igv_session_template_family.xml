@@ -31,22 +31,27 @@
         <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="$fontsize" height="150" id="$hc_ratio_child_track" name="$hc_ratio_child_track_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
             <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
         </Track>
-        
+    </Panel>
+
+    <Panel name="DataPanel3">        
         <Track altColor="0,100,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,100,0" fontSize="$fontsize" height="150" id="$baf_track_child" name="$baf_track_child_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
             <DataRange baseline="50" drawBaseline="true" flipAxis="false" maximum="100" minimum="0" type="LINEAR"/>
         </Track>
+    </Panel>
 
-
+    <Panel name="DataPanel4">
         <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="$fontsize" height="150" id="$hc_ratio_father_track" name="$hc_ratio_father_track_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
             <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
         </Track>
-
+    </Panel>
+    
+    <Panel name="DataPanel5">
         <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="$fontsize" height="150" id="$hc_ratio_mother_track" name="$hc_ratio_mother_track_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
             <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
         </Track>
     </Panel>
 
-    <Panel name="DataPanel3">
+    <Panel name="DataPanel6">
         <Track autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" color="175,175,175" colorScale="ContinuousColorScale;0.0;487.0;255,255,255;175,175,175" fontSize="$fontsize" id="$bam_coverage" name="Read_coverage: $bam_id" snpThreshold="0.2" visible="true">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" type="LINEAR"/>
         </Track>
@@ -60,7 +65,7 @@
         <Track clazz="org.broad.igv.track.SequenceTrack" fontSize="$fontsize" id="Reference sequence" name="Reference sequence" visible="true"/>
         <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;308.0;255,255,255;0,0,178" fontSize="$fontsize" height="35" id="hg19_genes" name="RefSeq Genes hg19" visible="true"/>
     </Panel>
-    <PanelLayout dividerFractions="0.139,0.666,0.920"/>
+    <PanelLayout dividerFractions="0.139,0.275,0.415,0.553,0.691,0.943"/>
     <HiddenAttributes>
         <Attribute name="DATA FILE"/>
         <Attribute name="DATA TYPE"/>
