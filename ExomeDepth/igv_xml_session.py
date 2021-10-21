@@ -8,13 +8,13 @@ def make_single_igvsession(args, sample_id, statistic, igv_extension, vcf_extens
 
     # Data files XML variables
     if args.pipeline == "iap": #For analysis based on IAP
-        bam = "../{0}/mapping/{1}".format(args.sampleid, args.bam)  #BAM file
+        bam = "../{0}/mapping/{1}_dedup.realigned.bam".format(args.sampleid, args.sampleid)  #BAM file
         snv_vcf = "../single_sample_vcf/{0}.filtered_variants.vcf".format(args.sampleid)  #SNV VCF file
     elif args.pipeline == "nf": #For NF pipeline.
-        bam = "../bam_files/{0}".format(args.bam)  #Bam file
+        bam = "../bam_files/{0}.bam".format(args.sampleid)  #Bam file
         snv_vcf = "../single_sample_vcf/{0}_{1}.vcf".format(args.sampleid, args.runid)  #SNV VCF file
     hc_cnv_vcf = "HC/HC_{0}_{1}_{2}_{3}".format(args.refset, args.sampleid, args.runid, vcf_extension)  # HC CNV-VCF file
-    baf = "../baf/{0}.igv".format(args.sampleid)  # BAF file
+    baf = "../baf/{0}_baf.igv".format(args.sampleid)  # BAF file
     igv_hc_ratio = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refset, args.sampleid, args.runid, igv_extension)  #CNV igv session with ratios for HC
     igv_umcu_ratio = "igv_tracks/UMCU_{0}_{1}_{2}_{3}".format(args.refset, args.sampleid, args.runid, igv_extension)  #CNV igv session with ratios for UMCU
 
@@ -63,19 +63,27 @@ def make_single_igvsession(args, sample_id, statistic, igv_extension, vcf_extens
     new_file = template_file.substitute(substitute_dic)
     return new_file
 
-def make_family_igvsession(args, statistic, igv_extension, vcf_extension):
-    template_file = Template(open(args.template_xml).read())
-    child, father, mother = args.trioid.split(",")
+def parse_ped(ped_file, sampleid):
+    sample_dic = {}
+    for line in ped_file:
+        splitline = line.split()
+        if splitline[1] not in sample_dic:
+            sample_dic[splitline[1]] = [splitline[0], splitline[2], splitline[3]]
+    return sampleid, sample_dic[sampleid][0], sample_dic[sampleid][1], sample_dic[sampleid][2]
 
+
+def make_family_igvsession(args, statistic, igv_extension, vcf_extension, familyid, child, father, mother):
+    template_file = Template(open(args.template_xml).read())
+    
     # Data files XML variables
     if args.pipeline == "iap": #For analysis based on IAP
-        bam_child = "../{0}/mapping/{1}".format(child, args.bam)  #BAM file
+        bam_child = "../{0}/mapping/{1}_dedup.realigned.bam".format(child, args.sampleid)  #BAM file
         snv_vcf_child = "../single_sample_vcf/{0}.filtered_variants.vcf".format(child)  #SNV VCF file child
         snv_vcf_father = "../single_sample_vcf/{0}.filtered_variants.vcf".format(father)  #SNV VCF file father
         snv_vcf_mother = "../single_sample_vcf/{0}.filtered_variants.vcf".format(mother)  #SNV VCF file mother
 
     elif args.pipeline == "nf": #For NF pipeline.
-        bam_child = "../bam_files/{0}".format(args.bam)  #Bam file
+        bam_child = "../bam_files/{0}.bam".format(args.sampleid)  #Bam file
         snv_vcf_child = "../single_sample_vcf/{0}_{1}.vcf".format(child, args.runid)  #SNV VCF file child
         snv_vcf_father = "../single_sample_vcf/{0}_{1}.vcf".format(father, args.runid)  #SNV VCF file father
         snv_vcf_mother = "../single_sample_vcf/{0}_{1}.vcf".format(mother, args.runid)  #SNV VCF file mother
@@ -87,12 +95,12 @@ def make_family_igvsession(args, statistic, igv_extension, vcf_extension):
     hc_ratio_father = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refset, father, args.runid, igv_extension)  #Father CNV igv session with ratios for HC
     hc_ratio_mother = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refset, mother, args.runid, igv_extension)  #Mother CNV igv session with ratios for HC
     igv_hc_ratio = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(args.refset, child, args.runid, igv_extension)  #CNV child igv session with ratios for HC
-    upd = "../upd/{0}".format(args.family_upd_file)  #UPD file trio
+    upd = "../upd/{0}_{1}.igv".format(args.runid, familyid)  #UPD file 
     upd_track = "{0}_1".format(upd)
-    baf_child = "../baf/{0}.igv".format(child)  # BAF file child
+    baf_child = "../baf/{0}_baf.igv".format(child)  # BAF file child
  
     # ID XML variables
-    session = "{0}_{1}_{2}_igv.xml".format(args.familyid, args.runid, statistic)  #Session ID
+    session = "{0}_{1}_{2}_igv.xml".format(familyid, args.runid, statistic)  #Session ID
     snv_vcf_child_id = "SNV_child:{0}".format(snv_vcf_child.split("/")[-1])  #SNV track child ID in IGV
     snv_vcf_father_id = "SNV_father:{0}".format(snv_vcf_father.split("/")[-1])  #SNV track father ID in IGV
     snv_vcf_mother_id = "SNV_mother:{0}".format(snv_vcf_mother.split("/")[-1])  #SNV track mother ID in IGV
@@ -109,7 +117,7 @@ def make_family_igvsession(args, statistic, igv_extension, vcf_extension):
     baf_track_child_id = "BAF_child:{0}".format(child)  #BAF track child id in IGV
     bam_coverage = "{0}_coverage".format(bam_child) #BAM coverage track child for BAM
     bam_id = bam_child.split("/")[-1]  #BAM child id
-    upd_track_id = "Mendelian_violations_{0}".format(args.familyid)
+    upd_track_id = "Mendelian_violations_{0}".format(familyid)
 
     # Scale XML variables
     min_axis, mid_axis, max_axis = settings.igv_settings[statistic]  #Get axis values out of settings.py
@@ -163,9 +171,10 @@ def make_single(args, igv_extension, vcf_extension):
         write_file.close()
 
 def make_family(args, igv_extension, vcf_extension):
+    child, familyid, father, mother = parse_ped(args.ped_file, args.sampleid)
     for statistic in settings.igv_settings:
-        write_file = open("{0}/{1}_{2}_{3}_igv.xml".format(args.output, args.familyid, args.runid, statistic), "w")
-        write_file.write(make_family_igvsession(args, statistic, igv_extension, vcf_extension))
+        write_file = open("{0}/{1}_{2}_{3}_igv.xml".format(args.output, familyid, args.runid, statistic), "w")
+        write_file.write(make_family_igvsession(args, statistic, igv_extension, vcf_extension, familyid, child, father, mother))
         write_file.close()
 
 if __name__ == "__main__":
@@ -173,27 +182,24 @@ if __name__ == "__main__":
     subparser = parser.add_subparsers()
     
     parser_single = subparser.add_parser('single_igv', help='Make single sample IGV session')
-    parser_single.add_argument('bam', help='BAM file')
     parser_single.add_argument('output', help='Output folder')
     parser_single.add_argument('sampleid', help='Sample ID')
-    parser_single.add_argument('template_xml', default=settings.template_single_xml, help='Full path to template XML [default = settting.py]')
     parser_single.add_argument('refset', help='used refset (i.e. CREv2-2021-2 ')
     parser_single.add_argument('runid', help='Run ID')
+    parser_single.add_argument('--refset', default=settings.refset, help='used refset (default = settings.refset)')
+    parser_single.add_argument('--template_xml', default=settings.template_single_xml, help='Full path to template XML [default = settting.py]')
     parser_single.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
     parser_single.add_argument('--vcf_filename_suffix', help='suffix that was included in the VCF filename. Do not include spaces or underscores in suffix')
     parser_single.add_argument('--fontsize', default=12, type=int, help='fontzise within IGV session for headers [default 12]')
-    
     parser_single.set_defaults(func = make_single)
 
     parser_family = subparser.add_parser('family_igv', help='Make family IGV session')
-    parser_family.add_argument('bam', help='BAM file')
     parser_family.add_argument('output', help='Output folder')
-    parser_family.add_argument('familyid', help='familyid')
-    parser_family.add_argument('trioid', help='comma seperated trio ID:  child, father, mother')
-    parser_family.add_argument('family_upd_file', help='input family UPD file')
-    parser_family.add_argument('template_xml',  default=settings.template_family_xml, help='Full path to template XML [default = settting.py]')
-    parser_family.add_argument('refset', help='used refset (i.e. CREv2-2021-2 ')
+    parser_family.add_argument('ped_file', type=argparse.FileType('r'), help='pedigree file')
     parser_family.add_argument('runid', help='Run ID')
+    parser_family.add_argument('sampleid', help='sample id')
+    parser_family.add_argument('--refset', default=settings.refset, help='used refset (default = settings.refset)')
+    parser_family.add_argument('--template_xml',  default=settings.template_family_xml, help='Full path to template XML [default = settting.py]')
     parser_family.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline')
     parser_family.add_argument('--vcf_filename_suffix', help='suffix that was included in the VCF filename. Do not include spaces or underscores in suffix')
     parser_family.add_argument('--fontsize', default=12, type=int, help='fontzise within IGV session for headers [default 12]')
