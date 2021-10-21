@@ -7,6 +7,10 @@ import argparse
 import glob
 from multiprocessing import Pool
 import pysam
+from database import connect_database
+from models import Sample
+from exomedepth_db import create_sample
+from exomedepth_db import store_sample
 import settings
 
 def valid_read(read):
@@ -15,7 +19,6 @@ def valid_read(read):
         return True
     else:
         return False
-
 
 def get_gender(bam):
     """Determine chrY ratio based on read count in bam (excl PAR)."""
@@ -36,16 +39,6 @@ def get_gender(bam):
             return "female"
         else:
             sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))  
-
-def get_merge_status(bam, runid):
-    """Get platform unit (PU) from bam file 
-    If one of the PU in all readgroups is not in the runID, the sample is considered to be a merge sample
-    """
-    workfile = pysam.AlignmentFile(bam, "rb")
-    for readgroup in workfile.header['RG']:
-        if readgroup['PU'] not in runid:
-             return True
-    return False
 
 def multiprocess_ref(mp_list):
 
@@ -116,7 +109,6 @@ def make_refset(args):
 def multiprocess_call(multiprocess_list):
 
     """Log all settings in setting.log file"""
-
     setting_log_suffix = "settings.log"
     r_log_suffix = "CNV.log"
     r_igv_suffix = "ref.igv"
@@ -128,7 +120,7 @@ def multiprocess_call(multiprocess_list):
     log_file="{output}/{model}_{refset}_{bam}_{run}_{setting_log_suffix}".format(
         output=multiprocess_list[1],
         model=multiprocess_list[0],
-        refset=args.refset,
+        refset=multiprocess_list[7],
         bam=args.sample,
         run=args.run,
         setting_log_suffix=setting_log_suffix
@@ -147,7 +139,7 @@ def multiprocess_call(multiprocess_list):
         refset_dir=settings.refset_dir,
         model=multiprocess_list[0],
         gender=multiprocess_list[2],
-        refset=args.refset
+        refset=multiprocess_list[7]
         )
 
     action = ("export SINGULARITYENV_R_LIBS={r_libs} && "
@@ -166,7 +158,7 @@ def multiprocess_call(multiprocess_list):
             prob=settings.probability[str(multiprocess_list[0])],
             bam=multiprocess_list[5],
             model=multiprocess_list[0],
-            refset=args.refset,
+            refset=multiprocess_list[7],
             expected=args.expectedCNVlength,
             run=args.run,
             r_log_suffix=r_log_suffix,
@@ -179,7 +171,7 @@ def multiprocess_call(multiprocess_list):
     inputcsv = "{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(
         multiprocess_list[6], 
         multiprocess_list[0], 
-        args.refset, 
+        multiprocess_list[7], 
         args.sample, 
         args.run
         )
@@ -189,7 +181,7 @@ def multiprocess_call(multiprocess_list):
         " {sampleid} {template} {runid} ").format(
             csv2vcf=settings.csv2vcf,
             inputcsv=inputcsv,
-            refset=args.refset,
+            refset=multiprocess_list[7],
             model=multiprocess_list[0],
             gender=multiprocess_list[2],
             sampleid=args.sample,
@@ -201,6 +193,28 @@ def multiprocess_call(multiprocess_list):
         action = "{action} --vcf_filename_suffix {vcf_filename_suffix}".format(action=action, vcf_filename_suffix=args.vcf_filename_suffix)
 
     os.system(action)
+
+def add_sample_to_db(sample_id, flowcell_id, refset):
+    Session = connect_database()
+    with Session() as session:
+        if not session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).all():
+            entry = create_sample(sample_id, flowcell_id, refset)
+            store_sample(Session, entry)
+
+def query_refset(sample_id, flowcell_id):
+    Session = connect_database()
+    with Session() as session:
+        return session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).one().refset
+
+def get_flowcelid(bam):
+    workfile = pysam.AlignmentFile(bam, "rb")
+    readgroups = []
+    for readgroup in workfile.header['RG']:
+        if readgroup['PU'] not in readgroup:
+            readgroups.append(readgroup['PU'])
+    readgroups=list(set(readgroups))
+    flowcell_id = "_".join(readgroups)
+    return flowcell_id
 
 def call_cnv(args):
 
@@ -217,16 +231,24 @@ def call_cnv(args):
         gender = args.refset_gender
     else:  # Otherwise determine based on chrY count
         gender = get_gender(bam)
+  
+    flowcell_id = get_flowcelid(bam)
+
+    refset = settings.refset
+    add_sample_to_db(args.sample, flowcell_id, refset) # Add sample to database if not present, and use current production refset if not present in db
+    if args.refset:  #do not use refset in database, but from argument (overrule)
+        refset = args.refset
+    else:  #use refset in db
+        refset = query_refset(args.sample, flowcell_id)
 
     multiprocess_list=[]
     for model in analysis:
-        multiprocess_list += [[model, output_folder, gender, analysis[model]["target_bed"], analysis[model]["exon_bed"], bam, output_folder]] 
+        multiprocess_list += [[model, output_folder, gender, analysis[model]["target_bed"], analysis[model]["exon_bed"], bam, output_folder, refset]] 
     
     with Pool(processes=int(args.simjobs)) as pool:
         result = pool.map(multiprocess_call, multiprocess_list, 1)
 
     """Make log for stats of each model """
-    merge = get_merge_status(bam, args.run)
     for model in analysis:
 
         stats_log_suffix = "_"
@@ -248,7 +270,7 @@ def call_cnv(args):
         vcf = "{output}/{model}_{refset}_{sample}_{run}_{vcf_suffix}.vcf".format(
             output=args.output,
             model=model,
-            refset=args.refset,
+            refset=refset,
             sample=args.sample,
             run=args.run,
             vcf_suffix=vcf_suffix
@@ -265,15 +287,13 @@ def call_cnv(args):
                 del_dup_ratio < float(settings.del_dup_ratio[0]) or 
                 del_dup_ratio > float(settings.del_dup_ratio[1])):
                 qc_status = "{qc_status}\tWARNING:QC_FAIL".format(qc_status=qc_status)
-        if merge:
-            qc_status = "{qc_status}\tWARNING:{merge_warning}".format(qc_status=qc_status, merge_warning=settings.merge_warning)
         if args.vcf_filename_suffix:
             qc_status = "{qc_status}\tWARNING:{qc_suffix}".format(qc_status=qc_status, qc_suffix=args.vcf_filename_suffix)        
 
         sample_model_log.write("{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
             sample=args.sample,
             model=model,
-            refset=args.refset,
+            refset=refset,
             correlation=correlation,
             del_dup_ratio=del_dup_ratio,
             number_calls=number_calls,
@@ -284,13 +304,12 @@ def call_cnv(args):
 
 
     """Make IGV session xml """
-    action = "python {igv_xml} single_igv {bam} {output} {sampleid} {template} {refset} {runid} --pipeline {pipeline}".format(
+    action = "python {igv_xml} single_igv {output} {sampleid} {refset} {runid} --refset {refset} --template {template}  --pipeline {pipeline}".format(
         igv_xml=settings.igv_xml,
-        bam=args.inputbam,
         output=args.output,
         sampleid=args.sample,
-        template=settings.template_xml,
-        refset=args.refset,
+        template=args.template,
+        refset=refset,
         runid=args.run,
         pipeline=args.pipeline
         )
@@ -315,7 +334,8 @@ if __name__ == "__main__":
     parser_cnv.add_argument('inputbam', help='Input BAM file')
     parser_cnv.add_argument('run', help='Name of the run')
     parser_cnv.add_argument('sample', help='Sample name')
-    parser_cnv.add_argument('--refset', default=settings.refset, help='Reference set to be used (e.g. Jan2020). Default = refset in settings.py')
+    parser_cnv.add_argument('--refset', help='Reference set to be used (e.g. CREv2-2021-2).')
+    parser_cnv.add_argument('--template', default=settings.template_single_xml, help='Template XML for single sample IGV session. Default = template_single_xml in settings.py')
     parser_cnv.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline')
     parser_cnv.add_argument('--simjobs', default=2, help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 2]')
     parser_cnv.add_argument('--refset_gender', choices=['male', 'female'], help='force specific use of female/male reference set in analysis')
