@@ -43,7 +43,6 @@ analysis = {
         }
     }
 
-
 # Parameters transition.probability
 probability = {"HC": 0.0001, "UMCU": 0.5}
 
@@ -64,7 +63,7 @@ template_single_xml = str(cwd)+"igv_session_template_single.xml"
 template_family_xml = str(cwd)+"igv_session_template_family.xml"
 
 igv_xml = str(cwd)+"igv_xml_session.py"
-igv_settings = {"ratio":[0, 1, 2], "log2ratio":[-2.5, 0, 2.5] }
+igv_settings = {"ratio":[-0.1, 1, 2.1], "log2ratio":[-2.5, 0, 2.5] }
 
 # Check VCF stats criteria
 correlation = 0.98
@@ -78,5 +77,6 @@ reanalysis_dic = {
     "asMale": ["male", "AsMale"]
     }
 
-merge_warning = "DO_NOT_USE_MergeSample"
+# Database settings
+database = 'sqlite:////hpc/diaggen/data/databases/ExomeDepth_db/exomedepth_db.sqlite'
 
