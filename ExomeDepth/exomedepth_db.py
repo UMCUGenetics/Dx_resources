@@ -1,9 +1,11 @@
 #!venv/bin/python
-"""Exomeepth db CLI."""
+"""Exomedepth db CLI."""
 
+import sys
 import argparse
 from database import connect_database
 from models import Sample
+import pysam
 import settings
 
 def store_sample(Session, sample):
@@ -48,6 +50,41 @@ def query_refset(args):
     with Session() as session:
         print(session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == args.flowcell_id).one().refset)
 
+def get_flowcelid(bam):
+    workfile = pysam.AlignmentFile(bam, "rb")
+    readgroups = []
+    for readgroup in workfile.header['RG']:
+        if readgroup['PU'] not in readgroup:
+            readgroups.append(readgroup['PU'])
+    readgroups=list(set(readgroups))
+    flowcell_id = "_".join(readgroups)
+    return flowcell_id
+
+
+def query_refset_bam(args):
+    Session = connect_database()
+    bam_file = []
+    for bam in args.bam_id:
+        if args.sample_id in bam:
+            bam_file.append(bam)
+    if len(bam_file) == 1:
+        flowcell_id = get_flowcelid(bam_file[0])
+        with Session() as session:
+            print(session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).one().refset)
+    else:
+        sys.exit("None or multiple BAMs files detected for same sample")
+
+def delete_sample_db(args):
+    Session = connect_database()
+    with Session() as session:
+        if session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == args.flowcell_id).all():
+            session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == args.flowcell_id).delete()
+            session.commit() 
+            print("Deleted sample {0} with flowcell {1}.".format(args.sample_id, args.flowcell_id))
+        else:
+            print("Sample {0} with flowcell {1} not in database.".format(args.sample_id, args.flowcell_id))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers()
@@ -71,6 +108,16 @@ if __name__ == "__main__":
 
     parser_allsamples = subparser.add_parser('print_all_samples', help='Print database (tab-separated)')
     parser_allsamples.set_defaults(func = print_all_samples)
+
+    parser_query_refset_bam = subparser.add_parser('query_refset_bam', help='query refset of sample based on BAM file')
+    parser_query_refset_bam.add_argument('sample_id', help='sample id')
+    parser_query_refset_bam.add_argument('bam_id', nargs='+', help='full path to BAM file(s), space seperated. Requires at least 1 BAM file')
+    parser_query_refset_bam.set_defaults(func = query_refset_bam)
+
+    parser_delete_sample = subparser.add_parser('delete_sample', help='Delete samples from database (sample + flowcell)')
+    parser_delete_sample.add_argument('sample_id', help='sample id')
+    parser_delete_sample.add_argument('flowcell_id', help='flowcell barcode')
+    parser_delete_sample.set_defaults(func = delete_sample_db)
 
     args = parser.parse_args()
     args.func(args)
