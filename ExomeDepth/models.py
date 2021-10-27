@@ -4,7 +4,6 @@ from sqlalchemy import Column, Integer, String, UniqueConstraint
 
 from database import Base
 
-
 class Sample(Base):
     __tablename__ = 'samples'
 
