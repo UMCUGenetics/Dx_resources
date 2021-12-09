@@ -25,21 +25,25 @@ singularity_mount_path = "/hpc/diaggen:/hpc/diaggen"
 
 # Location of target files
 refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
-reffile_repo = "/hpc/diaggen/software/production/Dx_tracks/"
-reffile_dir = "{}/ExomeDepth/".format(reffile_repo)
+reffile_repo = "/hpc/diaggen/software/production/Dx_tracks"
+reffile_dir = "{}/ExomeDepth".format(reffile_repo)
 
 #Reference set
-refset = "CREv2-2021-2"
+refset = "RS-SSv7-2021-1"		## Annotation for HC and UMCU refsets
+callingmodel_HC = "HC_SSv7-2021-1"	## High Confdient track annotation
+callingmodel_UMCU = "UMCU"		## UMCU track annotation
 
 analysis = {
     "HC":
-        {"target_bed":str(reffile_dir)+"HC_target.bed",
-        "exon_bed":str(reffile_dir)+"HC_exon.tsv"
+        {"target_bed":"{}/{}_target.bed".format(reffile_dir, callingmodel_HC),
+        "exon_bed":"{}/{}_exon.tsv".format(reffile_dir, callingmodel_HC),
+        "calling_model":callingmodel_HC
         },
 
     "UMCU":
-        {"target_bed":str(reffile_dir)+"UMCU_target.bed",
-        "exon_bed":str(reffile_dir)+"UMCU_exon.tsv"
+        {"target_bed":"{}/{}_target.bed".format(reffile_dir, callingmodel_UMCU),
+        "exon_bed":"{}/{}_exon.tsv".format(reffile_dir, callingmodel_UMCU),
+        "calling_model":callingmodel_UMCU
         }
     }
 
