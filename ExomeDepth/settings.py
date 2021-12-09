@@ -35,14 +35,14 @@ callingmodel_UMCU = "UMCU"		## UMCU track annotation
 
 analysis = {
     "HC":
-        {"target_bed":"{}/{}_target.bed".format(reffile_dir, callingmodel_HC),
-        "exon_bed":"{}/{}_exon.tsv".format(reffile_dir, callingmodel_HC),
+        {"target_bed":"{0}/{1}_target.bed".format(reffile_dir, callingmodel_HC),
+        "exon_bed":"{0}/{1}_exon.tsv".format(reffile_dir, callingmodel_HC),
         "calling_model":callingmodel_HC
         },
 
     "UMCU":
-        {"target_bed":"{}/{}_target.bed".format(reffile_dir, callingmodel_UMCU),
-        "exon_bed":"{}/{}_exon.tsv".format(reffile_dir, callingmodel_UMCU),
+        {"target_bed":"{0}/{1}_target.bed".format(reffile_dir, callingmodel_UMCU),
+        "exon_bed":"{0}/{1}_exon.tsv".format(reffile_dir, callingmodel_UMCU),
         "calling_model":callingmodel_UMCU
         }
     }
