@@ -67,7 +67,7 @@ if __name__ == "__main__":
     parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline)')
     parser.add_argument('--refset', default = settings.refset, help='Reference set to be used. Default = refset in settings.py')
     parser.add_argument('--reanalysis', help='Tab delimited file with SampleID, RefsetID, and optional reanalysis female/male mode (see settings.py) to be used. If samples are not present in the file, default refset and female/male is used')
-    parser.add_argument('--exomedepth', default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py", help='Full path to exomedepth script')
+    parser.add_argument('--exomedepth', default = "{}/run_ExomeDepth.py".format(settings.cwd), help='Full path to exomedepth script')
     parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
     args = parser.parse_args()
 
