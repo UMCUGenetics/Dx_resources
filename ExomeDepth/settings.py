@@ -22,15 +22,15 @@ r_library_path = "/hpc/diaggen/software/production/R_libs/ExomeDepthv2.0.1/3.5.1
 singularity_r_container = "/hpc/diaggen/software/singularity_cache/rocker-tidyverse-3.5.1.img"
 singularity_mount_path = "/hpc/diaggen:/hpc/diaggen"
 
-
 # Location of target files
+refset_dir = "/hpc/diaggen/data/databases/ExomeDepth_refset/"
 reffile_repo = "/hpc/diaggen/software/production/Dx_tracks"
 reffile_dir = "{}/ExomeDepth".format(reffile_repo)
 
 #Reference set
-refset = "RS-SSv7-2021-1"		## Annotation for HC and UMCU refsets
-callingmodel_HC = "HC_SSv7-2021-1"	## High Confident track annotation
-callingmodel_UMCU = "UMCU"		## UMCU track annotation
+refset = "RS-SSv7-2021-1"               ## Annotation for HC and UMCU refsets
+callingmodel_HC = "HC_SSv7-2021-1"      ## High Confident track annotation
+callingmodel_UMCU = "UMCU"              ## UMCU track annotation
 
 analysis = {
     "HC":
@@ -80,4 +80,3 @@ reanalysis_dic = {
     }
 
 merge_warning = "DO_NOT_USE_MergeSample"
-
