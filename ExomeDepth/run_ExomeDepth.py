@@ -185,12 +185,12 @@ def multiprocess_call(multiprocess_list):
         )
 
     action = (
-        "python {csv2vcf} {inputcsv} {refset} {model} {gender} "
+        "python {csv2vcf} {inputcsv} {refset} {calling_model} {gender} "
         " {sampleid} {template} {runid} ").format(
             csv2vcf=settings.csv2vcf,
             inputcsv=inputcsv,
             refset=args.refset,
-            model=multiprocess_list[0],
+            calling_model=multiprocess_list[7],
             gender=multiprocess_list[2],
             sampleid=args.sample,
             template=settings.vcf_template,
@@ -220,7 +220,7 @@ def call_cnv(args):
 
     multiprocess_list=[]
     for model in analysis:
-        multiprocess_list += [[model, output_folder, gender, analysis[model]["target_bed"], analysis[model]["exon_bed"], bam, output_folder]] 
+        multiprocess_list += [[model, output_folder, gender, analysis[model]["target_bed"], analysis[model]["exon_bed"], bam, output_folder, analysis[model]["calling_model"]]] 
     
     with Pool(processes=int(args.simjobs)) as pool:
         result = pool.map(multiprocess_call, multiprocess_list, 1)
