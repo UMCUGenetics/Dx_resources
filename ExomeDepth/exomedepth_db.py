@@ -23,20 +23,22 @@ def create_sample(sample_id, flowcell_id, refset):
 
 def add_sample_to_db(args):
     Session = connect_database()
+    flowcell_id = get_flowcell_id(args.flowcell_id)
     with Session() as session:
-        if not session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == args.flowcell_id).all():
-            entry = create_sample(args.sample_id, args.flowcell_id, args.refset)
+        if not session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).all():
+            entry = create_sample(args.sample_id, flowcell_id, args.refset)
             store_sample(Session, entry)
-            print("## Sample {0} added to database with flowcell {1} and with refset {2}".format(args.sample_id, args.flowcell_id, args.refset))
+            print("## Sample {0} added to database with flowcell {1} and with refset {2}".format(args.sample_id, flowcell_id, args.refset))
 
 def change_refset_in_db(args):
     Session = connect_database()
+    flowcell_id = get_flowcell_id(args.flowcell_id)
     with Session() as session:
-        sample_update = session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == args.flowcell_id).one()
+        sample_update = session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).one()
         sample_update.refset = args.refset
         session.add(sample_update)
         session.commit()
-        print("## Changed refset of sample {0} with flowcell {1} to refset {2}".format(args.sample_id, args.flowcell_id, args.refset))
+        print("## Changed refset of sample {0} with flowcell {1} to refset {2}".format(args.sample_id, flowcell_id, args.refset))
 
 def print_all_samples(args):
     Session = connect_database()
@@ -47,10 +49,11 @@ def print_all_samples(args):
 
 def query_refset(args):
     Session = connect_database()
+    flowcell_id = get_flowcell_id(args.flowcell_id)
     with Session() as session:
-        print(session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == args.flowcell_id).one().refset)
+        print(session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).one().refset)
 
-def get_flowcelid(bam):
+def get_flowcelid_bam(bam):
     workfile = pysam.AlignmentFile(bam, "rb")
     readgroups = []
     for readgroup in workfile.header['RG']:
@@ -68,7 +71,7 @@ def query_refset_bam(args):
         if args.sample_id in bam:
             bam_file.append(bam)
     if len(bam_file) == 1:
-        flowcell_id = get_flowcelid(bam_file[0])
+        flowcell_id = get_flowcelid_bam(bam_file[0])
         with Session() as session:
             print(session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).one().refset)
     else:
@@ -76,14 +79,29 @@ def query_refset_bam(args):
 
 def delete_sample_db(args):
     Session = connect_database()
+    flowcell_id = get_flowcell_id(args.flowcell_id)
     with Session() as session:
-        if session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == args.flowcell_id).all():
-            session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == args.flowcell_id).delete()
+        if session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).all():
+            session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).delete()
             session.commit() 
-            print("Deleted sample {0} with flowcell {1}.".format(args.sample_id, args.flowcell_id))
+            print("Deleted sample {0} with flowcell {1}.".format(args.sample_id, flowcell_id))
         else:
-            print("Sample {0} with flowcell {1} not in database.".format(args.sample_id, args.flowcell_id))
+            print("Sample {0} with flowcell {1} not in database.".format(args.sample_id, flowcell_id))
 
+def get_flowcell_id(flowcellsarg):
+    flowcells = list(set(flowcellsarg))
+    flowcells.sort()
+    flowcell_id = "_".join(flowcells)
+    return flowcell_id
+
+def add_sample_to_db_and_return_refset(args):
+    Session = connect_database()
+    flowcell_id = get_flowcell_id(args.flowcell_id)
+    with Session() as session:
+        if not session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).all():
+            entry = create_sample(args.sample_id, flowcell_id, args.refset)
+            store_sample(Session, entry)
+        print(session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).one().refset)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -91,19 +109,25 @@ if __name__ == "__main__":
 
     parser_add = subparser.add_parser('add_sample', help='add sample + flowcell to database')
     parser_add.add_argument('sample_id', help='sample id')
-    parser_add.add_argument('flowcell_id', help='flowcell barcode')
+    parser_add.add_argument('flowcell_id', nargs='+', help='flowcell barcode')
     parser_add.add_argument('--refset', default = settings.refset, help='exomedepth reference set ID [default = settings.refser]')
     parser_add.set_defaults(func = add_sample_to_db)
 
+    parser_add_return = subparser.add_parser('add_sample_return_reset', help='add sample + flowcell and return refset')
+    parser_add_return.add_argument('sample_id', help='sample id')
+    parser_add_return.add_argument('flowcell_id', nargs='+', help='flowcell barcode')
+    parser_add_return.add_argument('--refset', default = settings.refset, help='exomedepth reference set ID [default = settings.refser]')
+    parser_add_return.set_defaults(func = add_sample_to_db_and_return_refset)
+
     parser_query_refset = subparser.add_parser('query_refset', help='query refset of sample + flowcell')
     parser_query_refset.add_argument('sample_id', help='sample id')
-    parser_query_refset.add_argument('flowcell_id', help='flowcell barcode')
+    parser_query_refset.add_argument('flowcell_id', nargs='+', help='flowcell barcode')
     parser_query_refset.set_defaults(func = query_refset)
 
     parser_change = subparser.add_parser('change_refset', help='change refset of specific sample + flowcell')
-    parser_change.add_argument('sample_id', help='sample id')
-    parser_change.add_argument('flowcell_id', help='flowcell barcode')
     parser_change.add_argument('refset', help='new refset ID')
+    parser_change.add_argument('sample_id', help='sample id')
+    parser_change.add_argument('flowcell_id', nargs='+', help='flowcell barcode')
     parser_change.set_defaults(func = change_refset_in_db)
 
     parser_allsamples = subparser.add_parser('print_all_samples', help='Print database (tab-separated)')
@@ -116,7 +140,7 @@ if __name__ == "__main__":
 
     parser_delete_sample = subparser.add_parser('delete_sample', help='Delete samples from database (sample + flowcell)')
     parser_delete_sample.add_argument('sample_id', help='sample id')
-    parser_delete_sample.add_argument('flowcell_id', help='flowcell barcode')
+    parser_delete_sample.add_argument('flowcell_id', nargs='+', help='flowcell barcode')
     parser_delete_sample.set_defaults(func = delete_sample_db)
 
     args = parser.parse_args()
