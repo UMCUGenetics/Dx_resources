@@ -234,6 +234,7 @@ def call_cnv(args):
   
     flowcell_id = get_flowcelid(bam)
 
+    """Determine refset"""
     refset = settings.refset
     add_sample_to_db(args.sample, flowcell_id, refset) # Add sample to database if not present, and use current production refset if not present in db
     if args.refset:  #do not use refset in database, but from argument (overrule)
@@ -304,7 +305,8 @@ def call_cnv(args):
 
 
     """Make IGV session xml """
-    action = "python {igv_xml} single_igv {output} {sampleid} {refset} {runid} --refset {refset} --template {template}  --pipeline {pipeline}".format(
+    """
+    action = "python {igv_xml} single_igv {output} {sampleid} {runid} --refset {refset} --template {template}  --pipeline {pipeline} ".format(
         igv_xml=settings.igv_xml,
         output=args.output,
         sampleid=args.sample,
@@ -317,7 +319,7 @@ def call_cnv(args):
         action = "{action} --vcf_filename_suffix {vcf_filename_suffix}".format(action=action, vcf_filename_suffix=args.vcf_filename_suffix)
 
     os.system(action)
-
+    """ 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers()
