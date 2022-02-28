@@ -6,19 +6,38 @@ import glob
 import sys
 from multiprocessing import Pool
 from datetime import date
-
+from run_ExomeDepth import query_refset
+from run_ExomeDepth import get_flowcelid
+import pysam
 import settings
 
-def process(bam, args, refset_dic, gender_dic, suffix_dic):
+def determine_sample_id (args, bam):
     bamfile = bam.rstrip("/").split("/")[-1]
-    if args.pipeline == "iap":
-        sampleid = bamfile.split("_")[0]
-    elif args.pipeline == "nf":
-        sampleid = bamfile.split(".")[0]
+    workfile = pysam.AlignmentFile(bam, "rb")
+    sampleid = []
+    for readgroup in workfile.header['RG']:
+        sampleid.append(readgroup['SM'])
+    sampleid = list(set(sampleid))
+    sampleid = "_".join(sampleid)
 
-    refset = args.refset
-    if args.refset and sampleid in refset_dic:
+    return sampleid, bamfile
+
+def determine_refset(args, refset_dic, flowcellid, sampleid):
+    """ Determine refset to be used """
+    if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
          refset = refset_dic[sampleid]
+    else:  #use refset in db
+        if query_refset(sampleid, flowcellid): # used refset in database
+            refset = query_refset(sampleid, flowcellid)
+        else: # else use default refset
+            refset = args.refset
+    return refset
+
+
+def process(bam, args, gender_dic, suffix_dic):   
+    sampleid, bamfile = determine_sample_id(args, bam)
+    flowcellid = get_flowcelid(bam)
+    refset = determine_refset(args, bam, flowcellid, sampleid)
 
     os.system("mkdir -p {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
     os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
@@ -58,14 +77,40 @@ def process(bam, args, refset_dic, gender_dic, suffix_dic):
     os.system("mv {output}/{sampleid}/UMCU*.vcf {output}/UMCU/".format(sampleid = sampleid, output = args.outputfolder))
     os.system("rm -r {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
 
+    sample_info = [sampleid, bamfile, refset]
+    return sample_info
+
+def parse_ped(ped_file):
+    samples = {}  # 'sample_id': {'family': 'fam_id', 'parents': ['sample_id', 'sample_id']}
+    for line in ped_file:
+        ped_data = line.strip().split()
+        family, sample, father, mother, sex, phenotype = ped_data
+
+        # Create samples
+        if sample not in samples:
+            samples[sample] = {'family': family, 'parents': [], 'children': []}
+        if father != '0' and father not in samples:
+            samples[father] = {'family': family, 'parents': [], 'children': []}
+        if mother != '0' and mother not in samples:
+            samples[mother] = {'family': family, 'parents': [], 'children': []}
+
+        # Save sample relations
+        if father != '0':
+            samples[sample]['parents'].append(father)
+            samples[father]['children'].append(sample)
+        if mother != '0':
+            samples[sample]['parents'].append(mother)
+            samples[mother]['children'].append(sample)
+    return samples
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputfolder', help='Path to root folder of analysis')
     parser.add_argument('outputfolder', help='Path to output folder')
     parser.add_argument('runid', help='Run ID')
     parser.add_argument('simjobs', help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session!')
+    parser.add_argument('pedfile', help='full path to ped file')
     parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline)')
-    parser.add_argument('--refset', default = settings.refset, help='Reference set to be used. Default = refset in settings.py')
     parser.add_argument('--reanalysis', help='Tab delimited file with SampleID, RefsetID, and optional reanalysis female/male mode (see settings.py) to be used. If samples are not present in the file, default refset and female/male is used')
     parser.add_argument('--exomedepth', default = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth/run_ExomeDepth.py", help='Full path to exomedepth script')
     parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
@@ -115,7 +160,8 @@ if __name__ == "__main__":
     refset_dic = {}
     gender_dic = {}
     suffix_dic = {}
-    if args.reanalysis:
+    metadata_dic = {}
+    if args.reanalysis: # Use predetermined refset for each sample based on the reanalysis option input 
         with open(args.reanalysis) as refset_file:
             for line in refset_file:
                 splitline = line.split()
@@ -135,12 +181,13 @@ if __name__ == "__main__":
                     
     """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
-        result = pool.starmap(process, [[bam, args, refset_dic, gender_dic, suffix_dic] for bam in bams])
+        sampleinfo = pool.starmap(process, [[bam, args, gender_dic, suffix_dic] for bam in bams])
 
     """ Make CNV summary file """
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
     if not os.path.isdir("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder)):
         os.system("mkdir -p {inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder))
+        pass
 
     action = "python {cwd}/exomedepth_summary.py {files} > {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
         cwd=settings.cwd,
@@ -148,4 +195,18 @@ if __name__ == "__main__":
         files=" ".join(logs),
         runid=args.runid
     )
-    os.system(action)
+    os.system(action)    
+
+    """ Make single sample IGV sessions for all samples """ 
+    for item in sampleinfo:
+        action = "python {0}/igv_xml_session.py single_igv {1} {2} {3} --bam {4} --refset {5}".format(settings.cwd, args.outputfolder, item[0], args.runid, item[1], item[2])
+        os.system(action) 
+  
+    """ Make family IGV session(s)"""
+    families = parse_ped(open(args.pedfile, "r"))
+    for item in sampleinfo:
+        if len(list(set(families[item[0]]["parents"]))) == 2:
+            action = "python {0}/igv_xml_session.py family_igv {1} {2} {3} {4} --refset {5}".format(settings.cwd, args.outputfolder, args.pedfile, args.runid, item[0], item[2])
+            print(action)
+            os.system(action)
+
