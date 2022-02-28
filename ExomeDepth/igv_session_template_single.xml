@@ -5,18 +5,18 @@
         <Resource path="$igv_hc_ratio"/>
         <Resource path="$igv_umcu_ratio"/>
         <Resource path="$baf"/>
-        <Resource path="$bam"/>
+        <Resource path="$bam_path"/>
         <Resource path="$hc_cnv_vcf"/>
         <Resource path="../../../../Miscellaneous/Dx_tracks/SNP_arrays/CytoSNP-850Kv1-2.bed"/>
     </Resources>
 
-    <Panel name="DataPanel">
-       <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1823.0;255,255,255;0,0,178" displayMode="COLLAPSED" fontSize="$fontsize" id="$snv_vcf" name="$snv_vcf_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
+    <Panel name="DataPanel" height="85">
+       <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1823.0;255,255,255;0,0,178" displayMode="COLLAPSED" fontSize="$fontsize" id="$snv_vcf" name="$snv_vcf_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="5" visible="true"/>
 
-        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" displayMode="EXPANDED" fontSize="$fontsize" id="$hc_cnv_vcf" name="$hc_cnv_vcf_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="1" visible="true"/>
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" displayMode="EXPANDED" fontSize="$fontsize" id="$hc_cnv_vcf" name="$hc_cnv_vcf_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="5" visible="true"/>
     </Panel>
 
-    <Panel name="DataPanel2"> 
+    <Panel name="DataPanel2" height="401"> 
         <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="$fontsize" height="200" id="$igv_hc_ratio_track" name="$igv_hc_ratio_track_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
             <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
         </Track>
@@ -25,7 +25,7 @@
         </Track>
     </Panel>
 
-    <Panel name="DataPanel3">
+    <Panel name="DataPanel3" height="203">
         <Track altColor="0,100,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,100,0" fontSize="$fontsize" height="200" id="$baf_track" name="$baf_track_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
             <DataRange baseline="50" drawBaseline="true" flipAxis="false" maximum="101" minimum="-1" type="LINEAR"/>
         </Track>
@@ -35,7 +35,7 @@
         <Track autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" color="175,175,175" colorScale="ContinuousColorScale;0.0;487.0;255,255,255;175,175,175" fontSize="$fontsize" id="$bam_coverage" name="Read_coverage: $bam_id" snpThreshold="0.2" visible="true">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" type="LINEAR"/>
         </Track>
-        <Track clazz="org.broad.igv.sam.AlignmentTrack" displayMode="COLLAPSED" experimentType="OTHER" fontSize="$fontsize" id="$bam" name="Read_alignment: $bam_id" visible="true">
+        <Track clazz="org.broad.igv.sam.AlignmentTrack" displayMode="COLLAPSED" experimentType="OTHER" fontSize="$fontsize" id="$bam_path" name="Read_alignment: $bam_id" visible="true">
             <RenderOptions viewPairs="true"/>
         </Track>
     </Panel>
@@ -45,7 +45,7 @@
         <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;308.0;255,255,255;0,0,178" fontSize="$fontsize" height="35" id="hg19_genes" name="RefSeq Genes hg19" visible="true"/>
         <Track clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" featureVisibilityWindow="10000000" fontSize="8" height="20" id="../../../../Miscellaneous/Dx_tracks/SNP_arrays/CytoSNP-850Kv1-2.bed" name="CytoSNP-850Kv1-2.bed" visible="true"/>
     </Panel>
-    <PanelLayout dividerFractions="0.0575,0.2317,0.4120,0.8369"/> 
+    <PanelLayout dividerFractions="0.09405,0.3113,0.5362,0.8162"/> 
     <HiddenAttributes>
         <Attribute name="DATA FILE"/>
         <Attribute name="DATA TYPE"/>
