@@ -242,8 +242,8 @@ def make_bed_detail(args, event_dic, children, parents):
         alissa_event.append(total_count)
         alissa_events.append(alissa_event)
 
-    total_events.sort(key=lambda x:(settings.chromosome_order[x[0]], int(x[1])))
-    alissa_events.sort(key=lambda x:(settings.chromosome_order[x[0]], int(x[1])))
+    total_events.sort(key=lambda x:(settings.chromosome_order[x[0]], int(x[1]),int(x[2])))
+    alissa_events.sort(key=lambda x:(settings.chromosome_order[x[0]], int(x[1]), int(x[2])))
       
     for event in total_events:
         event[0] = "chr{original}".format(original=event[0])
