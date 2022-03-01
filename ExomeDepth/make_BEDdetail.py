@@ -190,8 +190,8 @@ def make_bed_detail(args, event_dic, children, parents):
     event_file_alissa = open("{outputfolder}/{outputfile}_Alissa.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),"w")
 
     """ Write header in BED file """
-    event_file_ucsc.write("track name=\"HC_WES_CNV\" type=\"bedDetail\" description=\"CNVs called by Exomedepth using HC callset. #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n".format(children=children, parents=parents)) 
-    event_file_igv.write("track name=\"HC_WES_CNV\" type=\"bed\" description=\"CNVs called by Exomedepth using HC callset. #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n".format(children=children, parents=parents))
+    event_file_ucsc.write("track name=\"{outputfile}\" type=\"bedDetail\" description=\"CNVs called by Exomedepth using {outputfile} callset. #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n".format(outputfile=args.outputfile, children=children, parents=parents)) 
+    event_file_igv.write("track name=\"{outputfile}\" type=\"bed\" description=\"CNVs called by Exomedepth using {outputfile} callset. #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n".format(outputfile=args.outputfile, children=children, parents=parents))
     total_events = []
     alissa_events = []
     for cnv_event in event_dic:
