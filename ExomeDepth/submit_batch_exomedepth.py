@@ -11,7 +11,8 @@ from run_ExomeDepth import get_flowcelid
 import pysam
 import settings
 
-def determine_sample_id (args, bam):
+
+def determine_sample_id(args, bam):
     bamfile = bam.rstrip("/").split("/")[-1]
     workfile = pysam.AlignmentFile(bam, "rb")
     sampleid = []
@@ -22,39 +23,48 @@ def determine_sample_id (args, bam):
 
     return sampleid, bamfile
 
+
 def determine_refset(args, refset_dic, flowcellid, sampleid):
     """ Determine refset to be used """
     if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
-         refset = refset_dic[sampleid]
-    else:  #use refset in db
-        if query_refset(sampleid, flowcellid): # used refset in database
+        refset = refset_dic[sampleid]
+    else:  # use refset in db
+        if query_refset(sampleid, flowcellid):  # used refset in database
             refset = query_refset(sampleid, flowcellid)
-        else: # else use default refset
+        else:  # else use default refset
             refset = args.refset
     return refset
 
 
-def process(bam, args, gender_dic, suffix_dic):   
+def process(bam, args, gender_dic, suffix_dic):
     sampleid, bamfile = determine_sample_id(args, bam)
     flowcellid = get_flowcelid(bam)
     refset = determine_refset(args, bam, flowcellid, sampleid)
 
-    os.system("mkdir -p {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
-    os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
-    os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(bam = bam, bamfile = bamfile, sample = sampleid, output = args.outputfolder))
-    os.chdir("{output}/{sample}".format(output = args.outputfolder, sample = sampleid))
+    os.system("mkdir -p {output}/{sample}".format(
+        output=args.outputfolder, sample=sampleid)
+    )
+    os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(
+        bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder)
+    )
+    os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(
+        bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder)
+    )
+    os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
 
-    action = "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} --refset {refset} --expectedCNVlength {length} --pipeline {pipeline}".format(
-        exomedepth=args.exomedepth,
-        output=args.outputfolder,
-        inputbam=bamfile,
-        run=args.inputfolder.rstrip("/").split("/")[-1],
-        sample=sampleid,
-        refset=refset,
-        length=args.expectedCNVlength,
-        pipeline=args.pipeline
+    action = (
+        "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} "
+        "--refset {refset} --expectedCNVlength {length} --pipeline {pipeline}").format(
+            exomedepth=args.exomedepth,
+            output=args.outputfolder,
+            inputbam=bamfile,
+            run=args.inputfolder.rstrip("/").split("/")[-1],
+            sample=sampleid,
+            refset=refset,
+            length=args.expectedCNVlength,
+            pipeline=args.pipeline
         )
-    
+
     if sampleid in gender_dic:
         gender = gender_dic[sampleid]
         action = "{action} --refset_gender {gender}".format(action=action, gender=gender)
@@ -64,21 +74,22 @@ def process(bam, args, gender_dic, suffix_dic):
         action = "{action} --vcf_filename_suffix {suffix}".format(action=action, suffix=suffix)
 
     os.system(action)
- 
-    os.chdir("{output}".format(output = args.outputfolder))
-    os.system("mkdir -p {output}/logs".format(output = args.outputfolder))
-    os.system("mkdir -p {output}/igv_tracks".format(output = args.outputfolder))
-    os.system("mkdir -p {output}/UMCU/".format(output = args.outputfolder))
-    os.system("mkdir -p {output}/HC/".format(output = args.outputfolder))
-    os.system("mv {output}/{sampleid}/*.xml {output}/".format(sampleid = sampleid, output = args.outputfolder)) 
-    os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid = sampleid, output = args.outputfolder))
-    os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid = sampleid, output = args.outputfolder))
-    os.system("mv {output}/{sampleid}/HC*.vcf {output}/HC/".format(sampleid = sampleid, output = args.outputfolder))
-    os.system("mv {output}/{sampleid}/UMCU*.vcf {output}/UMCU/".format(sampleid = sampleid, output = args.outputfolder))
-    os.system("rm -r {output}/{sample}".format(output = args.outputfolder, sample = sampleid))
+
+    os.chdir("{output}".format(output=args.outputfolder))
+    os.system("mkdir -p {output}/logs".format(output=args.outputfolder))
+    os.system("mkdir -p {output}/igv_tracks".format(output=args.outputfolder))
+    os.system("mkdir -p {output}/UMCU/".format(output=args.outputfolder))
+    os.system("mkdir -p {output}/HC/".format(output=args.outputfolder))
+    os.system("mv {output}/{sampleid}/*.xml {output}/".format(sampleid=sampleid, output=args.outputfolder))
+    os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid=sampleid, output=args.outputfolder))
+    os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid=sampleid, output=args.outputfolder))
+    os.system("mv {output}/{sampleid}/HC*.vcf {output}/HC/".format(sampleid=sampleid, output=args.outputfolder))
+    os.system("mv {output}/{sampleid}/UMCU*.vcf {output}/UMCU/".format(sampleid=sampleid, output=args.outputfolder))
+    os.system("rm -r {output}/{sample}".format(output=args.outputfolder, sample=sampleid))
 
     sample_info = [sampleid, bamfile, refset]
     return sample_info
+
 
 def parse_ped(ped_file):
     samples = {}  # 'sample_id': {'family': 'fam_id', 'parents': ['sample_id', 'sample_id']}
@@ -103,21 +114,38 @@ def parse_ped(ped_file):
             samples[mother]['children'].append(sample)
     return samples
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputfolder', help='Path to root folder of analysis')
     parser.add_argument('outputfolder', help='Path to output folder')
     parser.add_argument('runid', help='Run ID')
-    parser.add_argument('simjobs', help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session!')
+    parser.add_argument(
+        'simjobs',
+        help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session!'
+    )
     parser.add_argument('pedfile', help='full path to ped file')
-    parser.add_argument('--pipeline', default='nf', choices=['nf', 'iap'], help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline)')
-    parser.add_argument('--reanalysis', help='Tab delimited file with SampleID, RefsetID, and optional reanalysis female/male mode (see settings.py) to be used. If samples are not present in the file, default refset and female/male is used')
-    parser.add_argument('--exomedepth', default = "{}/run_ExomeDepth.py".format(settings.cwd), help='Full path to exomedepth script')
-    parser.add_argument('--expectedCNVlength',default=settings.expectedCNVlength, help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]')
+    parser.add_argument(
+        '--pipeline', default='nf', choices=['nf', 'iap'],
+        help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline)'
+    )
+    parser.add_argument(
+        '--reanalysis',
+        help='Tab delimited file with SampleID, RefsetID, and optional reanalysis female/male mode (see settings.py)'
+        'to be used. If samples are not present in the file, default refset and female/male is used'
+    )
+    parser.add_argument(
+        '--exomedepth',
+        default="{}/run_ExomeDepth.py".format(settings.cwd), help='Full path to exomedepth script'
+    )
+    parser.add_argument(
+        '--expectedCNVlength', default=settings.expectedCNVlength,
+        help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]'
+    )
     args = parser.parse_args()
 
     today = date.today().strftime("%d%m%y")
-    user = subprocess.getoutput("whoami") 
+    user = subprocess.getoutput("whoami")
 
     """ Check if previous exomedepth analysis is already present """
     if os.path.isdir(args.outputfolder):
@@ -133,27 +161,39 @@ if __name__ == "__main__":
         os.system("mv {outputfolder}/* {outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today))
 
         """ Rename relative paths in IGV sessions"""
-        if archivefolder == False:
-            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {outputfolder}/archive_{today}/*xml".format(outputfolder=args.outputfolder, today=today))
+        if not archivefolder:
+            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {outputfolder}/archive_{today}/*xml".format(
+                outputfolder=args.outputfolder, today=today)
+            )
 
         """ Check if archive folder were already present in archived folder, and move the to the correct location."""
         if glob.glob("{outputfolder}/archive_{today}/archive*".format(outputfolder=args.outputfolder, today=today)):
-            os.system("mv {outputfolder}/archive_{today}/archive* {outputfolder}/".format(outputfolder=args.outputfolder, today=today))       
+            os.system("mv {outputfolder}/archive_{today}/archive* {outputfolder}/".format(
+                outputfolder=args.outputfolder, today=today)
+            )
 
         """ Copy CNV summary file into archive folder """
-        if glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(inputfolder=args.inputfolder, runid=args.runid)):
+        if (glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
+           inputfolder=args.inputfolder, runid=args.runid))):
             os.system("mkdir -p {inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today))
-            os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, runid=args.runid, today=today))
+            os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(
+                inputfolder=args.inputfolder, runid=args.runid, today=today)
+            )
 
     """Find BAM files to be processed"""
     if args.pipeline == "iap":
-        bams = set(glob.glob("{}/**/*.realigned.bam".format(args.inputfolder), recursive=True)) - set(glob.glob("{}/[eE]xome[dD]epth*/**/*.realigned.bam".format(args.inputfolder), recursive=True))
+        bams = (
+            set(glob.glob("{}/**/*.realigned.bam".format(args.inputfolder), recursive=True))
+            - set(glob.glob("{}/[eE]xome[dD]epth*/**/*.realigned.bam".format(args.inputfolder), recursive=True))
+        )
     elif args.pipeline == "nf":
-        bams = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)  
+        bams = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)
     print("Number of BAM files = "+str(len(bams)))
 
-    if bams: 
-        os.system("echo \"{user} {today}\tExomeDepth reanalysis performed\" >> {inputfolder}/logbook.txt".format(user=user, today=today, inputfolder=args.inputfolder))
+    if bams:
+        os.system("echo \"{user} {today}\tExomeDepth reanalysis performed\" >> {inputfolder}/logbook.txt".format(
+            user=user, today=today, inputfolder=args.inputfolder)
+        )
     else:
         sys.exit("no bam files detected")
 
@@ -161,7 +201,7 @@ if __name__ == "__main__":
     gender_dic = {}
     suffix_dic = {}
     metadata_dic = {}
-    if args.reanalysis: # Use predetermined refset for each sample based on the reanalysis option input 
+    if args.reanalysis:  # Use predetermined refset for each sample based on the reanalysis option input
         with open(args.reanalysis) as refset_file:
             for line in refset_file:
                 splitline = line.split()
@@ -169,16 +209,19 @@ if __name__ == "__main__":
                 refset = splitline[1]
                 if sampleid not in refset_dic:
                     refset_dic[sampleid] = refset
-                if len(splitline) > 2: 
+                if len(splitline) > 2:
                     tag = splitline[2]
-                    if settings.reanalysis_dic[tag]: 
-                        if sampleid not in gender_dic: 
+                    if settings.reanalysis_dic[tag]:
+                        if sampleid not in gender_dic:
                             gender_dic[sampleid] = settings.reanalysis_dic[tag][0]
-                        if sampleid not in  suffix_dic:
+                        if sampleid not in suffix_dic:
                             suffix_dic[sampleid] = settings.reanalysis_dic[tag][1]
-                    else: 
-                        sys.exit("Warning: reanalysis tag {0} in file {1} is unknown within settings.reanalysis_dic. Please change or add reanalysis tag".format(tag), args.reanalysis)
-                    
+                    else:
+                        sys.exit(
+                            "Warning: reanalysis tag {0} in file {1} is unknown within settings.reanalysis_dic."
+                            " Please change or add reanalysis tag".format(tag, args.reanalysis)
+                        )
+
     """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
         sampleinfo = pool.starmap(process, [[bam, args, gender_dic, suffix_dic] for bam in bams])
@@ -195,18 +238,21 @@ if __name__ == "__main__":
         files=" ".join(logs),
         runid=args.runid
     )
-    os.system(action)    
+    os.system(action)
 
-    """ Make single sample IGV sessions for all samples """ 
+    """ Make single sample IGV sessions for all samples """
     for item in sampleinfo:
-        action = "python {0}/igv_xml_session.py single_igv {1} {2} {3} --bam {4} --refset {5}".format(settings.cwd, args.outputfolder, item[0], args.runid, item[1], item[2])
-        os.system(action) 
-  
+        action = "python {0}/igv_xml_session.py single_igv {1} {2} {3} --bam {4} --refset {5}".format(
+            settings.cwd, args.outputfolder, item[0], args.runid, item[1], item[2]
+        )
+        os.system(action)
+
     """ Make family IGV session(s)"""
     families = parse_ped(open(args.pedfile, "r"))
     for item in sampleinfo:
         if len(list(set(families[item[0]]["parents"]))) == 2:
-            action = "python {0}/igv_xml_session.py family_igv {1} {2} {3} {4} --refset {5}".format(settings.cwd, args.outputfolder, args.pedfile, args.runid, item[0], item[2])
+            action = "python {0}/igv_xml_session.py family_igv {1} {2} {3} {4} --refset {5}".format(
+                settings.cwd, args.outputfolder, args.pedfile, args.runid, item[0], item[2]
+            )
             print(action)
             os.system(action)
-
