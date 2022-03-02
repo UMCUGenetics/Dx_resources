@@ -7,6 +7,7 @@ import settings
 
 Base = declarative_base()
 
+
 def connect_database():
     engine = create_engine(settings.database)
     if not database_exists(engine.url):
