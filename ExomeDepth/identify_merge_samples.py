@@ -1,27 +1,26 @@
 #! /usr/bin/env python
 import re
-import glob 
+import glob
 import argparse
 import pysam
+
 
 def detect_merge(arguments):
     merge_file = open(arguments.outputfile, "w")
     bams = glob.glob("{}*/**/*.bam".format(arguments.inputfolder), recursive=True)
     for bam in bams:
         skip_file_keywords = ['tmp', 'exomedepth', 'work']
-        if not any(keyword in bam.lower() for keyword in skip_file_keywords): # Skip files in folder with keywords
+        if not any(keyword in bam.lower() for keyword in skip_file_keywords):  # Skip files in folder with keywords
             with pysam.AlignmentFile(bam, "rb") as bam_file:
                 """ Extract sample_ID """
                 sample_id = re.split('_|\.', bam.split("/")[-1])[0]
-
                 """ Extract run ID """
                 run_id = bam.split("/")[-3]
                 if run_id == sample_id:  # Run is old IAP run
-                    run_id = bam.split("/")[-4] 
+                    run_id = bam.split("/")[-4]
 
                 """ Removes deck (A/B) from run_barcode ID. This information is not present in BAM file """
                 run_barcode = re.sub('^[A|B]', '', run_id.split("_")[3])
-
                 """ Compare barcode ID in BAM with run barcode ID(s) of sample """
                 sample_barcodes = list(set([read_group['PU'] for read_group in bam_file.header['RG']]))
                 sample_barcode = re.sub('^[A|B]', '', sample_barcodes[0])
@@ -36,6 +35,7 @@ def detect_merge(arguments):
                         ))
 
     merge_file.close()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
