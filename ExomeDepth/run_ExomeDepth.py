@@ -177,12 +177,12 @@ def multiprocess_call(multiprocess_list):
         )
 
     action = (
-        "python {csv2vcf} {inputcsv} {refset} {model} {gender} "
+        "python {csv2vcf} {inputcsv} {refset} {calling_model} {gender} "
         " {sampleid} {template} {runid} ").format(
             csv2vcf=settings.csv2vcf,
             inputcsv=inputcsv,
-            refset=multiprocess_list[7],
-            model=multiprocess_list[0],
+            refset=args.refset,
+            calling_model=multiprocess_list[7],
             gender=multiprocess_list[2],
             sampleid=args.sample,
             template=settings.vcf_template,
@@ -244,7 +244,7 @@ def call_cnv(args):
 
     multiprocess_list=[]
     for model in analysis:
-        multiprocess_list += [[model, output_folder, gender, analysis[model]["target_bed"], analysis[model]["exon_bed"], bam, output_folder, refset]] 
+        multiprocess_list += [[model, output_folder, gender, analysis[model]["target_bed"], analysis[model]["exon_bed"], bam, output_folder, analysis[model]["calling_model"]]] 
     
     with Pool(processes=int(args.simjobs)) as pool:
         result = pool.map(multiprocess_call, multiprocess_list, 1)
@@ -304,22 +304,6 @@ def call_cnv(args):
         sample_model_log.close()    
 
 
-    """Make IGV session xml """
-    """
-    action = "python {igv_xml} single_igv {output} {sampleid} {runid} --refset {refset} --template {template}  --pipeline {pipeline} ".format(
-        igv_xml=settings.igv_xml,
-        output=args.output,
-        sampleid=args.sample,
-        template=args.template,
-        refset=refset,
-        runid=args.run,
-        pipeline=args.pipeline
-        )
-    if args.vcf_filename_suffix:
-        action = "{action} --vcf_filename_suffix {vcf_filename_suffix}".format(action=action, vcf_filename_suffix=args.vcf_filename_suffix)
-
-    os.system(action)
-    """ 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers()
