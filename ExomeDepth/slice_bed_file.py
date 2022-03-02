@@ -2,7 +2,7 @@
 import sys
 
 bed_file = open(sys.argv[1], "r")  # BED file
-tlen = float(sys.argv[2]) # targeted length of target/exons
+tlen = float(sys.argv[2])  # targeted length of target/exons
 
 for line in bed_file:
     splitline = line.split()
@@ -14,10 +14,9 @@ for line in bed_file:
         for i in range(0, regions - 1):
             stop = start + chunk
             print("{chr}\t{start}\t{stop}".format(chr=splitline[0], start=start, stop=stop))
-            start += chunk 
+            start += chunk
         print("{chr}\t{start}\t{stop}".format(chr=splitline[0], start=start, stop=splitline[2]))
     else:
         print(line.rstrip())
 
 bed_file.close()
-
