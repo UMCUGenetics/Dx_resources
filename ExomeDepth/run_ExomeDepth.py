@@ -216,6 +216,9 @@ def add_sample_to_db(sample_id, flowcell_id, refset):
         if not session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).all():
             entry = create_sample(sample_id, flowcell_id, refset)
             store_sample(Session, entry)
+            return True
+        else:
+            return False
 
 
 def query_refset(sample_id, flowcell_id):
@@ -241,6 +244,7 @@ def call_cnv(args):
     bam = format(os.path.abspath(args.inputbam))
     output_folder = format(os.path.abspath(args.output))
     analysis = settings.analysis
+
     if not os.path.isdir(output_folder):
         os.system("mkdir -p " + str(output_folder))
 
@@ -252,15 +256,14 @@ def call_cnv(args):
 
     flowcell_id = get_flowcelid(bam)
 
-    """Determine refset"""
-    refset = settings.refset  # Add sample with default refset in settings.py
-    """ Add sample to database if not present, and use current production refset if not present in db  """
-    add_sample_to_db(args.sample, flowcell_id, refset)
-    if args.refset:  # Do not use refset in database, but from argument (overrule)
+    if args.refset:  # Do not query database to query refset
         refset = args.refset
-    else:  # Use refset in db
-        refset = query_refset(args.sample, flowcell_id)
-        # IS THIS NEEDED??? ###############################################################################
+    else:
+        """ Add sample to database if not present, or query refset from db if present """
+        refset = settings.refset  # Default refset in settings.py
+        if not add_sample_to_db(args.sample, flowcell_id, refset):
+            """ Query database if sample + flowcell present in database """
+            refset = query_refset(args.sample, flowcell_id)  # Get refset from database
 
     multiprocess_list = []
     for model in analysis:
