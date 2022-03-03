@@ -139,7 +139,7 @@ def slice_vcf(args, merge_dic):
                 ccn = float(record.genotype(sampleid)['CCN'])
                 bf = float(record.genotype(sampleid)['BF'])
 
-                if (totalcalls < args.totalcallsqc_min or
+                if(totalcalls < args.totalcallsqc_min or
                    totalcalls > args.totalcallsqc_max or
                    correl < args.correlqc or
                    deldupratio < args.deldupratioqc_min or
