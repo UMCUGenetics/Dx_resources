@@ -1,4 +1,4 @@
-#!venv/bin/python
+#! /usr/bin/env python3
 
 from sqlalchemy import Column, Integer, String, UniqueConstraint
 from database import Base
