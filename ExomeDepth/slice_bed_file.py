@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+
 import sys
 
 bed_file = open(sys.argv[1], "r")  # BED file
