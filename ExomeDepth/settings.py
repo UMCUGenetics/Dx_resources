@@ -1,7 +1,8 @@
 # Settings used in run_Exomedepth.py #
 
 # Location of repository
-cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth"
+# cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth"
+cwd = "/hpc/diaggen/software/development/Dx_resources_bafupd/ExomeDepth"
 
 # R script for RefSet and CNV calling
 call_cnv_r = str(cwd)+"/Exomedepth_callCNVs.R"
