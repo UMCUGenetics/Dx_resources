@@ -267,10 +267,10 @@ def call_cnv(args):
 
     multiprocess_list = []
     for model in analysis:
-        multiprocess_list += [[(
+        multiprocess_list += [[
             model, output_folder, gender, analysis[model]["target_bed"],
             analysis[model]["exon_bed"], bam, output_folder, refset
-            )]
+            ]
         ]
 
     with Pool(processes=int(args.simjobs)) as pool:
