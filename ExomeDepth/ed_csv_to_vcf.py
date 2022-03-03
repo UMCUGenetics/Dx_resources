@@ -156,7 +156,7 @@ if __name__ == "__main__":
                     calc_copynumber = 0
                     genotype = "1/1"
             else:
-                if (row_type == "deletion" and calc_copynumber > normal_copy or
+                if(row_type == "deletion" and calc_copynumber > normal_copy or
                    row_type == "duplication" and calc_copynumber < normal_copy):
                     """ If calc_copynumber is opposite of expected CN for region, i.e. ratio 1.5 for a deletion"""
                     print(
