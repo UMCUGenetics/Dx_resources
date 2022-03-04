@@ -25,7 +25,7 @@ def determine_sample_id(args, bam):
     return sampleid, bamfile
 
 
-def determine_refset(args, refset_dic, flowcellid, sampleid):
+def determine_refset(args, flowcellid, sampleid, refset_dic):
     """ Determine refset to be used """
     if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
         refset = refset_dic[sampleid]
@@ -37,10 +37,10 @@ def determine_refset(args, refset_dic, flowcellid, sampleid):
     return refset
 
 
-def process(bam, args, gender_dic, suffix_dic):
+def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     sampleid, bamfile = determine_sample_id(args, bam)
     flowcellid = get_flowcelid(bam)
-    refset = determine_refset(args, bam, flowcellid, sampleid)
+    refset = determine_refset(args, flowcellid, sampleid, refset_dic)
 
     os.system("mkdir -p {output}/{sample}".format(
         output=args.outputfolder, sample=sampleid)
@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
     """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
-        sampleinfo = pool.starmap(process, [[bam, args, gender_dic, suffix_dic] for bam in bams])
+        sampleinfo = pool.starmap(exomedepth_analysis, [[bam, args, gender_dic, suffix_dic, refset_dic] for bam in bams])
 
     """ Make CNV summary file """
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
@@ -243,8 +243,8 @@ if __name__ == "__main__":
 
     """ Make single sample IGV sessions for all samples """
     for item in sampleinfo:
-        action = "python {0}/igv_xml_session.py single_igv {1} {2} {3} --bam {4} --refset {5}".format(
-            settings.cwd, args.outputfolder, item[0], args.runid, item[1], item[2]
+        action = "python {0}/igv_xml_session.py single_igv {1} {2} {3} {4} --bam {5}".format(
+            settings.cwd, args.outputfolder, item[0], args.runid, item[2], item[1]
         )
         os.system(action)
 
@@ -252,7 +252,7 @@ if __name__ == "__main__":
     families = parse_ped(open(args.pedfile, "r"))
     for item in sampleinfo:
         if len(list(set(families[item[0]]["parents"]))) == 2:
-            action = "python {0}/igv_xml_session.py family_igv {1} {2} {3} {4} --refset {5}".format(
+            action = "python {0}/igv_xml_session.py family_igv {1} {2} {3} {4} {5}".format(
                 settings.cwd, args.outputfolder, args.pedfile, args.runid, item[0], item[2]
             )
             print(action)
