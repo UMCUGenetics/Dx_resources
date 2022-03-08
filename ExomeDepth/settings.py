@@ -91,7 +91,5 @@ reanalysis_dic = {
     "asMale": ["male", "AsMale"]
     }
 
-merge_warning = "DO_NOT_USE_MergeSample"
-
 # Database settings
 database = 'sqlite:////hpc/diaggen/data/databases/ExomeDepth_db/exomedepth_db.sqlite'
