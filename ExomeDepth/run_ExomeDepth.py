@@ -234,6 +234,7 @@ def get_flowcelid(bam):
         if readgroup['PU'] not in readgroup:
             readgroups.append(readgroup['PU'])
     readgroups = list(set(readgroups))
+    readgroups.sort()
     flowcell_id = "_".join(readgroups)
     return flowcell_id
 
