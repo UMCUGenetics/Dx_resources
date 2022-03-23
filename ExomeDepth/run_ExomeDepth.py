@@ -12,6 +12,7 @@ from database import connect_database
 from models import Sample
 from exomedepth_db import create_sample
 from exomedepth_db import store_sample
+from exomedepth_db import get_flowcelid_bam
 import settings
 
 
@@ -25,9 +26,9 @@ def valid_read(read):
 
 def get_gender(bam):
     """Determine chrY ratio based on read count in bam (excl PAR)."""
-    workfile = pysam.AlignmentFile(bam, "rb")
-    yreads = float(sum([valid_read(read) for read in workfile.fetch(region=settings.gender_determination_locus_y)]))
-    total = float(workfile.mapped)
+    with pysam.AlignmentFile(bam, "rb") as workfile:
+        yreads = float(sum([valid_read(read) for read in workfile.fetch(region=settings.gender_determination_locus_y)]))
+        total = float(workfile.mapped)
     yratio = float("%.2f" % ((yreads / total) * 100))
     if yratio <= float(settings.gender_determination_y_ratio[0]):
         return "female"
@@ -227,18 +228,6 @@ def query_refset(sample_id, flowcell_id):
         return session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).one().refset
 
 
-def get_flowcelid(bam):
-    workfile = pysam.AlignmentFile(bam, "rb")
-    readgroups = []
-    for readgroup in workfile.header['RG']:
-        if readgroup['PU'] not in readgroup:
-            readgroups.append(readgroup['PU'])
-    readgroups = list(set(readgroups))
-    readgroups.sort()
-    flowcell_id = "_".join(readgroups)
-    return flowcell_id
-
-
 def call_cnv(args):
 
     """Call CNV from BAMs"""
@@ -255,7 +244,7 @@ def call_cnv(args):
     else:  # Otherwise determine based on chrY count
         gender = get_gender(bam)
 
-    flowcell_id = get_flowcelid(bam)
+    flowcell_id = get_flowcelid_bam(bam)
 
     if args.refset:  # Do not query database to query refset
         refset = args.refset
