@@ -2,6 +2,7 @@
 
 import argparse
 from string import Template
+from exomedepth_db import add_sample_to_db_and_return_refset_bam
 import settings
 
 
@@ -11,7 +12,7 @@ def parse_ped(ped_file, sampleid):
         splitline = line.split()
         if splitline[1] not in sample_dic:
             sample_dic[splitline[1]] = [splitline[0], splitline[2], splitline[3]]
-    return sampleid, sample_dic[sampleid][0], sample_dic[sampleid][1], sample_dic[sampleid][2]
+    return sample_dic[sampleid][0], sampleid, sample_dic[sampleid][1], sample_dic[sampleid][2]
 
 
 def make_single_igvsession(args, sample_id, statistic, igv_extension, vcf_extension, bam):
@@ -81,39 +82,40 @@ def make_single_igvsession(args, sample_id, statistic, igv_extension, vcf_extens
     return new_file
 
 
-def make_family_igvsession(args, statistic, igv_extension, vcf_extension, familyid, child, father, mother, bam):
+def make_family_igvsession(args, statistic, igv_extension, vcf_extension, familyid, child, father, mother, child_bam, refsets):
     template_file = Template(open(args.template_xml).read())
+    child_ref, father_ref, mother_ref = refsets
 
     """ Data files XML variables """
     if args.pipeline == "iap":  # For analysis based on IAP
-        bam_child_path = "../{0}/mapping/{1}".format(child, bam)  # BAM path
-        snv_vcf_child = "../single_sample_vcf/{0}.filtered_variants.vcf".format(child)  # SNV VCF file child
+        bam_child_path = "../{0}/mapping/{1}".format(child, child_bam)  # BAM path
+        snv_vcf_child = "../single_sample_vcf/{0}.filtered_variuants.vcf".format(child)  # SNV VCF file child
         snv_vcf_father = "../single_sample_vcf/{0}.filtered_variants.vcf".format(father)  # SNV VCF file father
         snv_vcf_mother = "../single_sample_vcf/{0}.filtered_variants.vcf".format(mother)  # SNV VCF file mother
 
     elif args.pipeline == "nf":  # For NF pipeline.
-        bam_child_path = "../bam_files/{0}".format(bam)  # BAM path
+        bam_child_path = "../bam_files/{0}".format(child_bam)  # BAM path
         snv_vcf_child = "../single_sample_vcf/{0}_{1}.vcf".format(child, args.runid)  # SNV VCF file child
         snv_vcf_father = "../single_sample_vcf/{0}_{1}.vcf".format(father, args.runid)  # SNV VCF file father
         snv_vcf_mother = "../single_sample_vcf/{0}_{1}.vcf".format(mother, args.runid)  # SNV VCF file mother
 
     hc_cnv_vcf_child = "HC/HC_{0}_{1}_{2}_{3}".format(
-        args.refset, child, args.runid, vcf_extension
+        child_ref, child, args.runid, vcf_extension
     )  # HC CNV-VCF file child
     hc_cnv_vcf_father = "HC/HC_{0}_{1}_{2}_{3}".format(
-        args.refset, father, args.runid, vcf_extension
+        father_ref, father, args.runid, vcf_extension
     )  # HC CNV-VCF file father
     hc_cnv_vcf_mother = "HC/HC_{0}_{1}_{2}_{3}".format(
-        args.refset, mother, args.runid, vcf_extension
+        mother_ref, mother, args.runid, vcf_extension
     )  # HC CNV-VCF file mother
     hc_ratio_child = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(
-        args.refset, child, args.runid, igv_extension
+        child_ref, child, args.runid, igv_extension
     )  # Child CNV igv session with ratios for HC
     hc_ratio_father = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(
-        args.refset, father, args.runid, igv_extension
+        father_ref, father, args.runid, igv_extension
     )  # Father CNV igv session with ratios for HC
     hc_ratio_mother = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(
-        args.refset, mother, args.runid, igv_extension
+        mother_ref, mother, args.runid, igv_extension
     )  # Mother CNV igv session with ratios for HC
     upd = "../upd/{0}_{1}.igv".format(args.runid, familyid)  # UPD file
     upd_track = "{0}_inheritence".format(upd)
@@ -133,13 +135,13 @@ def make_family_igvsession(args, statistic, igv_extension, vcf_extension, family
         snv_vcf_mother.split("/")[-1]
     )  # SNV/MNV track mother ID in IGV
     hc_cnv_vcf_child_id = "CNV_child:HC_{0}_{1}_{2}_{3}".format(
-        args.refset, child, args.runid, vcf_extension
+        child_ref, child, args.runid, vcf_extension
     )  # HC CNV-VCF child track id in IGV
     hc_cnv_vcf_father_id = "CNV_father:HC_{0}_{1}_{2}_{3}".format(
-        args.refset, father, args.runid, vcf_extension
+        father_ref, father, args.runid, vcf_extension
     )  # HC CNV-VCF father track id in IGV
     hc_cnv_vcf_mother_id = "CNV_mother:HC_{0}_{1}_{2}_{3}".format(
-        args.refset, mother, args.runid, vcf_extension
+        mother_ref, mother, args.runid, vcf_extension
     )  # HC CNV-VCF mother track id in IGV
     hc_ratio_child_track = "{0}_{1}_test".format(
         hc_ratio_child, statistic
@@ -204,13 +206,21 @@ def make_family_igvsession(args, statistic, igv_extension, vcf_extension, family
         'baf_track_child': baf_track_child,
         'baf_track_child_id': baf_track_child_id,
         'bam_coverage': bam_coverage,
-        'bam_id': bam
+        'bam_id': child_bam
     }
     new_file = template_file.substitute(substitute_dic)
     return new_file
 
 
-def make_single(args, igv_extension, vcf_extension, bam):
+def make_single(args, igv_extension, vcf_extension):
+    if args.bam:  # Use full path
+        bam = args.bam
+    else:  # Use relative path
+        if args.pipeline == "iap":  # For analysis based on IAP
+            bam = "{0}_dedup.realigned.bam".format(args.sampleid.split(",")[0])  # BAM file
+        elif args.pipeline == "nf":  # For NF pipeline.
+            bam = "{0}.bam".format(args.sampleid.split(",")[0])  # Bam file
+
     for statistic in settings.igv_settings:
         write_file = open("{0}/{1}_{2}_{3}_igv.xml".format(
             args.output, args.sampleid, statistic, args.runid), "w"
@@ -221,14 +231,42 @@ def make_single(args, igv_extension, vcf_extension, bam):
         write_file.close()
 
 
-def make_family(args, igv_extension, vcf_extension, bam):
-    child, familyid, father, mother = parse_ped(args.ped_file, args.sampleid)
+def get_refset(bam_file, sample):
+    class refset_arguments:
+        bam = bam_file
+        sample_id = sample
+        print_refset = False
+    return add_sample_to_db_and_return_refset_bam(refset_arguments)
+
+
+def get_bam(sample, bam_files):
+    for bam in bam_files:
+        if sample in bam:
+            return bam
+
+
+def make_family(args, igv_extension, vcf_extension):
+
+    familyid, child, father, mother = parse_ped(args.ped_file, args.sampleid)
+
+    child_bam = get_bam(child, args.bam_files)
+    father_bam = get_bam(father, args.bam_files)
+    mother_bam = get_bam(mother, args.bam_files)
+
+    refsets = [
+        get_refset(child_bam, child),
+        get_refset(father_bam, father),
+        get_refset(mother_bam, mother)
+    ]
+
     for statistic in settings.igv_settings:
         write_file = open("{0}/FAM{1}_{2}_{3}_{4}_igv.xml".format(
-            args.output, familyid, args.sampleid, args.runid, statistic), "w"
+            args.output, familyid, child, args.runid, statistic), "w"
         )
         write_file.write(make_family_igvsession(
-            args, statistic, igv_extension, vcf_extension, familyid, child, father, mother, bam)
+            args, statistic, igv_extension, vcf_extension,
+            familyid, child, father, mother, child_bam, refsets
+            )
         )
         write_file.close()
 
@@ -262,11 +300,14 @@ if __name__ == "__main__":
 
     parser_family = subparser.add_parser('family_igv', help='Make family IGV session')
     parser_family.add_argument('output', help='Output folder')
-    parser_family.add_argument('ped_file', type=argparse.FileType('r'), help='pedigree file')
+    parser_family.add_argument('ped_file', type=argparse.FileType('r'), help='full path to ped_file')
     parser_family.add_argument('runid', help='Run ID')
-    parser_family.add_argument('sampleid', help='sample id')
-    parser_family.add_argument('refset', help='refset of sample')
-    parser_family.add_argument('--bam', help='BAM file ID')
+    parser_family.add_argument('sampleid', help='Sample ID (child)')
+    parser_family.add_argument(
+        'bam_files',
+        nargs='+',
+        help='full path to BAM files of all family members of child (space seperated)'
+    )
     parser_family.add_argument(
         '--template_xml',  default=settings.template_family_xml,
         help='Full path to template XML [default = settting.py]'
@@ -286,17 +327,10 @@ if __name__ == "__main__":
     parser_family.set_defaults(func=make_family)
     args = parser.parse_args()
 
-    if args.bam:  # Use full path
-        bam = args.bam
-    else:  # Use relative path
-        if args.pipeline == "iap":  # For analysis based on IAP
-            bam = "{0}_dedup.realigned.bam".format(args.sampleid)  # BAM file
-        elif args.pipeline == "nf":  # For NF pipeline.
-            bam = "{0}.bam".format(args.sampleid)  # Bam file
-
     igv_extension = "ref.igv"
     vcf_extension = "exome_calls.vcf"
     if args.vcf_filename_suffix:
         igv_extension = "{}_ref.igv".format(args.vcf_filename_suffix)
         vcf_extension = "exome_calls_{}.vcf".format(args.vcf_filename_suffix)
-    args.func(args, igv_extension, vcf_extension, bam)
+
+    args.func(args, igv_extension, vcf_extension)
