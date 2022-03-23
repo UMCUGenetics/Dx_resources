@@ -66,22 +66,23 @@ def query_refset(args):
 
 
 def get_flowcelid_bam(bam):
-    workfile = pysam.AlignmentFile(bam, "rb")
-    readgroups = []
-    for readgroup in workfile.header['RG']:
-        if readgroup['PU'] not in readgroup:
-            readgroups.append(readgroup['PU'])
-    readgroups = list(set(readgroups))
-    flowcell_id = "_".join(readgroups)
+    with pysam.AlignmentFile(bam, "rb") as workfile:
+        readgroups = []
+        for readgroup in workfile.header['RG']:
+            if readgroup['PU'] not in readgroup:
+                readgroups.append(readgroup['PU'])
+        readgroups = list(set(readgroups))
+        flowcell_id = "_".join(readgroups)
     return flowcell_id
 
 
 def query_refset_bam(args):
     Session = connect_database()
     flowcell_id = get_flowcelid_bam(args.bam)
+    sample_id = determine_sample_id(args.bam)
     with Session() as session:
         print(session.query(
-            Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).one().refset
+            Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).one().refset
         )
 
 
@@ -120,17 +121,27 @@ def add_sample_to_db_and_return_refset(args):
 
 def add_sample_to_db_and_return_refset_bam(args):
     Session = connect_database()
+    sample_id = determine_sample_id(args.bam)
     flowcell_id = get_flowcelid_bam(args.bam)
     with Session() as session:
-        if not session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).all():
-            entry = create_sample(args.sample_id, flowcell_id, args.refset)
+        if not session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).all():
+            entry = create_sample(sample_id, flowcell_id, args.refset)
             store_sample(Session, entry)
         refset = (
-            session.query(Sample).filter(Sample.sample == args.sample_id).filter(Sample.flowcell == flowcell_id).one().refset
+            session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).one().refset
         )
         if args.print_refset:
             print(refset)
         return refset
+
+def determine_sample_id(bam):
+    with pysam.AlignmentFile(bam, "rb") as workfile:
+        sampleid = []
+        for readgroup in workfile.header['RG']:
+            sampleid.append(readgroup['SM'])
+        sampleid = list(set(sampleid))
+        sampleid = "_".join(sampleid)
+    return sampleid
 
 
 if __name__ == "__main__":
@@ -165,7 +176,6 @@ if __name__ == "__main__":
         'add_sample_return_refset_bam',
         help='add sample to db based on BAM file and return refset'
     )
-    parser_add_return_bam.add_argument('sample_id', help='sample id')
     parser_add_return_bam.add_argument('bam', help='full path to BAM file')
     parser_add_return_bam.add_argument(
         '--refset', default=settings.refset,
@@ -186,9 +196,8 @@ if __name__ == "__main__":
     """ Arguments query refset based on BAM file"""
     parser_query_refset_bam = subparser.add_parser(
         'query_refset_bam',
-        help='return refset of sample based on sampleid and BAM file'
+        help='return refset of sample based on BAM file'
     )
-    parser_query_refset_bam.add_argument('sample_id', help='sample id')
     parser_query_refset_bam.add_argument('bam', help='full path to BAM file')
     parser_query_refset_bam.set_defaults(func=query_refset_bam)
 
