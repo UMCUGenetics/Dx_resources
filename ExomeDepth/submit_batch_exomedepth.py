@@ -7,40 +7,29 @@ import glob
 import sys
 from multiprocessing import Pool
 from datetime import date
-from run_ExomeDepth import query_refset
-from run_ExomeDepth import get_flowcelid
+from exomedepth_db import get_flowcelid_bam
+from exomedepth_db import add_sample_to_db_and_return_refset_bam
+from exomedepth_db import determine_sample_id
+from igv_xml_session import get_refset
 import pysam
 import settings
 
-
-def determine_sample_id(args, bam):
-    bamfile = bam.rstrip("/").split("/")[-1]
-    workfile = pysam.AlignmentFile(bam, "rb")
-    sampleid = []
-    for readgroup in workfile.header['RG']:
-        sampleid.append(readgroup['SM'])
-    sampleid = list(set(sampleid))
-    sampleid = "_".join(sampleid)
-
-    return sampleid, bamfile
-
-
-def determine_refset(args, flowcellid, sampleid, refset_dic):
+def determine_refset(args, bam, sampleid, refset_dic):
     """ Determine refset to be used """
     if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
         refset = refset_dic[sampleid]
     else:  # use refset in db
-        if query_refset(sampleid, flowcellid):  # used refset in database
-            refset = query_refset(sampleid, flowcellid)
-        else:  # else use default refset
+        refset = get_refset(bam, sampleid)
+        if not refset:  # If not found in database, use default refset
             refset = args.refset
     return refset
 
 
 def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
-    sampleid, bamfile = determine_sample_id(args, bam)
-    flowcellid = get_flowcelid(bam)
-    refset = determine_refset(args, flowcellid, sampleid, refset_dic)
+    bamfile = bam.rstrip("/").split("/")[-1]
+    sampleid = determine_sample_id(bam)
+    flowcellid = get_flowcelid_bam(bam)
+    refset = determine_refset(args, bam, sampleid, refset_dic)
 
     os.system("mkdir -p {output}/{sample}".format(
         output=args.outputfolder, sample=sampleid)
