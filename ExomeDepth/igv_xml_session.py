@@ -6,12 +6,13 @@ from exomedepth_db import add_sample_to_db_and_return_refset_bam
 import settings
 
 
-def parse_ped(ped_file, sampleid):
+def parse_ped_family(ped_file, sampleid):
     sample_dic = {}
     for line in ped_file:
         splitline = line.split()
         if splitline[1] not in sample_dic:
             sample_dic[splitline[1]] = [splitline[0], splitline[2], splitline[3]]
+    """ Return familyID, child, father, mother """ 
     return sample_dic[sampleid][0], sampleid, sample_dic[sampleid][1], sample_dic[sampleid][2]
 
 
@@ -234,7 +235,6 @@ def make_single(args, igv_extension, vcf_extension):
 def get_refset(bam_file, sample):
     class refset_arguments:
         bam = bam_file
-        sample_id = sample
         print_refset = False
     return add_sample_to_db_and_return_refset_bam(refset_arguments)
 
@@ -246,13 +246,10 @@ def get_bam(sample, bam_files):
 
 
 def make_family(args, igv_extension, vcf_extension):
-
-    familyid, child, father, mother = parse_ped(args.ped_file, args.sampleid)
-
+    familyid, child, father, mother = parse_ped_family(args.ped_file, args.sampleid)
     child_bam = get_bam(child, args.bam_files)
     father_bam = get_bam(father, args.bam_files)
     mother_bam = get_bam(mother, args.bam_files)
-
     refsets = [
         get_refset(child_bam, child),
         get_refset(father_bam, father),
