@@ -134,6 +134,7 @@ def add_sample_to_db_and_return_refset_bam(args):
             print(refset)
         return refset
 
+
 def determine_sample_id(bam):
     with pysam.AlignmentFile(bam, "rb") as workfile:
         sampleid = []
