@@ -242,7 +242,7 @@ if __name__ == "__main__":
     for item in sampleinfo:
         if len(list(set(families[item[0]]["parents"]))) == 2:
             action = "python {0}/igv_xml_session.py family_igv {1} {2} {3} {4} {5}".format(
-                settings.cwd, args.outputfolder, args.pedfile, args.runid, item[0], item[2]
+                settings.cwd, args.outputfolder, args.pedfile, args.runid, item[0], " ".join(bams)
             )
             print(action)
             os.system(action)
