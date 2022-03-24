@@ -12,7 +12,7 @@ def parse_ped_family(ped_file, sampleid):
         splitline = line.split()
         if splitline[1] not in sample_dic:
             sample_dic[splitline[1]] = [splitline[0], splitline[2], splitline[3]]
-    """ Return familyID, child, father, mother """ 
+    """ Return familyID, child, father, mother """
     return sample_dic[sampleid][0], sampleid, sample_dic[sampleid][1], sample_dic[sampleid][2]
 
 
