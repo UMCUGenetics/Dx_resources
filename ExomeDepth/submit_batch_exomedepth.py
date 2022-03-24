@@ -7,12 +7,10 @@ import glob
 import sys
 from multiprocessing import Pool
 from datetime import date
-from exomedepth_db import get_flowcelid_bam
-from exomedepth_db import add_sample_to_db_and_return_refset_bam
 from exomedepth_db import determine_sample_id
 from igv_xml_session import get_refset
-import pysam
 import settings
+
 
 def determine_refset(args, bam, sampleid, refset_dic):
     """ Determine refset to be used """
@@ -28,7 +26,6 @@ def determine_refset(args, bam, sampleid, refset_dic):
 def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     bamfile = bam.rstrip("/").split("/")[-1]
     sampleid = determine_sample_id(bam)
-    flowcellid = get_flowcelid_bam(bam)
     refset = determine_refset(args, bam, sampleid, refset_dic)
 
     os.system("mkdir -p {output}/{sample}".format(
