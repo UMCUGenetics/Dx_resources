@@ -258,7 +258,7 @@ def make_family(args, igv_extension, vcf_extension):
 
     for statistic in settings.igv_settings:
         write_file = open("{0}/FAM{1}_{2}_{3}_{4}_igv.xml".format(
-            args.output, familyid, child, args.runid, statistic), "w"
+            args.output, familyid, child, statistic, args.runid), "w"
         )
         write_file.write(make_family_igvsession(
             args, statistic, igv_extension, vcf_extension,
