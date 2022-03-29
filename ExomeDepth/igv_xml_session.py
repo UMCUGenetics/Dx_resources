@@ -118,7 +118,7 @@ def make_family_igvsession(args, statistic, igv_extension, vcf_extension, family
     hc_ratio_mother = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(
         mother_ref, mother, args.runid, igv_extension
     )  # Mother CNV igv session with ratios for HC
-    upd = "../upd/{0}_{1}.igv".format(args.runid, familyid)  # UPD file
+    upd = "../upd/{0}_{1}_{2}.igv".format(args.runid, familyid, child)  # UPD file
     upd_track = "{0}_inheritence".format(upd)
     baf_child = "../baf/{0}_baf.igv".format(child)  # BAF file child
 
