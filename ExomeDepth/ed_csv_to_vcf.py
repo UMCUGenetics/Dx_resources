@@ -142,12 +142,13 @@ if __name__ == "__main__":
             copynumber = int(decimal.Decimal(calc_copynumber).quantize(decimal.Decimal('0'), rounding=decimal.ROUND_HALF_UP))
             if args.gender == "female" and locus_type == "chrY":
                 """In case CNV is detected on chrY in female, correct for this"""
-                print(
-                    "WARNING: {sample} chromosome Y CNV detected (region = {region}) in female,"
-                    " calc_copynumber set to 0 (deletion call) or 1 (duplication call)".format(
-                       sample=str(args.sampleid),
-                       region=str("_".join(str(x) for x in region))
-                      ))
+                print((
+                    "WARNING: {sample} chromosome Y CNV detected (region = {region}) in female, "
+                    "calc_copynumber set to 0 (deletion call) or 1 (duplication call)"
+                    ).format(
+                        sample=str(args.sampleid),
+                        region=str("_".join(str(x) for x in region))
+                ))
 
                 # CNV CN is set to 1, could also be >1 (but makes no biological sense)
                 if ratio > 1:
@@ -160,25 +161,26 @@ if __name__ == "__main__":
                 if(row_type == "deletion" and calc_copynumber > normal_copy or
                    row_type == "duplication" and calc_copynumber < normal_copy):
                     """ If calc_copynumber is opposite of expected CN for region, i.e. ratio 1.5 for a deletion"""
-                    print(
+                    print((
                         "WARNING: {sample} CNV copynumber estimation {copynumber} "
-                        "does not match CNV type {rowtype} for region {region}".format(
-                           sample=str(args.sampleid),
-                           copynumber=str(float(calc_copynumber)),
-                           rowtype=row_type,
-                           region=str("_".join(str(x) for x in region))
-                           ))
+                        "does not match CNV type {rowtype} for region {region}"
+                        ).format(
+                            sample=str(args.sampleid),
+                            copynumber=str(float(calc_copynumber)),
+                            rowtype=row_type,
+                            region=str("_".join(str(x) for x in region))
+                    ))
                     """Note: no correction here. should be bugfix in the ExomeDepth code"""
 
                 if copynumber == int(normal_copy):
                     """ Estimated copynumber is similar to copyneutral """
-                    print(
+                    print((
                         "WARNING: {sample} true copynumber for region {region} is same as normal "
-                        "CN > set to -1 for deletion, +1 for duplication".format(
+                        "CN > set to -1 for deletion, +1 for duplication"
+                        ).format(
                             sample=str(args.sampleid),
                             region=str("_".join(str(x) for x in region))
-                        )
-                    )
+                    ))
                     if row_type == "deletion":  # If deletion correct copynumber with -1
                         copynumber -= 1
                         if copynumber == 0:
