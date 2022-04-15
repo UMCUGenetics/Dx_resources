@@ -6,17 +6,14 @@ from exomedepth_db import add_sample_to_db_and_return_refset_bam
 import settings
 
 
-def parse_ped_family(ped_file, sampleid):
-    sample_dic = {}
+def parse_ped_family(ped_file, sample_id):
     for line in ped_file:
-        splitline = line.split()
-        if splitline[1] not in sample_dic:
-            sample_dic[splitline[1]] = [splitline[0], splitline[2], splitline[3]]
-    """ Return familyID, child, father, mother """
-    return sample_dic[sampleid][0], sampleid, sample_dic[sampleid][1], sample_dic[sampleid][2]
+        family, sample, father, mother = line.split()[0:4]
+        if sample == sample_id:
+            return family, sample_id, father, mother
 
 
-def make_single_igvsession(args, sample_id, statistic, igv_extension, vcf_extension, bam):
+def make_single_igv_file(args, sample_id, statistic, igv_extension, vcf_extension, bam):
     template_file = Template(open(args.template_xml).read())
 
     """ Data files XML variables"""
@@ -83,7 +80,7 @@ def make_single_igvsession(args, sample_id, statistic, igv_extension, vcf_extens
     return new_file
 
 
-def make_family_igvsession(args, statistic, igv_extension, vcf_extension, familyid, child, father, mother, child_bam, refsets):
+def make_family_igv_file(args, statistic, igv_extension, vcf_extension, familyid, child, father, mother, child_bam, refsets):
     template_file = Template(open(args.template_xml).read())
     child_ref, father_ref, mother_ref = refsets
 
@@ -213,7 +210,7 @@ def make_family_igvsession(args, statistic, igv_extension, vcf_extension, family
     return new_file
 
 
-def make_single(args, igv_extension, vcf_extension):
+def make_single_igv_session(args, igv_extension, vcf_extension):
     if args.bam:  # Use full path
         bam = args.bam
     else:  # Use relative path
@@ -226,7 +223,7 @@ def make_single(args, igv_extension, vcf_extension):
         write_file = open("{0}/{1}_{2}_{3}_igv.xml".format(
             args.output, args.sampleid, statistic, args.runid), "w"
         )
-        write_file.write(make_single_igvsession(
+        write_file.write(make_single_igv_file(
             args, args.sampleid, statistic, igv_extension, vcf_extension, bam)
         )
         write_file.close()
@@ -245,7 +242,7 @@ def get_bam(sample, bam_files):
             return bam
 
 
-def make_family(args, igv_extension, vcf_extension):
+def make_family_igv_session(args, igv_extension, vcf_extension):
     familyid, child, father, mother = parse_ped_family(args.ped_file, args.sampleid)
     child_bam = get_bam(child, args.bam_files)
     father_bam = get_bam(father, args.bam_files)
@@ -257,10 +254,11 @@ def make_family(args, igv_extension, vcf_extension):
     ]
 
     for statistic in settings.igv_settings:
-        write_file = open("{0}/FAM{1}_{2}_{3}_{4}_igv.xml".format(
-            args.output, familyid, child, statistic, args.runid), "w"
+        write_file = open(
+            "{0}/FAM{1}_{2}_{3}_{4}_igv.xml".format(args.output, familyid, child, statistic, args.runid),
+            "w"
         )
-        write_file.write(make_family_igvsession(
+        write_file.write(make_family_igv_file(
             args, statistic, igv_extension, vcf_extension,
             familyid, child, father, mother, child_bam, refsets
             )
@@ -293,7 +291,7 @@ if __name__ == "__main__":
         '--fontsize', default=10, type=int,
         help='fontzise within IGV session for headers [default 12]'
     )
-    parser_single.set_defaults(func=make_single)
+    parser_single.set_defaults(func=make_single_igv_session)
 
     parser_family = subparser.add_parser('family_igv', help='Make family IGV session')
     parser_family.add_argument('output', help='Output folder')
@@ -321,7 +319,7 @@ if __name__ == "__main__":
         '--fontsize', default=10, type=int,
         help='fontzise within IGV session for headers [default 12]'
     )
-    parser_family.set_defaults(func=make_family)
+    parser_family.set_defaults(func=make_family_igv_session)
     args = parser.parse_args()
 
     igv_extension = "ref.igv"
