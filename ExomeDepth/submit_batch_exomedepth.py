@@ -7,12 +7,12 @@ import glob
 import sys
 from multiprocessing import Pool
 from datetime import date
-from exomedepth_db import determine_sample_id
+from exomedepth_db import get_sample_id
 from igv_xml_session import get_refset
 import settings
 
 
-def determine_refset(args, bam, sampleid, refset_dic):
+def get_refset(args, bam, sampleid, refset_dic):
     """ Determine refset to be used """
     if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
         refset = refset_dic[sampleid]
@@ -25,8 +25,8 @@ def determine_refset(args, bam, sampleid, refset_dic):
 
 def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     bamfile = bam.rstrip("/").split("/")[-1]
-    sampleid = determine_sample_id(bam)
-    refset = determine_refset(args, bam, sampleid, refset_dic)
+    sampleid = get_sample_id(bam)
+    refset = get_refset(args, bam, sampleid, refset_dic)
 
     os.system("mkdir -p {output}/{sample}".format(
         output=args.outputfolder, sample=sampleid)
@@ -217,7 +217,6 @@ if __name__ == "__main__":
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
     if not os.path.isdir("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder)):
         os.system("mkdir -p {inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder))
-        pass
 
     action = "python {cwd}/exomedepth_summary.py {files} > {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
         cwd=settings.cwd,
@@ -241,5 +240,4 @@ if __name__ == "__main__":
             action = "python {0}/igv_xml_session.py family_igv {1} {2} {3} {4} {5}".format(
                 settings.cwd, args.outputfolder, args.pedfile, args.runid, item[0], " ".join(bams)
             )
-            print(action)
             os.system(action)
