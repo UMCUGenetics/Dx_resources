@@ -22,8 +22,10 @@ def get_gender(bam, arguments):
         y_ratio = (y_reads / total_reads) * 100
         x_ratio = (x_reads / total_reads) * 100
 
-        if (y_ratio <= arguments.gender_determination_y_ratio_female
-           and x_ratio >= arguments.gender_determination_x_ratio_female):
+        if (
+            y_ratio <= arguments.gender_determination_y_ratio_female and
+            x_ratio >= arguments.gender_determination_x_ratio_female
+        ):
             return "female\t{y_ratio:.2f}\t{x_ratio:.2f}".format(y_ratio=y_ratio, x_ratio=x_ratio)
 
         elif y_ratio >= arguments.gender_determination_y_ratio_male and x_ratio <= arguments.gender_determination_x_ratio_male:
