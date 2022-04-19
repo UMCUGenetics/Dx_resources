@@ -24,8 +24,10 @@ def make_single_igv_file(args, sample_id, statistic, igv_extension, vcf_extensio
         bam_path = "../bam_files/{0}".format(bam)  # BAM path
         snv_vcf = "../single_sample_vcf/{0}_{1}.vcf".format(args.sampleid, args.runid)  # SNV VCF file
 
-    hc_cnv_vcf = "HC/HC_{0}_{1}_{2}_{3}".format(args.refset, args.sampleid, args.runid, vcf_extension)  # HC CNV-VCF file
-    baf = "../baf/{0}_baf.igv".format(args.sampleid)  # BAF file
+    min_axis, mid_axis, max_axis = settings.igv_settings[statistic]  # Get axis values out of settings.py
+    fontsize = args.fontsize
+
+    baf = "../baf/{0}_baf.igv".format(args.sampleid)
     igv_hc_ratio = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(
         args.refset, args.sampleid, args.runid, igv_extension
     )  # CNV igv session with ratios for HC
@@ -33,45 +35,29 @@ def make_single_igv_file(args, sample_id, statistic, igv_extension, vcf_extensio
         args.refset, args.sampleid, args.runid, igv_extension
     )  # CNV igv session with ratios for UMCU
 
-    """ ID XML variables"""
-    session = "{0}_{1}_{2}_igv.xml".format(sample_id, statistic, args.runid)  # Session ID
-    hc_cnv_vcf_id = "CNV:HC_{0}_{1}_{2}_{3}".format(
-        args.refset, args.sampleid, args.runid, vcf_extension
-    )  # HC CNV -VCF track id in IGV
-    snv_vcf_id = "SNV/MNV:{0}".format(snv_vcf.split("/")[-1])  # SNV/MNV track ID in IGV
-    igv_hc_ratio_track = "{0}_{1}_test".format(igv_hc_ratio, statistic)  # Ratio track within HC CNV igv session
-    igv_hc_ratio_track_id = "Probe_ratio:HC_{0}_{1}".format(statistic, args.sampleid)  # HC ratio track id in IGV
-    igv_umcu_ratio_track = "{0}_{1}_test".format(igv_umcu_ratio, statistic)  # Ratio track within UMCU CNV igv session
-    igv_umcu_ratio_track_id = "Probe_ratio:UMCU_{0}_{1}".format(statistic, args.sampleid)  # UMCU ratio track id in IGV
-    baf_track = "{0}_baf".format(baf)  # BAF track for BAF file
-    baf_track_id = "BAF:{0}".format(sample_id)  # BAF track id in IGV
-    bam_coverage = "{0}_coverage".format(bam_path)  # BAM coverage track for BAM
-
-    """ Scale XML variables"""
-    min_axis, mid_axis, max_axis = settings.igv_settings[statistic]  # Get axis values out of settings.py
-    fontsize = args.fontsize
-
     """ Substitue variables in IGV template"""
     substitute_dic = {
-        'session': session,
+        'session': "{0}_{1}_{2}_igv.xml".format(sample_id, statistic, args.runid),
         'snv_vcf': snv_vcf,
         'igv_hc_ratio': igv_hc_ratio,
         'igv_umcu_ratio': igv_umcu_ratio,
         'baf': baf,
         'bam_path': bam_path,
-        'hc_cnv_vcf': hc_cnv_vcf,
-        'snv_vcf_id': snv_vcf_id,
-        'hc_cnv_vcf_id': hc_cnv_vcf_id,
-        'igv_hc_ratio_track': igv_hc_ratio_track,
-        'igv_hc_ratio_track_id': igv_hc_ratio_track_id,
+        'hc_cnv_vcf': "HC/HC_{0}_{1}_{2}_{3}".format(args.refset, args.sampleid, args.runid, vcf_extension),  # HC CNV-VCF file
+        'snv_vcf_id': "SNV/MNV:{0}".format(snv_vcf.split("/")[-1]),  # SNV/MNV track ID in IGV
+        'hc_cnv_vcf_id': "CNV:HC_{0}_{1}_{2}_{3}".format(
+            args.refset, args.sampleid, args.runid, vcf_extension
+        ),  # HC CNV -VCF track id in IGV
+        'igv_hc_ratio_track': "{0}_{1}_test".format(igv_hc_ratio, statistic),  # Ratio track within HC CNV igv session
+        'igv_hc_ratio_track_id': "Probe_ratio:HC_{0}_{1}".format(statistic, args.sampleid),  # HC ratio track id in IGV
         'mid_axis': mid_axis,
         'max_axis': max_axis,
         'min_axis': min_axis,
-        'baf_track': baf_track,
-        'baf_track_id': baf_track_id,
-        'igv_umcu_ratio_track': igv_umcu_ratio_track,
-        'igv_umcu_ratio_track_id': igv_umcu_ratio_track_id,
-        'bam_coverage': bam_coverage,
+        'baf_track': "{0}_baf".format(baf),  # BAF track for BAF file
+        'baf_track_id': "BAF:{0}".format(sample_id),  # BAF track id in IGV
+        'igv_umcu_ratio_track': "{0}_{1}_test".format(igv_umcu_ratio, statistic),  # Ratio track within UMCU CNV igv session
+        'igv_umcu_ratio_track_id': "Probe_ratio:UMCU_{0}_{1}".format(statistic, args.sampleid),  # UMCU ratio track id in IGV
+        'bam_coverage': "{0}_coverage".format(bam_path),  # BAM coverage track for BAM
         'bam_id': bam,
         'sample_id': sample_id,
         'fontsize': fontsize
