@@ -8,11 +8,8 @@ import argparse
 import glob
 from multiprocessing import Pool
 import pysam
-from database import connect_database
-from models import Sample
-from exomedepth_db import create_sample
-from exomedepth_db import store_sample
-from exomedepth_db import get_flowcelid_bam
+from exomedepth_db import add_sample_to_db_and_return_refset_bam
+from utils.igv_xml_session import split_fslash
 import settings
 
 
@@ -35,18 +32,18 @@ def get_gender(bam):
     elif yratio >= float(settings.gender_determination_y_ratio[1]):
         return "male"
     else:
-        if re.search('[C|P]M', bam.split("/")[-1]):
+        if re.search('[C|P]M', split_fslash(bam)):
             print("Sample {0} has a unknown gender based on chrY reads, but resolved as male based on sampleID".format(
-                bam.split("/")[-1])
+                split_fslash(bam))
             )
             return "male"
-        elif re.search('[C|P]F', bam.split("/")[-1]):
+        elif re.search('[C|P]F', split_fslash(bam)):
             print("Sample {0} has a unknown gender based on chrY reads, but resolved as female based on sampleID".format(
-                bam.split("/")[-1])
+                split_fslash(bam))
             )
             return "female"
         else:
-            sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))
+            sys.exit("Sample {0} has a unknown gender and will not be analysed".format(split_fslash(bam)))
 
 
 def multiprocess_ref(mp_list):
@@ -107,12 +104,11 @@ def make_refset(args):
     mp_list = []
     for model in analysis:
         for item in ref_gender_dic:
-            folder = "{0}/{1}_{2}_{3}".format(output_folder, model, item, str(args.output).rstrip("/").split("/")[-1])
+            folder = "{0}/{1}_{2}_{3}".format(output_folder, model, item, split_fslash(str(args.output).rstrip("/")))
             output_id = "{0}_{1}_{2}.EDref".format(model, item, args.prefix)
-            action = "mkdir -p {0}".format(folder)
-            os.system(action)
+            os.mkdirs(folder)
             for bam in ref_gender_dic[item]:
-                os.system("ln -sd " + str(bam) + "* " + str(folder))
+                os.symlink("{bam}* {folder}".format(bam=bam, folder=folder))
             mp_list += [[folder, output_id, analysis[model]["target_bed"], analysis[model]["exon_bed"]]]
 
     with Pool(processes=int(args.simjobs)) as pool:
@@ -131,9 +127,9 @@ def multiprocess_call(multiprocess_list):
         r_igv_suffix = "{0}_{1}".format(args.vcf_filename_suffix, r_igv_suffix)
 
     log_file = "{output}/{model}_{refset}_{bam}_{run}_{setting_log_suffix}".format(
-        output=multiprocess_list[1],
-        model=multiprocess_list[0],
-        refset=multiprocess_list[7],
+        output=multiprocess_list["output_folder"],
+        model=multiprocess_list["model"],
+        refset=multiprocess_list["refset"],
         bam=args.sample,
         run=args.run,
         setting_log_suffix=setting_log_suffix
@@ -150,9 +146,9 @@ def multiprocess_call(multiprocess_list):
     """Perform ExomeDepth analysis"""
     refset_R = "{refset_dir}/{model}_{gender}_{refset}.EDref".format(
         refset_dir=settings.refset_dir,
-        model=multiprocess_list[0],
-        gender=multiprocess_list[2],
-        refset=multiprocess_list[7]
+        model=multiprocess_list["model"],
+        gender=multiprocess_list["gender"],
+        refset=multiprocess_list["refset"]
         )
 
     action = (
@@ -166,13 +162,13 @@ def multiprocess_call(multiprocess_list):
             singularity_container=settings.singularity_r_container,
             ed_r=settings.call_cnv_r,
             refset_R=refset_R,
-            target_bed=multiprocess_list[3],
+            target_bed=multiprocess_list["target_bed"],
             refgenome=settings.reference_genome,
-            exon_bed=multiprocess_list[4],
-            prob=settings.probability[str(multiprocess_list[0])],
-            bam=multiprocess_list[5],
-            model=multiprocess_list[0],
-            refset=multiprocess_list[7],
+            exon_bed=multiprocess_list["exon_bed"],
+            prob=settings.probability[str(multiprocess_list["model"])],
+            bam=multiprocess_list["bam"],
+            model=multiprocess_list["model"],
+            refset=multiprocess_list["refset"],
             expected=args.expectedCNVlength,
             run=args.run,
             r_log_suffix=r_log_suffix,
@@ -183,9 +179,9 @@ def multiprocess_call(multiprocess_list):
 
     """Perform csv to vcf conversion """
     inputcsv = "{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(
-        multiprocess_list[6],
-        multiprocess_list[0],
-        multiprocess_list[7],
+        multiprocess_list["output_folder"],
+        multiprocess_list["model"],
+        multiprocess_list["refset"],
         args.sample,
         args.run
         )
@@ -195,9 +191,9 @@ def multiprocess_call(multiprocess_list):
         " {sampleid} {template} {runid} ").format(
             csv2vcf=settings.csv2vcf,
             inputcsv=inputcsv,
-            refset=args.refset,
-            calling_model=multiprocess_list[7],
-            gender=multiprocess_list[2],
+            refset=multiprocess_list["refset"],
+            calling_model=multiprocess_list["calling_model"],
+            gender=multiprocess_list["gender"],
             sampleid=args.sample,
             template=settings.vcf_template,
             runid=args.run
@@ -211,23 +207,6 @@ def multiprocess_call(multiprocess_list):
     os.system(action)
 
 
-def add_sample_to_db(sample_id, flowcell_id, refset):
-    Session = connect_database()
-    with Session() as session:
-        if not session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).all():
-            entry = create_sample(sample_id, flowcell_id, refset)
-            store_sample(Session, entry)
-            return True
-        else:
-            return False
-
-
-def query_refset(sample_id, flowcell_id):
-    Session = connect_database()
-    with Session() as session:
-        return session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).one().refset
-
-
 def call_cnv(args):
 
     """Call CNV from BAMs"""
@@ -236,7 +215,7 @@ def call_cnv(args):
     analysis = settings.analysis
 
     if not os.path.isdir(output_folder):
-        os.system("mkdir -p " + str(output_folder))
+        os.mkdirs(output_folder)
 
     """Determine gender"""
     if args.refset_gender:  # Used gender if used as input parameter.
@@ -244,24 +223,29 @@ def call_cnv(args):
     else:  # Otherwise determine based on chrY count
         gender = get_gender(bam)
 
-    flowcell_id = get_flowcelid_bam(bam)
-
     if args.refset:  # Do not query database to query refset
         refset = args.refset
     else:
         """ Add sample to database if not present, or query refset from db if present """
-        refset = settings.refset  # Default refset in settings.py
-        if not add_sample_to_db(args.sample, flowcell_id, refset):
-            """ Query database if sample + flowcell present in database """
-            refset = query_refset(args.sample, flowcell_id)  # Get refset from database
+        class refset_arguments:
+           bam = bam_file
+           refset = settings.refset
+           print_refset_stdout = False
+        refset = add_sample_to_db_and_return_refset_bam(refset_arguments)
 
     multiprocess_list = []
     for model in analysis:
-        multiprocess_list += [[
-            model, output_folder, gender, analysis[model]["target_bed"],
-            analysis[model]["exon_bed"], bam, output_folder, refset
-            ]
-        ]
+        multiprocess_list.append({
+            "model":model,
+            "output_folder":output_folder,
+            "gender":gender,
+            "target_bed":analysis[model]["target_bed"],
+            "exon_bed":analysis[model]["exon_bed"],
+            "callingmodel":analysis[model]["calling_model"],
+            "bam":bam,
+            "refset":refset
+        })
+        
 
     with Pool(processes=int(args.simjobs)) as pool:
         pool.map(multiprocess_call, multiprocess_list, 1)
