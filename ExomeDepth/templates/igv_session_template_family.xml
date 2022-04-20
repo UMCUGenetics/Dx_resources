@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="hg19" hasGeneTrack="true" hasSequenceTrack="true" locus="chr1:1-10000" nextAutoscaleGroup="2" path="$session" version="8">
+    <Resources>
+        <Resource path="$snv_vcf_child"/>
+        <Resource path="$snv_vcf_father"/>
+        <Resource path="$snv_vcf_mother"/>
+        <Resource path="$hc_cnv_vcf_child"/>
+        <Resource path="$hc_cnv_vcf_father"/>
+        <Resource path="$hc_cnv_vcf_mother"/>
+        <Resource path="$hc_ratio_child"/>
+        <Resource path="$hc_ratio_father"/>
+        <Resource path="$hc_ratio_mother"/>
+        <Resource path="$upd"/>
+        <Resource path="$baf"/>
+        <Resource path="$bam"/>
+    </Resources>
+
+    <Panel name="DataPanel" height="155">
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1823.0;255,255,255;0,0,178" displayMode="COLLAPSED" fontSize="$fontsize" id="$snv_vcf_child" name="$snv_vcf_child_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="5" visible="true"/>
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1823.0;255,255,255;0,0,178" displayMode="COLLAPSED" fontSize="$fontsize" id="$snv_vcf_father" name="$snv_vcf_father_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="5" visible="true"/>
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;1823.0;255,255,255;0,0,178" displayMode="COLLAPSED" fontSize="$fontsize" id="$snv_vcf_mother" name="$snv_vcf_mother_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="5" visible="true"/>
+
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" displayMode="SQUISHED" fontSize="$fontsize" id="$hc_cnv_vcf_child" name="$hc_cnv_vcf_child_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="5" visible="true"/>
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" displayMode="SQUISHED" fontSize="$fontsize" id="$hc_cnv_vcf_father" name="$hc_cnv_vcf_father_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="5" visible="true"/>
+        <Track clazz="org.broad.igv.variant.VariantTrack" color="0,0,178" displayMode="SQUISHED" fontSize="$fontsize" id="$hc_cnv_vcf_mother" name="$hc_cnv_vcf_mother_id" siteColorMode="ALLELE_FREQUENCY" squishedHeight="5" visible="true"/>
+
+    </Panel>
+
+    <Panel name="DataPanel2" height="201">
+        <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="$fontsize" height="200" id="$hc_ratio_child_track" name="$hc_ratio_child_track_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
+            <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
+        </Track>
+    </Panel>
+
+    <Panel name="DataPanel3" height="131">
+         <Track altColor="0,100,224" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="204,204,0" fontSize="$fontsize" height="30" id="$upd_track" name="$upd_track_id" renderer="BAR_CHART" visible="true" windowFunction="none">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="-1.0" type="LINEAR"/>
+        </Track>
+
+        <Track altColor="0,100,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,100,0" fontSize="$fontsize" height="100" id="$baf_track_child" name="$baf_track_child_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
+            <DataRange baseline="50" drawBaseline="true" flipAxis="false" maximum="101" minimum="-1" type="LINEAR"/>
+        </Track>
+    </Panel>
+
+    <Panel name="DataPanel4" height="201">
+        <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="$fontsize" height="100" id="$hc_ratio_father_track" name="$hc_ratio_father_track_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
+            <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
+        </Track>
+
+        <Track altColor="255,102,0" autoScale="false" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,255" fontSize="$fontsize" height="100" id="$hc_ratio_mother_track" name="$hc_ratio_mother_track_id" renderer="SCATTER_PLOT" visible="true" windowFunction="none">
+            <DataRange baseline="$mid_axis" drawBaseline="true" flipAxis="false" maximum="$max_axis" minimum="$min_axis" type="LINEAR"/>
+        </Track>
+    </Panel>
+
+    <Panel name="DataPanel5">
+        <Track autoScale="true" clazz="org.broad.igv.sam.CoverageTrack" color="175,175,175" colorScale="ContinuousColorScale;0.0;487.0;255,255,255;175,175,175" fontSize="$fontsize" id="$bam_coverage" name="Read_coverage: $bam_id" snpThreshold="0.2" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" type="LINEAR"/>
+        </Track>
+        <Track clazz="org.broad.igv.sam.AlignmentTrack" displayMode="COLLAPSED" experimentType="OTHER" fontSize="$fontsize" id="$bam" name="Read_alignment: $bam_id" visible="true">
+            <RenderOptions viewPairs="true"/>
+        </Track>
+    </Panel>
+
+    <Panel name="FeaturePanel">
+        <Track clazz="org.broad.igv.track.SequenceTrack" fontSize="$fontsize" id="Reference sequence" name="Reference sequence" visible="true"/>
+        <Track altColor="0,0,178" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" colorScale="ContinuousColorScale;0.0;308.0;255,255,255;0,0,178" fontSize="$fontsize" height="35" id="hg19_genes" name="RefSeq Genes hg19" visible="true"/>
+    </Panel>
+    <PanelLayout dividerFractions="0.1816,0.4021,0.5491,0.7718,0.9383"/>
+    <HiddenAttributes>
+        <Attribute name="DATA FILE"/>
+        <Attribute name="DATA TYPE"/>
+        <Attribute name="NAME"/>
+    </HiddenAttributes>
+</Session>
