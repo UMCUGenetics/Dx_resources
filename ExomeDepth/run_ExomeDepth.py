@@ -85,7 +85,7 @@ def make_refset(args):
     bams = glob.glob("{}/**/*.bam".format(args.inputfolder), recursive=True)
     print("Number of BAM files detected = {0}".format(len(bams)))
 
-    """Get gender from chrY read count ratio."""
+    """Get gender from chrX read count ratio."""
     ref_gender_dic = {}  #Dictionary with gender of each sample
     for bam in bams:
        gender = get_gender(bam)
@@ -215,7 +215,7 @@ def call_cnv(args):
     """Determine gender"""
     if args.refset_gender:  # Used gender if used as input parameter.
         gender = args.refset_gender
-    else:  # Otherwise determine based on chrY count
+    else:  # Otherwise determine based on chrX count
         gender = get_gender(bam)
 
     multiprocess_list=[]
