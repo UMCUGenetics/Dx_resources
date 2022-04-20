@@ -3,6 +3,7 @@
 from sqlalchemy import Column, Integer, String, UniqueConstraint
 from database.database import Base
 
+
 class Sample(Base):
     __tablename__ = 'samples'
 
