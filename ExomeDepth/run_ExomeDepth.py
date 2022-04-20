@@ -228,24 +228,23 @@ def call_cnv(args):
     else:
         """ Add sample to database if not present, or query refset from db if present """
         class refset_arguments:
-           bam = bam_file
-           refset = settings.refset
-           print_refset_stdout = False
+            bam = bam
+            refset = settings.refset
+            print_refset_stdout = False
         refset = add_sample_to_db_and_return_refset_bam(refset_arguments)
 
     multiprocess_list = []
     for model in analysis:
         multiprocess_list.append({
-            "model":model,
-            "output_folder":output_folder,
-            "gender":gender,
-            "target_bed":analysis[model]["target_bed"],
-            "exon_bed":analysis[model]["exon_bed"],
-            "callingmodel":analysis[model]["calling_model"],
-            "bam":bam,
-            "refset":refset
+            "model": model,
+            "output_folder": output_folder,
+            "gender": gender,
+            "target_bed": analysis[model]["target_bed"],
+            "exon_bed": analysis[model]["exon_bed"],
+            "callingmodel": analysis[model]["calling_model"],
+            "bam": bam,
+            "refset": refset
         })
-        
 
     with Pool(processes=int(args.simjobs)) as pool:
         pool.map(multiprocess_call, multiprocess_list, 1)
