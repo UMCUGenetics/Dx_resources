@@ -4,15 +4,15 @@
 cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth"
 
 # R script for RefSet and CNV calling
-call_cnv_r = str(cwd)+"/Exomedepth_callCNVs.R"
-create_refset_r = str(cwd)+"/Exomedepth_create_Ref_set.R"
+call_cnv_r = str(cwd)+"/Rscripts/Exomedepth_callCNVs.R"
+create_refset_r = str(cwd)+"/Rscripts/Exomedepth_create_Ref_set.R"
 
 # ExomeDepth CSV to VCF parser
-csv2vcf = str(cwd)+"/ed_csv_to_vcf.py"
-vcf_template = str(cwd)+"/template.vcf"
+csv2vcf = str(cwd)+"/utils/ed_csv_to_vcf.py"
+vcf_template = str(cwd)+"/templates/template.vcf"
 
 # HTML template
-html = str(cwd)+"/template.html"
+html = str(cwd)+"/templates/template.html"
 
 # Reference genome
 reference_genome = (
@@ -30,7 +30,7 @@ reffile_repo = "/hpc/diaggen/software/production/Dx_tracks"
 reffile_dir = "{}/ExomeDepth".format(reffile_repo)
 
 # Reference set
-refset = "RS-SSv7-2021-1"               # Annotation for HC and UMCU refsets
+refset = "RS-SSv7-2022-1"               # Annotation for HC and UMCU refsets
 callingmodel_HC = "HC_SSv7-2021-1"      # High Confident track annotation
 callingmodel_UMCU = "UMCU"              # UMCU track annotation
 
@@ -73,10 +73,10 @@ chromosome_order = {
 }
 
 # IGV session settings:
-template_single_xml = str(cwd)+"/igv_session_template_single.xml"
-template_family_xml = str(cwd)+"/igv_session_template_family.xml"
+template_single_xml = str(cwd)+"/templates/igv_session_template_single.xml"
+template_family_xml = str(cwd)+"/templates/igv_session_template_family.xml"
 
-igv_xml = str(cwd)+"/igv_xml_session.py"
+igv_xml = str(cwd)+"/utils/igv_xml_session.py"
 igv_settings = {"ratio": [-0.1, 1, 2.1], "log2ratio": [-2.5, 0, 2.5]}
 
 # Check VCF stats criteria
