@@ -18,21 +18,21 @@ def valid_read(read):
 
 
 def get_gender(bam):
-    """Determine chrY ratio based on read count in bam (excl PAR)."""
+    """Determine chrX ratio based on read count in bam (excl PAR)."""
     workfile = pysam.AlignmentFile(bam, "rb")
-    yreads = float(sum([valid_read(read) for read in workfile.fetch(region=settings.gender_determination_locus_y)]))
+    xreads = float(sum([valid_read(read) for read in workfile.fetch(region=settings.locus_x)]))
     total = float(workfile.mapped)
-    yratio = float("%.2f" % ((yreads / total) * 100))
-    if yratio <= float(settings.gender_determination_y_ratio[0]):
+    xratio = float("%.4f" % ((xreads / total) * 100))
+    if xratio >= float(settings.ratio_x[1]):
         return "female"
-    elif yratio >= float(settings.gender_determination_y_ratio[1]):
+    elif xratio <= float(settings.ratio_x[0]):
         return "male"
     else:
         if re.search('[C|P]M', bam.split("/")[-1]):
-            print("Sample {0} has a unknown gender based on chrY reads, but resolved as male based on sampleID".format(bam.split("/")[-1]))
+            print("Sample {0} has a unknown gender based on chrX reads, but resolved as male based on sampleID".format(bam.split("/")[-1]))
             return "male"
         elif re.search('[C|P]F', bam.split("/")[-1]):
-            print("Sample {0} has a unknown gender based on chrY reads, but resolved as female based on sampleID".format(bam.split("/")[-1]))
+            print("Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID".format(bam.split("/")[-1]))
             return "female"
         else:
             sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))  
