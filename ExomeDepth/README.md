@@ -90,12 +90,12 @@ python submit_batch_exomedepth.py <input folder> <output folder> <runid> <sample
 
     Calculate coverage stats for each male/female folder for each population
     ``` bash
-    sh run_sambamba.sh <full path to sambamba executable> <folder> <bed_file> <email>
+    sh utils/run_sambamba.sh <full path to sambamba executable> <folder> <bed_file> <email>
     ```
 
     Calculate coverage stats overview for each male/female folder for each population
     ``` bash
-    ./filter_probe_file.py <folder> > <population>_<male/female>_output_all
+    ./utils/filter_probe_file.py <folder> > <population>_<male/female>_output_all
     ```
 
 4) Select least variable regions: 95% of chr1-22+chrX (female), and 33% of chrY (male)
