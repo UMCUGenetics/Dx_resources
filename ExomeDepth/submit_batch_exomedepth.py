@@ -8,7 +8,8 @@ import sys
 from multiprocessing import Pool
 from datetime import date
 from exomedepth_db import get_sample_id
-from igv_xml_session import get_refset
+from utils.igv_xml_session import get_refset
+
 import settings
 
 
@@ -28,13 +29,12 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     sampleid = get_sample_id(bam)
     refset = get_refset(args, bam, sampleid, refset_dic)
 
-    os.system("mkdir -p {output}/{sample}".format(
-        output=args.outputfolder, sample=sampleid)
-    )
-    os.system("ln -sd {bam} {output}/{sample}/{bamfile}".format(
+    os.mkdirs("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
+
+    os.symlink("{bam} {output}/{sample}/{bamfile}".format(
         bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder)
     )
-    os.system("ln -sd {bam}.bai {output}/{sample}/{bamfile}.bai".format(
+    os.symlink("{bam}.bai {output}/{sample}/{bamfile}.bai".format(
         bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder)
     )
     os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
@@ -63,10 +63,11 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     os.system(action)
 
     os.chdir("{output}".format(output=args.outputfolder))
-    os.system("mkdir -p {output}/logs".format(output=args.outputfolder))
-    os.system("mkdir -p {output}/igv_tracks".format(output=args.outputfolder))
-    os.system("mkdir -p {output}/UMCU/".format(output=args.outputfolder))
-    os.system("mkdir -p {output}/HC/".format(output=args.outputfolder))
+    os.mkdirs("{output}/logs".format(output=args.outputfolder))
+    os.mkdirs("{output}/igv_tracks".format(output=args.outputfolder))
+    os.mkdirs("{output}/UMCU/".format(output=args.outputfolder))
+    os.mkdirs("{output}/HC/".format(output=args.outputfolder))
+
     os.system("mv {output}/{sampleid}/*.xml {output}/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid=sampleid, output=args.outputfolder))
@@ -142,7 +143,7 @@ if __name__ == "__main__":
         if os.path.isdir("{outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today)):
             archivefolder = True
         else:
-            os.system("mkdir -p {outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today))
+            os.mkdirs("{outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today))
 
         """ Move original data to archive folder """
         os.system("mv {outputfolder}/* {outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today))
@@ -162,7 +163,7 @@ if __name__ == "__main__":
         """ Copy CNV summary file into archive folder """
         if(glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
            inputfolder=args.inputfolder, runid=args.runid))):
-            os.system("mkdir -p {inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today))
+            os.mkdirs("{inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today))
             os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(
                 inputfolder=args.inputfolder, runid=args.runid, today=today)
             )
@@ -216,9 +217,9 @@ if __name__ == "__main__":
     """ Make CNV summary file """
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
     if not os.path.isdir("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder)):
-        os.system("mkdir -p {inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder))
+        os.mkdirs("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder))
 
-    action = "python {cwd}/exomedepth_summary.py {files} > {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
+    action = "python {cwd}/utils/exomedepth_summary.py {files} > {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
         cwd=settings.cwd,
         inputfolder=args.inputfolder,
         files=" ".join(logs),
@@ -228,8 +229,8 @@ if __name__ == "__main__":
 
     """ Make single sample IGV sessions for all samples """
     for item in sampleinfo:
-        action = "python {0}/igv_xml_session.py single_igv {1} {2} {3} {4} --bam {5}".format(
-            settings.cwd, args.outputfolder, item[0], args.runid, item[2], item[1]
+        action = "python {0} single_igv {1} {2} {3} {4} --bam {5}".format(
+            settings.igv_xml, args.outputfolder, item[0], args.runid, item[2], item[1]
         )
         os.system(action)
 
@@ -237,7 +238,7 @@ if __name__ == "__main__":
     families = parse_ped(open(args.pedfile, "r"))
     for item in sampleinfo:
         if len(list(set(families[item[0]]["parents"]))) == 2:
-            action = "python {0}/igv_xml_session.py family_igv {1} {2} {3} {4} {5}".format(
-                settings.cwd, args.outputfolder, args.pedfile, args.runid, item[0], " ".join(bams)
+            action = "python {0} family_igv {1} {2} {3} {4} {5}".format(
+                settings.igv_xml, args.outputfolder, args.pedfile, args.runid, item[0], " ".join(bams)
             )
             os.system(action)
