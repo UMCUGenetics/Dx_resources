@@ -5,8 +5,10 @@ from string import Template
 from exomedepth_db import add_sample_to_db_and_return_refset_bam
 import settings
 
+
 def split_fslash(file_path):
-    return files_path.split("/")[-1]
+    return file_path.split("/")[-1]
+
 
 def parse_ped_family(ped_file, sample_id):
     for line in ped_file:
