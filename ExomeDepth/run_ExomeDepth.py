@@ -106,7 +106,7 @@ def make_refset(args):
         for item in ref_gender_dic:
             folder = "{0}/{1}_{2}_{3}".format(output_folder, model, item, split_fslash(str(args.output).rstrip("/")))
             output_id = "{0}_{1}_{2}.EDref".format(model, item, args.prefix)
-            os.mkdirs(folder)
+            os.mkdir(folder)
             for bam in ref_gender_dic[item]:
                 os.symlink("{bam}* {folder}".format(bam=bam, folder=folder))
             mp_list += [[folder, output_id, analysis[model]["target_bed"], analysis[model]["exon_bed"]]]
@@ -215,7 +215,7 @@ def call_cnv(args):
     analysis = settings.analysis
 
     if not os.path.isdir(output_folder):
-        os.mkdirs(output_folder)
+        os.mkdir(output_folder)
 
     """Determine gender"""
     if args.refset_gender:  # Used gender if used as input parameter.
@@ -241,7 +241,7 @@ def call_cnv(args):
             "gender": gender,
             "target_bed": analysis[model]["target_bed"],
             "exon_bed": analysis[model]["exon_bed"],
-            "callingmodel": analysis[model]["calling_model"],
+            "calling_model": analysis[model]["calling_model"],
             "bam": bam,
             "refset": refset
         })
