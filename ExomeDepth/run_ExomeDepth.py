@@ -29,13 +29,19 @@ def get_gender(bam):
         return "male"
     else:
         if re.search('[C|P]M', bam.split("/")[-1]):
-            print("Sample {0} has a unknown gender based on chrX reads, but resolved as male based on sampleID".format(bam.split("/")[-1]))
+            print(
+                "Sample {0} has a unknown gender based on chrX reads, but resolved as male based on sampleID".format(
+                bam.split("/")[-1]
+            ))
             return "male"
         elif re.search('[C|P]F', bam.split("/")[-1]):
-            print("Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID".format(bam.split("/")[-1]))
+            print(
+                "Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID".format(
+                bam.split("/")[-1]
+            ))
             return "female"
         else:
-            sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))  
+            sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam.split("/")[-1]))
 
 def get_merge_status(bam, runid):
     """Get platform unit (PU) from bam file 
