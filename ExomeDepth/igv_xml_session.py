@@ -222,7 +222,7 @@ def make_single_igv_session(args, igv_extension, vcf_extension):
 def get_refset(bam_file, sample):
     class refset_arguments:
         bam = bam_file
-        print_refset = False
+        print_refset_stdout = False
     return add_sample_to_db_and_return_refset_bam(refset_arguments)
 
 
