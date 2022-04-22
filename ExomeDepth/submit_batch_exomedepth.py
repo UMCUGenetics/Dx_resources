@@ -60,10 +60,19 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     os.system(action)
 
     os.chdir("{output}".format(output=args.outputfolder))
-    os.mkdir("{output}/logs".format(output=args.outputfolder))
-    os.mkdir("{output}/igv_tracks".format(output=args.outputfolder))
-    os.mkdir("{output}/UMCU/".format(output=args.outputfolder))
-    os.mkdir("{output}/HC/".format(output=args.outputfolder))
+
+    log_path = "{output}/logs".format(output=args.outputfolder)
+    if not os.path.exists(log_path):
+        os.mkdir(log_path)
+    igv_track_path = "{output}/igv_tracks".format(output=args.outputfolder)
+    if not os.path.exists(igv_track_path):
+        os.mkdir(igv_track_path)
+    UMCU_path = "{output}/UMCU/".format(output=args.outputfolder)
+    if not os.path.exists(UMCU_path):
+        os.mkdir(UMCU_path)
+    HC_path = "{output}/HC/".format(output=args.outputfolder)
+    if not os.path.exists(HC_path):
+        os.mkdir(HC_path)
 
     os.system("mv {output}/{sampleid}/*.xml {output}/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid=sampleid, output=args.outputfolder))
@@ -137,10 +146,11 @@ if __name__ == "__main__":
         print("Run folder not empty: assuming exomedepth has been runned. Current exomedepth folder will be archived")
         """Check if archive folder exists. If this is the case, relative path in IGV session should not be changed."""
         archivefolder = False
-        if os.path.isdir("{outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today)):
+        archive_folder_exomedepth = "{outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today)
+        if os.path.isdir(archive_folder_exomedepth):
             archivefolder = True
         else:
-            os.mkdir("{outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today))
+            os.mkdir(archive_folder_exomedepth)
 
         """ Move original data to archive folder """
         os.system("mv {outputfolder}/* {outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today))
@@ -160,7 +170,9 @@ if __name__ == "__main__":
         """ Copy CNV summary file into archive folder """
         if(glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
            inputfolder=args.inputfolder, runid=args.runid))):
-            os.mkdir("{inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today))
+            archive_path_QC = "{inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today)
+            if not os.path.exists(archive_path_QC): 
+                os.mkdir(archive_path_QC)
             os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(
                 inputfolder=args.inputfolder, runid=args.runid, today=today)
             )
