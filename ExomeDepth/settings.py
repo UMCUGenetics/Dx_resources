@@ -8,7 +8,7 @@ call_cnv_r = str(cwd)+"/Rscripts/Exomedepth_callCNVs.R"
 create_refset_r = str(cwd)+"/Rscripts/Exomedepth_create_Ref_set.R"
 
 # ExomeDepth CSV to VCF parser
-csv2vcf = str(cwd)+"/utils/ed_csv_to_vcf.py"
+csv2vcf = str(cwd)+"/ed_csv_to_vcf.py"
 vcf_template = str(cwd)+"/templates/template.vcf"
 
 # HTML template
@@ -76,7 +76,7 @@ chromosome_order = {
 template_single_xml = str(cwd)+"/templates/igv_session_template_single.xml"
 template_family_xml = str(cwd)+"/templates/igv_session_template_family.xml"
 
-igv_xml = str(cwd)+"/utils/igv_xml_session.py"
+igv_xml = str(cwd)+"/igv_xml_session.py"
 igv_settings = {"ratio": [-0.1, 1, 2.1], "log2ratio": [-2.5, 0, 2.5]}
 
 # Check VCF stats criteria
