@@ -9,7 +9,7 @@ import glob
 from multiprocessing import Pool
 import pysam
 from exomedepth_db import add_sample_to_db_and_return_refset_bam
-from utils.igv_xml_session import split_fslash
+from igv_xml_session import split_fslash
 import settings
 
 
