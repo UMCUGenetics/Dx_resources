@@ -90,12 +90,12 @@ python submit_batch_exomedepth.py <input folder> <output folder> <runid> <sample
 
     Calculate coverage stats for each male/female folder for each population
     ``` bash
-    sh utils/run_sambamba.sh <full path to sambamba executable> <folder> <bed_file> <email>
+    sh scripts/run_sambamba.sh <full path to sambamba executable> <folder> <bed_file> <email>
     ```
 
     Calculate coverage stats overview for each male/female folder for each population
     ``` bash
-    ./utils/filter_probe_file.py <folder> > <population>_<male/female>_output_all
+    ./scripts/filter_probe_file.py <folder> > <population>_<male/female>_output_all
     ```
 
 4) Select least variable regions: 95% of chr1-22+chrX (female), and 33% of chrY (male)
@@ -135,7 +135,20 @@ python submit_batch_exomedepth.py <input folder> <output folder> <runid> <sample
     Copy the final_bed_file and exons.hg19.full.tsv to a repository/location of choice.\
     Include in `setting.py` if these file are needed in the ExomeDepth analysis.
 
-## Other scripts in this repository 
+## Other scripts/options in this repository 
+### Identify merge sample (run_ExomeDepth.py)
+``` bash
+python run_ExomeDepth.py identify_merge <inputfolder> <output name for list with merge_samples>
+```
+Output will be list of merge samples based on slide barcode comparison in BAM and runID.\
+Made specific for UMCU IAP and NF runs.
+
+### Make exomedepth summary file (run_ExomeDepth.py)
+``` bash
+python run_ExomeDepth.py summary <exomedepth log files>
+```
+Script will combine exomedepth log files, and make summary statistics
+
 ### check_gender_bam.py ###
 Check gender of BAM files in a specific folder.\
 Consider male is nonPAR regions of chrY fraction >=0.12 and chrX <= 2.3.\
@@ -145,13 +158,6 @@ All other combinations are considerend unknown (these include i.e. XXY and X or 
 python check_gender_bam.py <inputfolder>
 ```
 
-### identify_merge_samples.py
-``` bash
-python identify_merge_samples.py <inputfolder> <output name for list with merge_samples> 
-```
-This script will produce a list of merge samples based on slide barcode comparison in BAM and runID.\
-Made specific for UMCU IAP and NF runs.
-
 ### make_BEDdetail.py
 ``` bash
 python make_BEDdetail.py <inputfolder> <outputfolder> <output prefix> <list with merge_samples>
@@ -159,9 +165,6 @@ python make_BEDdetail.py <inputfolder> <outputfolder> <output prefix> <list with
 Make a BED detail file for UCSC browser. This BED file is a frequency summary of all events detected in the provided VCF files.\
 WES-CNV files should be present in inputfolder.\
 List with merge_samples is the output file of identify_merge_samples.py or tabseperated file inclusding sampleID and runID, in that order.
-
-### exomedepth_summary.py 
-Creates ExomeDepth summary stats file. This scripts need to be run with python3
 
 ### ed_csv_to_vcf.py
 Converts ExomeDepth csv file to VCF using pyvcf
