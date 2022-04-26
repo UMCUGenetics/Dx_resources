@@ -8,6 +8,7 @@ import sys
 from multiprocessing import Pool
 from datetime import date
 import database.functions
+import utils.utils
 import settings
 
 
@@ -25,10 +26,10 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
 
     os.symlink(f"{bam}", "{output}/{sample}/{bamfile}".format(
-        bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder)
+        bamfile=bamfile, sample=sampleid, output=args.outputfolder)
     )
     os.symlink(f"{bam}.bai", "{output}/{sample}/{bamfile}.bai".format(
-        bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder)
+        bamfile=bamfile, sample=sampleid, output=args.outputfolder)
     )
 
     action = (
@@ -111,7 +112,7 @@ if __name__ == "__main__":
     parser.add_argument('runid', help='Run ID')
     parser.add_argument(
         'simjobs',
-        help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session!'
+        help='number of simultaneous samples to proces. Note: make sure similar threads are reserved in session!'
     )
     parser.add_argument('pedfile', help='full path to ped file')
     parser.add_argument(
@@ -227,13 +228,12 @@ if __name__ == "__main__":
     if not os.path.isdir("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder)):
         os.mkdir("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder))
 
-    action = "python {cwd}/utils/exomedepth_summary.py {files} > {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
-        cwd=settings.cwd,
+    write_summary = "{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
         inputfolder=args.inputfolder,
-        files=" ".join(logs),
         runid=args.runid
     )
-    os.system(action)
+    with open(write_summary, 'w') as write_file_summary:
+        write_file_summary.write(utils.utils.exomedepth_summary(" ".join(logs)), False)
 
     """ Make single sample IGV sessions for all samples """
     for item in sampleinfo:
