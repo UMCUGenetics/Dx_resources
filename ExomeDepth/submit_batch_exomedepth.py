@@ -7,24 +7,18 @@ import glob
 import sys
 from multiprocessing import Pool
 from datetime import date
-from exomedepth_db import get_sample_id
-from exomedepth_db import add_sample_to_db_and_return_refset_bam
+import database.functions
 import settings
 
 def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     bamfile = bam.rstrip("/").split("/")[-1]
-    sampleid = get_sample_id(bam)
+    sampleid = database.functions.get_sample_id(bam)
     bam_path = format(os.path.abspath(bam)) 
 
     if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
         refset = refset_dic[sampleid]
     else:
-        class refset_arguments:
-            bam = bam_path
-            refset = settings.refset
-            print_refset_stdout = False
-
-        refset = add_sample_to_db_and_return_refset_bam(refset_arguments)
+        refset = database.functions.add_sample_to_db_and_return_refset_bam(bam_path, settings.refset, False)
 
     os.mkdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
     os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
@@ -153,12 +147,16 @@ if __name__ == "__main__":
             os.mkdir(archive_folder_exomedepth)
 
         """ Move original data to archive folder """
-        os.system("mv {outputfolder}/* {outputfolder}/archive_{today}/".format(outputfolder=args.outputfolder, today=today))
+        os.system("mv {outputfolder}/* {archive_folder_exomedepth}".format(
+            outputfolder=args.outputfolder, archive_folder_exomedepth=archive_folder_exomedepth)
+        )
 
         """ Rename relative paths in IGV sessions"""
         if not archivefolder:
-            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {outputfolder}/archive_{today}/*xml".format(
-                outputfolder=args.outputfolder, today=today)
+            os.system(
+                "sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {archive_folder_exomedepth}/*xml".format(
+                    archive_folder_exomedepth=archive_folder_exomedepth
+                )
             )
 
         """ Check if archive folder were already present in archived folder, and move the to the correct location."""
