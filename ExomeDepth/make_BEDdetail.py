@@ -32,9 +32,9 @@ def is_parent(sampleid):
 
 def slice_vcf(args, merge_dic):
     vcf_files = subprocess.getoutput("find -L {input} -type f -iname \"*vcf\"".format(input=args.inputfolder)).split()
-    all_event_file = open("{output}/{outputfile}_all_events.txt".format(
-        output=args.outputfolder,
-        outputfile=args.outputfile), "w"
+    all_event_file = open(
+        "{output}/{outputfile}_all_events.txt".format(output=args.outputfolder, outputfile=args.outputfile),
+        "w"
     )
     all_event_file.write(
         "sampleID\tchromosome\tstart\tstop\tgender\trefset\tcalltype\t"
@@ -76,9 +76,10 @@ def slice_vcf(args, merge_dic):
                 continue
 
             if sampleid not in vcf_file:
-                excluded_samples_file.write(
+                excluded_samples_file.write((
                     "Sample {sampleid} form run {runid} does not have the same ID "
-                    " in VCF file {vcf_file} and is excluded\n".format(
+                    "in VCF file {vcf_file} and is excluded\n"
+                    ).format(
                         sampleid=sampleid,
                         runid=runid,
                         vcf_file=vcf_file
@@ -139,11 +140,13 @@ def slice_vcf(args, merge_dic):
                 ccn = float(record.genotype(sampleid)['CCN'])
                 bf = float(record.genotype(sampleid)['BF'])
 
-                if(totalcalls < args.totalcallsqc_min or
-                   totalcalls > args.totalcallsqc_max or
-                   correl < args.correlqc or
-                   deldupratio < args.deldupratioqc_min or
-                   deldupratio > args.deldupratioqc_max):
+                if(
+                    totalcalls < args.totalcallsqc_min or
+                    totalcalls > args.totalcallsqc_max or
+                    correl < args.correlqc or
+                    deldupratio < args.deldupratioqc_min or
+                    deldupratio > args.deldupratioqc_max
+                ):
                     excluded_samples_file.write(
                         "Sample {sampleid} run {runid} is excluded because not all QC are above threshold\n".format(
                             sampleid=sampleid,
@@ -256,36 +259,32 @@ def calculate_statistics(data, status):
 
 def make_bed_detail(args, event_dic, children, parents):
     event_file_ucsc = open(
-        "{outputfolder}/{outputfile}_UCSC.bed".format(
-            outputfolder=args.outputfolder,
-            outputfile=args.outputfile
-         ), "w"
+        "{outputfolder}/{outputfile}_UCSC.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),
+        "w"
     )
     event_file_igv = open(
-        "{outputfolder}/{outputfile}_IGV.bed".format(
-            outputfolder=args.outputfolder,
-            outputfile=args.outputfile
-         ), "w"
+        "{outputfolder}/{outputfile}_IGV.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),
+        "w"
     )
     event_file_alissa = open(
-        "{outputfolder}/{outputfile}_Alissa.bed".format(
-             outputfolder=args.outputfolder,
-             outputfile=args.outputfile
-        ), "w"
+        "{outputfolder}/{outputfile}_Alissa.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),
+        "w"
     )
 
     """ Write header in BED file """
-    event_file_ucsc.write(
+    event_file_ucsc.write((
         "track name=\"{outputfile}\" type=\"bedDetail\" description=\"CNVs called by Exomedepth using {outputfile} callset. "
-        "#Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n".format(
+        "#Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n"
+        ).format(
             outputfile=args.outputfile,
             children=children,
             parents=parents
         )
     )
-    event_file_igv.write(
+    event_file_igv.write((
         "track name=\"{outputfile}\" type=\"bed\" description=\"CNVs called by Exomedepth using {outputfile} callset. "
-        " #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n".format(
+        " #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n"
+        ).format(
             outputfile=args.outputfile,
             children=children,
             parents=parents
@@ -342,8 +341,8 @@ def make_bed_detail(args, event_dic, children, parents):
         alissa_event.append(total_count)
         alissa_events.append(alissa_event)
 
-    total_events.sort(key=lambda x: (settings.chromosome_order[x[0]], int(x[1]), int(x[2])))
-    alissa_events.sort(key=lambda x: (settings.chromosome_order[x[0]], int(x[1]), int(x[2])))
+    total_events.sort(key=lambda pos: (settings.chromosome_order[pos[0]], int(pos[1]), int(pos[2])))
+    alissa_events.sort(key=lambda pos: (settings.chromosome_order[pos[0]], int(pos[1]), int(pos[2])))
 
     for event in total_events:
         event[0] = "chr{original}".format(original=event[0])
@@ -395,6 +394,7 @@ if __name__ == "__main__":
 
     if not os.path.isdir(args.outputfolder):
         os.system("mkdir -p {outputfolder}".format(outputfolder=args.outputfolder))
+        os.mkdirs("{outputfolder}".format(outputfolder=args.outputfolder))
     merge_dic = make_merge_dic(args.merge_samples)
     event_dic, children, parents = slice_vcf(args, merge_dic)
     make_bed_detail(args, event_dic, children, parents)
