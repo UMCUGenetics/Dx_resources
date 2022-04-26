@@ -10,10 +10,11 @@ from datetime import date
 import database.functions
 import settings
 
+
 def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     bamfile = bam.rstrip("/").split("/")[-1]
     sampleid = database.functions.get_sample_id(bam)
-    bam_path = format(os.path.abspath(bam)) 
+    bam_path = format(os.path.abspath(bam))
 
     if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
         refset = refset_dic[sampleid]
@@ -22,12 +23,12 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
 
     os.mkdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
     os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
-  
+
     os.symlink(f"{bam}", "{output}/{sample}/{bamfile}".format(
         bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder)
     )
     os.symlink(f"{bam}.bai", "{output}/{sample}/{bamfile}.bai".format(
-        bamfile=bamfile, sample=sampleid, output=args.outputfolder)
+        bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder)
     )
 
     action = (
@@ -169,7 +170,7 @@ if __name__ == "__main__":
         if(glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
            inputfolder=args.inputfolder, runid=args.runid))):
             archive_path_QC = "{inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today)
-            if not os.path.exists(archive_path_QC): 
+            if not os.path.exists(archive_path_QC):
                 os.mkdir(archive_path_QC)
             os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(
                 inputfolder=args.inputfolder, runid=args.runid, today=today)
