@@ -35,22 +35,25 @@ def exomedepth_summary(exomedepth_logs, stdout=None):
             else:
                 sample_lines = "{}{}".format(sample_lines, sample_line)
 
-    summary_lines = ((
-        "\n#Average_CR={mean_CR}\n#Average_PD={mean_PD}\n#Average_TC={mean_TC}\n"
-        "\n#Median_CR={median_CR}\n#Median_PD={median_PD}\n#Median_TC={median_TC}"
-    ).format(
-        mean_CR="%.4f" % statistics.mean(stats_dic["CR"]),
-        mean_PD="%.2f" % statistics.mean(stats_dic["PD"]),
-        mean_TC="%.2f" % statistics.mean(stats_dic["TC"]),
-        median_CR="%.4f" % statistics.median(stats_dic["CR"]),
-        median_PD="%.2f" % statistics.median(stats_dic["PD"]),
-        median_TC="%.2f" % statistics.median(stats_dic["TC"])
-    ))
+    mean_CR_line = "#Average_CR={}\r".format("%.4f" % statistics.mean(stats_dic["CR"]))
+    mean_PD_line = "#Average_PD={}\r".format("%.2f" % statistics.mean(stats_dic["PD"]))
+    mean_TC_line = "#Average_TC={}\r".format("%.2f" % statistics.mean(stats_dic["TC"]))
+    median_CR = "#Median_CR={}\r".format("%.4f" % statistics.median(stats_dic["CR"]))
+    median_PD = "#Median_PD={}\r".format("%.2f" % statistics.median(stats_dic["PD"]))
+    median_TC = "#Median_TC={}\r".format("%.2f" % statistics.median(stats_dic["TC"]))
 
     if stdout:
-        print(summary_lines)
+        print((
+            "\r{}\n{}\n{}\n{}\n\r\n{}\n{}\n{}"
+        ).format(
+            sample_lines, mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
+        ))
     else:
-        return "{}{}".format(sample_lines, summary_lines)
+        return (
+            "\r{}\n{}\n{}\n{}\n\r\n{}\n{}\n{}"
+        ).format(
+            sample_lines, mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
+        )
 
 
 def detect_merge(inputfolder, outputfile):
