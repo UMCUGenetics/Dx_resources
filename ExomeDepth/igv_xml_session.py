@@ -2,7 +2,7 @@
 
 import argparse
 from string import Template
-from exomedepth_db import add_sample_to_db_and_return_refset_bam
+import database.functions
 import settings
 
 
@@ -219,13 +219,6 @@ def make_single_igv_session(args, igv_extension, vcf_extension):
         write_file.close()
 
 
-def get_refset(bam_file, sample):
-    class refset_arguments:
-        bam = bam_file
-        print_refset_stdout = False
-    return add_sample_to_db_and_return_refset_bam(refset_arguments)
-
-
 def get_bam(sample, bam_files):
     for bam in bam_files:
         if sample in bam:
@@ -238,9 +231,9 @@ def make_family_igv_session(args, igv_extension, vcf_extension):
     father_bam = get_bam(father, args.bam_files)
     mother_bam = get_bam(mother, args.bam_files)
     refsets = [
-        get_refset(child_bam, child),
-        get_refset(father_bam, father),
-        get_refset(mother_bam, mother)
+        database.functions.return_refset_bam(child_bam),
+        database.functions.return_refset_bam(father_bam),
+        database.functions.return_refset_bam(mother_bam)
     ]
 
     for statistic in settings.igv_settings:
