@@ -227,7 +227,7 @@ def call_cnv(args):
         refset = args.refset
     else:
         """ Add sample to database if not present, or query refset from db if present """
-        refset = add_sample_to_db_and_return_refset_bam(bam, settings.refset, False)
+        refset = database.functions.add_sample_to_db_and_return_refset_bam(bam, settings.refset, False)
 
     multiprocess_list = []
     for model in analysis:
