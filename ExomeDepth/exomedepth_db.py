@@ -1,38 +1,38 @@
 #! /usr/bin/env python3
 
 import argparse
-from database.database import connect_database
-from database.models import Sample
 import database.functions
 
 import settings
 
 
-def add_sample_to_db(args):
+def call_add_sample_to_db(args):
     database.functions.add_sample_to_db(args.flowcell_id, args.sample_id, args.refset)
 
 
-def change_refset_in_db(args):
+def call_change_refset_in_db(args):
     database.functions.change_refset_in_db(args.flowcell_id, args.sample_id, args.refset)
 
 
-def query_refset(args):
+def call_query_refset(args):
     database.functions.query_refset(args.flowcell_id, args.sample_id)
 
 
-def query_refset_bam(args):
+def call_query_refset_bam(args):
     database.functions.query_refset_bam(args.bam)
 
 
-def delete_sample_db(args):
+def call_delete_sample_db(args):
     database.functions.delete_sample_db(args.flowcell_id, args.sample_id)
 
 
-def add_sample_to_db_and_return_refset_bam(args):
+def call_add_sample_to_db_and_return_refset_bam(args):
     database.functions.add_sample_to_db_and_return_refset_bam(args.bam, args.refset, args.print_refset_stdout)
 
-def print_all_samples(args):
-    database.functions.print_all_samples() 
+
+def call_print_all_samples(args):
+    database.functions.print_all_samples()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         '--refset', default=settings.refset,
         help='exomedepth reference set ID [default = settings.refset]'
     )
-    parser_add.set_defaults(func=add_sample_to_db)
+    parser_add.set_defaults(func=call_add_sample_to_db)
 
     """ Arguments add sample to database based on BAM file and return refset"""
     parser_add_return_bam = subparser.add_parser(
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         help='exomedepth reference set ID [default = settings.refset]'
     )
     parser_add_return_bam.add_argument('--print_refset_stdout', default=True, help='print refset in stdout [default = True]')
-    parser_add_return_bam.set_defaults(func=add_sample_to_db_and_return_refset_bam)
+    parser_add_return_bam.set_defaults(func=call_add_sample_to_db_and_return_refset_bam)
 
     """ Arguments query refset"""
     parser_query_refset = subparser.add_parser(
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     )
     parser_query_refset.add_argument('sample_id', help='sample id')
     parser_query_refset.add_argument('flowcell_id', nargs='+', help='flowcell barcode')
-    parser_query_refset.set_defaults(func=query_refset)
+    parser_query_refset.set_defaults(func=call_query_refset)
 
     """ Arguments query refset based on BAM file"""
     parser_query_refset_bam = subparser.add_parser(
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         help='return refset of sample based on BAM file'
     )
     parser_query_refset_bam.add_argument('bam', help='full path to BAM file')
-    parser_query_refset_bam.set_defaults(func=query_refset_bam)
+    parser_query_refset_bam.set_defaults(func=call_query_refset_bam)
 
     """ Arguments change refset in database for sample"""
     parser_change = subparser.add_parser(
@@ -85,14 +85,14 @@ if __name__ == "__main__":
     parser_change.add_argument('sample_id', help='sample id')
     parser_change.add_argument('flowcell_id', help='flowcell barcode (as in database)')
     parser_change.add_argument('refset', help='new refset ID')
-    parser_change.set_defaults(func=change_refset_in_db)
+    parser_change.set_defaults(func=call_change_refset_in_db)
 
     """ Arguments to print all entries of database """
     parser_allsamples = subparser.add_parser(
         'print_all_samples',
         help='Print full database table (tab-separated)'
     )
-    parser_allsamples.set_defaults(func=print_all_samples)
+    parser_allsamples.set_defaults(func=call_print_all_samples)
 
     """ Arguments delete sample in database"""
     parser_delete_sample = subparser.add_parser(
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     )
     parser_delete_sample.add_argument('sample_id', help='sample id')
     parser_delete_sample.add_argument('flowcell_id', nargs='+', help='flowcell barcode')
-    parser_delete_sample.set_defaults(func=delete_sample_db)
+    parser_delete_sample.set_defaults(func=call_delete_sample_db)
 
     args = parser.parse_args()
     args.func(args)
