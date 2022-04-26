@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 
-import argparse
 from database.database import connect_database
 from database.models import Sample
 
@@ -120,6 +119,7 @@ def add_sample_to_db_and_return_refset_bam(bam, refset, print_refset_stdout=None
             print(refset_db)
         return refset_db
 
+
 def return_refset_bam(bam):
     Session = connect_database()
     sample_id = get_sample_id(bam)
@@ -137,4 +137,3 @@ def get_sample_id(bam):
         sampleid = list(set(sampleid))
         sampleid = "_".join(sampleid)
     return sampleid
-
