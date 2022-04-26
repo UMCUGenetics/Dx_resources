@@ -302,11 +302,14 @@ def call_cnv(args):
 
         sample_model_log.close()
 
+
 def call_exomedepth_summary(args):
     utils.utils.exomedepth_summary(args.exomedepth_logs, args.print_stdout)
 
+
 def call_detect_merge(args):
-     utils.utils.detect_merge(args.inputfolder, args.outputfile)
+    utils.utils.detect_merge(args.inputfolder, args.outputfile)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
