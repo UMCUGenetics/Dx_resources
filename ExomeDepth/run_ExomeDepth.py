@@ -9,6 +9,7 @@ import glob
 from multiprocessing import Pool
 import pysam
 import database.functions
+import utils.utils
 from igv_xml_session import split_fslash
 import settings
 
@@ -301,6 +302,11 @@ def call_cnv(args):
 
         sample_model_log.close()
 
+def call_exomedepth_summary(args):
+    utils.utils.exomedepth_summary(args.exomedepth_logs, args.print_stdout)
+
+def call_detect_merge(args):
+     utils.utils.detect_merge(args.inputfolder, args.outputfile)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -351,6 +357,16 @@ if __name__ == "__main__":
         help='switch on QC check for exomedepth VCF stats (default = off)'
     )
     parser_cnv.set_defaults(func=call_cnv)
+
+    parser_summary = subparser.add_parser('summary', help='Make ExomeDepth summary file')
+    parser_summary.add_argument('exomedepth_logs', type=argparse.FileType('r'), nargs='*', help='Exomedepth log files')
+    parser_summary.add_argument('--print_stdout', default=True, help='print output in stdout [default = True]')
+    parser_summary.set_defaults(func=call_exomedepth_summary)
+
+    parser_merge = subparser.add_parser('identify_merge', help='identify merge samples')
+    parser_merge.add_argument('inputfolder', help='input folder which included BAM files')
+    parser_merge.add_argument('outputfile', help='output filename of identified merge samples')
+    parser_merge.set_defaults(func=call_detect_merge)
 
     args = parser.parse_args()
     args.func(args)
