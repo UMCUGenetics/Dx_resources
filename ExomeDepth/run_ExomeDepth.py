@@ -8,7 +8,7 @@ import argparse
 import glob
 from multiprocessing import Pool
 import pysam
-from exomedepth_db import add_sample_to_db_and_return_refset_bam
+import database.functions
 from igv_xml_session import split_fslash
 import settings
 
@@ -227,11 +227,7 @@ def call_cnv(args):
         refset = args.refset
     else:
         """ Add sample to database if not present, or query refset from db if present """
-        class refset_arguments:
-            bam = bam
-            refset = settings.refset
-            print_refset_stdout = False
-        refset = add_sample_to_db_and_return_refset_bam(refset_arguments)
+        refset = add_sample_to_db_and_return_refset_bam(bam, settings.refset, False):
 
     multiprocess_list = []
     for model in analysis:
