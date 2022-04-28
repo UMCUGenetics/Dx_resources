@@ -70,7 +70,6 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     if not os.path.exists(HC_path):
         os.mkdir(HC_path)
 
-    os.system("mv {output}/{sampleid}/*.xml {output}/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("mv {output}/{sampleid}/HC*.vcf {output}/HC/".format(sampleid=sampleid, output=args.outputfolder))
@@ -234,7 +233,7 @@ if __name__ == "__main__":
     )
 
     with open(write_summary, 'w') as write_file_summary:
-        write_file_summary.write(utils.utils.exomedepth_summary(" ".join(logs), False))
+        write_file_summary.write(utils.utils.exomedepth_summary(logs, False))
 
     """ Make single sample IGV sessions for all samples """
     for item in sampleinfo:
