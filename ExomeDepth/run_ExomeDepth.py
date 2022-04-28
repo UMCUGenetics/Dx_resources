@@ -366,7 +366,7 @@ if __name__ == "__main__":
     parser_summary.add_argument('--print_stdout', default=True, help='print output in stdout [default = True]')
     parser_summary.set_defaults(func=call_exomedepth_summary)
 
-    parser_merge = subparser.add_parser('identify_merge', help='identify merge samples')
+    parser_merge = subparser.add_parser('identify_merge', help='Identify merge samples')
     parser_merge.add_argument('inputfolder', help='input folder which included BAM files')
     parser_merge.add_argument('outputfile', help='output filename of identified merge samples')
     parser_merge.set_defaults(func=call_detect_merge)
