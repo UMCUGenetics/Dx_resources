@@ -40,11 +40,10 @@ def slice_vcf(args, merge_dic):
         "sampleID\tchromosome\tstart\tstop\tgender\trefset\tcalltype\t"
         "ntargets\tsvlen\tratio\tccn\tbf\tcorrelation\tdeldupratio\ttotalcalls\trefsamples\n"
     )
-    excluded_samples_file = open("{output}/{outputfile}_excluded_samples.txt".format(
-            output=args.outputfolder,
-            outputfile=args.outputfile
-            ), "w"
-       )
+    excluded_samples_file = open(
+        "{output}/{outputfile}_excluded_samples.txt".format(output=args.outputfolder, outputfile=args.outputfile),
+        "w"
+    )
 
     event_dic = {}
     children = 0
@@ -283,7 +282,7 @@ def make_bed_detail(args, event_dic, children, parents):
     )
     event_file_igv.write((
         "track name=\"{outputfile}\" type=\"bed\" description=\"CNVs called by Exomedepth using {outputfile} callset. "
-        " #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n"
+        "#Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n"
         ).format(
             outputfile=args.outputfile,
             children=children,
@@ -393,7 +392,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.isdir(args.outputfolder):
-        os.system("mkdir -p {outputfolder}".format(outputfolder=args.outputfolder))
         os.mkdirs("{outputfolder}".format(outputfolder=args.outputfolder))
     merge_dic = make_merge_dic(args.merge_samples)
     event_dic, children, parents = slice_vcf(args, merge_dic)
