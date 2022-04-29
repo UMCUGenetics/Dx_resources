@@ -136,6 +136,23 @@ if __name__ == "__main__":
     today = date.today().strftime("%d%m%y")
     user = subprocess.getoutput("whoami")
 
+    """Find BAM files to be processed"""
+    if args.pipeline == "iap":
+        bams = (
+            set(glob.glob("{}/**/*.realigned.bam".format(args.inputfolder), recursive=True))
+            - set(glob.glob("{}/[eE]xome[dD]epth*/**/*.realigned.bam".format(args.inputfolder), recursive=True))
+        )
+    elif args.pipeline == "nf":
+        bams = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)
+    print("Number of BAM files = "+str(len(bams)))
+
+    if bams:
+        os.system("echo \"{user} {today}\tExomeDepth reanalysis performed\" >> {inputfolder}/logbook.txt".format(
+            user=user, today=today, inputfolder=args.inputfolder)
+        )
+    else:
+        sys.exit("no bam files detected")
+
     """ Check if previous exomedepth analysis is already present """
     if os.path.isdir(args.outputfolder):
         print("Run folder not empty: assuming exomedepth has been runned. Current exomedepth folder will be archived")
@@ -175,23 +192,8 @@ if __name__ == "__main__":
             os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(
                 inputfolder=args.inputfolder, runid=args.runid, today=today)
             )
-
-    """Find BAM files to be processed"""
-    if args.pipeline == "iap":
-        bams = (
-            set(glob.glob("{}/**/*.realigned.bam".format(args.inputfolder), recursive=True))
-            - set(glob.glob("{}/[eE]xome[dD]epth*/**/*.realigned.bam".format(args.inputfolder), recursive=True))
-        )
-    elif args.pipeline == "nf":
-        bams = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)
-    print("Number of BAM files = "+str(len(bams)))
-
-    if bams:
-        os.system("echo \"{user} {today}\tExomeDepth reanalysis performed\" >> {inputfolder}/logbook.txt".format(
-            user=user, today=today, inputfolder=args.inputfolder)
-        )
     else:
-        sys.exit("no bam files detected")
+        os.mkdir(args.outputfolder)
 
     refset_dic = {}
     gender_dic = {}
