@@ -10,30 +10,31 @@ def exomedepth_summary(exomedepth_logs, stdout=None):
     stats_dic = {"CR": [], "PD": [], "TC": []}
     sample_lines = ""
     for exomedepth_qc_file in exomedepth_logs:
-        for line in exomedepth_qc_file:
-            splitline = line.split()
-            correlation = float(splitline[3])
-            deldupratio = float(splitline[4])
-            totalcount = float(splitline[5])
-            warnings = splitline[6:]
-            stats_dic["CR"].append(correlation)
-            stats_dic["PD"].append(deldupratio)
-            stats_dic["TC"].append(totalcount)
-            sample_line = (
-                "{sample};CM={model};REFSET={refset};CR={correl};PD={deldupratio};TC={totalcount}\t{warnings}\r"
-            ).format(
-                sample=splitline[0],
-                model=splitline[1],
-                refset=splitline[2],
-                correl="%.4f" % correlation,
-                deldupratio="%.2f" % deldupratio,
-                totalcount="%.0f" % totalcount,
-                warnings="\t".join(warnings)
-            )
-            if stdout:
-                print(sample_line)
-            else:
-                sample_lines = "{}{}".format(sample_lines, sample_line)
+        with open(exomedepth_qc_file, 'r') as exomedepth_qc_lines:
+            for line in exomedepth_qc_lines:
+                splitline = line.split()
+                correlation = float(splitline[3])
+                deldupratio = float(splitline[4])
+                totalcount = float(splitline[5])
+                warnings = splitline[6:]
+                stats_dic["CR"].append(correlation)
+                stats_dic["PD"].append(deldupratio)
+                stats_dic["TC"].append(totalcount)
+                sample_line = (
+                    "{sample};CM={model};REFSET={refset};CR={correl};PD={deldupratio};TC={totalcount}\t{warnings}\r"
+                ).format(
+                    sample=splitline[0],
+                    model=splitline[1],
+                    refset=splitline[2],
+                    correl="%.4f" % correlation,
+                    deldupratio="%.2f" % deldupratio,
+                    totalcount="%.0f" % totalcount,
+                    warnings="\t".join(warnings)
+                )
+                if stdout:
+                    print(sample_line)
+                else:
+                    sample_lines = "{}\n{}".format(sample_lines, sample_line)
 
     mean_CR_line = "#Average_CR={}\r".format("%.4f" % statistics.mean(stats_dic["CR"]))
     mean_PD_line = "#Average_PD={}\r".format("%.2f" % statistics.mean(stats_dic["PD"]))
