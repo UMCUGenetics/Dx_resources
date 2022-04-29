@@ -362,7 +362,7 @@ if __name__ == "__main__":
     parser_cnv.set_defaults(func=call_cnv)
 
     parser_summary = subparser.add_parser('summary', help='Make ExomeDepth summary file')
-    parser_summary.add_argument('exomedepth_logs', type=argparse.FileType('r'), nargs='*', help='Exomedepth log files')
+    parser_summary.add_argument('exomedepth_logs', nargs='*', help='Exomedepth log files')
     parser_summary.add_argument('--print_stdout', default=True, help='print output in stdout [default = True]')
     parser_summary.set_defaults(func=call_exomedepth_summary)
 
