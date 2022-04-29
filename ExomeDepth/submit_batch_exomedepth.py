@@ -235,7 +235,7 @@ if __name__ == "__main__":
     )
 
     with open(write_summary, 'w') as write_file_summary:
-        write_file_summary.write(utils.utils.exomedepth_summary(logs, False))
+        write_file_summary.write(utils.utils.exomedepth_summary(logs))
 
     """ Make single sample IGV sessions for all samples """
     for item in sampleinfo:
