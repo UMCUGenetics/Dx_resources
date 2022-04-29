@@ -34,7 +34,7 @@ def exomedepth_summary(exomedepth_logs, stdout=None):
                 if stdout:
                     print(sample_line)
                 else:
-                    sample_lines = "{}\n{}".format(sample_lines, sample_line)
+                    sample_lines = "{}{}\n".format(sample_lines, sample_line)
 
     mean_CR_line = "#Average_CR={}\r".format("%.4f" % statistics.mean(stats_dic["CR"]))
     mean_PD_line = "#Average_PD={}\r".format("%.2f" % statistics.mean(stats_dic["PD"]))
