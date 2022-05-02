@@ -51,7 +51,7 @@ def exomedepth_summary(exomedepth_logs, stdout=None):
         ))
     else:
         return (
-            "\r{}\n{}\n{}\n{}\n\r\n{}\n{}\n{}"
+            "\n\r{}\n{}\n{}\n{}\n\r\n{}\n{}\n{}"
         ).format(
             sample_lines, mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
         )
