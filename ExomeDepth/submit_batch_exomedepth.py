@@ -15,22 +15,22 @@ import settings
 def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     bamfile = bam.rstrip("/").split("/")[-1]
     sampleid = database.functions.get_sample_id(bam)
-    bam_path = format(os.path.abspath(bam))
+    bam_path = os.path.abspath(bam)
 
     if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
         refset = refset_dic[sampleid]
     else:
         refset = database.functions.add_sample_to_db_and_return_refset_bam(bam_path, settings.refset, False)
 
-    os.mkdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
+    os.makedirs("{output}/{sample}".format(output=args.outputfolder, sample=sampleid), exist_ok=True)
     os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
 
-    os.symlink(f"{bam}", "{output}/{sample}/{bamfile}".format(
-        bamfile=bamfile, sample=sampleid, output=args.outputfolder)
-    )
-    os.symlink(f"{bam}.bai", "{output}/{sample}/{bamfile}.bai".format(
-        bamfile=bamfile, sample=sampleid, output=args.outputfolder)
-    )
+    os.symlink("{bam=bam}", "{output}/{sample}/{bamfile}".format(
+        bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder
+    ))
+    os.symlink("{bam}.bai", "{output}/{sample}/{bamfile}.bai".format(
+        bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder
+    ))
 
     action = (
         "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} "
@@ -57,18 +57,10 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
 
     os.chdir("{output}".format(output=args.outputfolder))
 
-    log_path = "{output}/logs".format(output=args.outputfolder)
-    if not os.path.exists(log_path):
-        os.mkdir(log_path)
-    igv_track_path = "{output}/igv_tracks".format(output=args.outputfolder)
-    if not os.path.exists(igv_track_path):
-        os.mkdir(igv_track_path)
-    UMCU_path = "{output}/UMCU/".format(output=args.outputfolder)
-    if not os.path.exists(UMCU_path):
-        os.mkdir(UMCU_path)
-    HC_path = "{output}/HC/".format(output=args.outputfolder)
-    if not os.path.exists(HC_path):
-        os.mkdir(HC_path)
+    os.makedirs("{output}/logs".format(output=args.outputfolder), exist_ok=True)
+    os.makedirs("{output}/igv_tracks".format(output=args.outputfolder), exist_ok=True)
+    os.makedirs("{output}/UMCU/".format(output=args.outputfolder), exist_ok=True)
+    os.makedirs("{output}/HC/".format(output=args.outputfolder) , exist_ok=True)
 
     os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid=sampleid, output=args.outputfolder))
@@ -162,38 +154,35 @@ if __name__ == "__main__":
         if os.path.isdir(archive_folder_exomedepth):
             archivefolder = True
         else:
-            os.mkdir(archive_folder_exomedepth)
+            os.makedirs(archive_folder_exomedepth, exist_ok=True)
 
         """ Move original data to archive folder """
         os.system("mv {outputfolder}/* {archive_folder_exomedepth}".format(
-            outputfolder=args.outputfolder, archive_folder_exomedepth=archive_folder_exomedepth)
-        )
+            outputfolder=args.outputfolder, archive_folder_exomedepth=archive_folder_exomedepth
+        ))
 
         """ Rename relative paths in IGV sessions"""
         if not archivefolder:
-            os.system(
-                "sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {archive_folder_exomedepth}/*xml".format(
-                    archive_folder_exomedepth=archive_folder_exomedepth
-                )
-            )
+            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {archive_folder_exomedepth}/*xml".format(
+                archive_folder_exomedepth=archive_folder_exomedepth
+            ))
 
         """ Check if archive folder were already present in archived folder, and move the to the correct location."""
         if glob.glob("{outputfolder}/archive_{today}/archive*".format(outputfolder=args.outputfolder, today=today)):
             os.system("mv {outputfolder}/archive_{today}/archive* {outputfolder}/".format(
-                outputfolder=args.outputfolder, today=today)
-            )
+                outputfolder=args.outputfolder, today=today
+            ))
 
         """ Copy CNV summary file into archive folder """
         if(glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
            inputfolder=args.inputfolder, runid=args.runid))):
-            archive_path_QC = "{inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today)
-            if not os.path.exists(archive_path_QC):
-                os.mkdir(archive_path_QC)
+            os.makedirs("{inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today), exist_ok=True)
+
             os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(
-                inputfolder=args.inputfolder, runid=args.runid, today=today)
-            )
+                inputfolder=args.inputfolder, runid=args.runid, today=today
+            ))
     else:
-        os.mkdir(args.outputfolder)
+        os.makedirs(args.outputfolder, exist_ok=True)
 
     refset_dic = {}
     gender_dic = {}
@@ -226,9 +215,8 @@ if __name__ == "__main__":
 
     """ Make CNV summary file """
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
-    if not os.path.isdir("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder)):
-        os.mkdir("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder))
-
+    os.makedirs("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder), exist_ok=True)
+ 
     write_summary = "{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
         inputfolder=args.inputfolder,
         runid=args.runid
