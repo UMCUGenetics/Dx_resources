@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('inputcsv', help='Full path to input CSV file')
     parser.add_argument('refset', help='Used reference set ID')
-    parser.add_argument('callingmodel', help='Used calling model ID')
+    parser.add_argument('calling_model', help='Used calling model ID')
     parser.add_argument('gender', choices=['male', 'female'], help='Used gender')
     parser.add_argument('sampleid', help='sampleid name to be included in VCF')
     parser.add_argument('template', help='Full path to template VCF')
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     """Add reference and ED reference set metadata."""
     vcf_reader.metadata['exomedepth_reference'] = [args.refset]
-    vcf_reader.metadata['calling_model'] = [args.callingmodel]
+    vcf_reader.metadata['calling_model'] = [args.calling_model]
     vcf_reader.metadata['gender_refset'] = [args.gender]
     vcf_reader.metadata['reference'] = "file:{}".format(settings.reference_genome)
     dx_track_git = subprocess.getoutput("git --git-dir={repo}/.git log --pretty=oneline --decorate -n 1".format(
@@ -208,7 +208,7 @@ if __name__ == "__main__":
             format_dict['CR'] = "%.4f" % (float(row['correlation']))
             format_dict['RS'] = row['refsize']
             format_dict['IH'] = "NaN"  # Inheritence is not build in yet
-            format_dict['CM'] = args.callingmodel
+            format_dict['CM'] = args.calling_model
             format_dict['PD'] = perc_del
             format_dict['TC'] = total_calls
             new_vals = [format_dict[x] for x in format_keys]
