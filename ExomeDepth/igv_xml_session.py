@@ -1,13 +1,12 @@
 #! /usr/bin/env python3
 
 import argparse
+import os
+
 from string import Template
 import database.functions
+
 import settings
-
-
-def split_fslash(file_path):
-    return file_path.split("/")[-1]
 
 
 def parse_ped_family(ped_file, sample_id):
@@ -48,7 +47,7 @@ def make_single_igv_file(args, sample_id, statistic, igv_extension, vcf_extensio
         'baf': baf,
         'bam_path': bam_path,
         'hc_cnv_vcf': "HC/HC_{0}_{1}_{2}_{3}".format(args.refset, args.sampleid, args.runid, vcf_extension),  # HC CNV-VCF file
-        'snv_vcf_id': "SNV/MNV:{0}".format(split_fslash(snv_vcf)),  # SNV/MNV track ID in IGV
+        'snv_vcf_id': "SNV/MNV:{0}".format(os.path.basename(snv_vcf)), # SNV/MNV track ID in IGV
         'hc_cnv_vcf_id': "CNV:HC_{0}_{1}_{2}_{3}".format(
             args.refset, args.sampleid, args.runid, vcf_extension
         ),  # HC CNV -VCF track id in IGV
@@ -114,13 +113,13 @@ def make_family_igv_file(args, statistic, igv_extension, vcf_extension, familyid
         familyid, args.runid, statistic
     )  # Session ID
     snv_vcf_child_id = "SNV/MNV_child:{0}".format(
-        split_fslash(snv_vcf_child)
+        os.path.basename(snv_vcf_child) 
     )  # SNV/MNV track child ID in IGV
     snv_vcf_father_id = "SNV/MNV_father:{0}".format(
-        split_fslash(snv_vcf_father)
+        os.path.basename(snv_vcf_father) 
     )  # SNV/MNV track father ID in IGV
     snv_vcf_mother_id = "SNV/MNV_mother:{0}".format(
-        split_fslash(snv_vcf_mother)
+        os.path.basename(snv_vcf_mother)
     )  # SNV/MNV track mother ID in IGV
     hc_cnv_vcf_child_id = "CNV_child:HC_{0}_{1}_{2}_{3}".format(
         child_ref, child, args.runid, vcf_extension
