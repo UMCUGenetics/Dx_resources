@@ -45,13 +45,13 @@ def exomedepth_summary(exomedepth_logs, stdout=None):
 
     if stdout:
         print((
-            "\r{}\n{}\n{}\n{}\n\r\n{}\n{}\n{}"
+            "\r\n{}\n{}\n{}\n\r\n{}\n{}\n{}\n"
         ).format(
-            sample_lines, mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
+            mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
         ))
     else:
         return (
-            "\n\r{}\n{}\n{}\n{}\n\r\n{}\n{}\n{}"
+            "{}\r\n{}\n{}\n{}\n\r\n{}\n{}\n{}\n"
         ).format(
             sample_lines, mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
         )
