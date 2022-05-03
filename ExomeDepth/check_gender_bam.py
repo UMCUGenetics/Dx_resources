@@ -2,7 +2,9 @@
 
 import argparse
 import glob
+
 import pysam
+
 import settings
 
 
