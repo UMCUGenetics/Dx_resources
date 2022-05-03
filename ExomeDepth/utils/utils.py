@@ -43,18 +43,15 @@ def exomedepth_summary(exomedepth_logs, stdout=None):
     median_PD = "#Median_PD={}\r".format("%.2f" % statistics.median(stats_dic["PD"]))
     median_TC = "#Median_TC={}\r".format("%.2f" % statistics.median(stats_dic["TC"]))
 
+    statistic_lines = ("\r\n{}\n{}\n{}\n\r\n{}\n{}\n{}\n").format(
+        mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
+    )
+      
+
     if stdout:
-        print((
-            "\r\n{}\n{}\n{}\n\r\n{}\n{}\n{}\n"
-        ).format(
-            mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
-        ))
+        print(statistic_lines)
     else:
-        return (
-            "{}\r\n{}\n{}\n{}\n\r\n{}\n{}\n{}\n"
-        ).format(
-            sample_lines, mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
-        )
+        return("{}{}".format(sample_lines, statistic_lines))
 
 
 def detect_merge(inputfolder, outputfile):
@@ -80,10 +77,10 @@ def detect_merge(inputfolder, outputfile):
                 if len(sample_barcodes) > 1:  # Sample consisting of multiple sequence runs is considered merge sample
                     merge_file.write("{sample_id}\t{run_id}\t{reason}\n".format(
                         sample_id=sample_id, run_id=run_id, reason="multiple_runs"
-                        ))
+                    ))
                 elif run_barcode != sample_barcode:
                     merge_file.write("{sample_id}\t{run_id}\t{reason}\t{sample_barcode}\n".format(
                         sample_id=sample_id, run_id=run_id, reason="different_barcode", sample_barcode=sample_barcode
-                        ))
+                    ))
 
     merge_file.close()
