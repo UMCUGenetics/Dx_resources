@@ -8,9 +8,10 @@ import argparse
 import glob
 from multiprocessing import Pool
 import pysam
+
 import database.functions
 import utils.utils
-from igv_xml_session import split_fslash
+
 import settings
 
 
@@ -33,18 +34,19 @@ def get_gender(bam):
     elif yratio >= float(settings.gender_determination_y_ratio[1]):
         return "male"
     else:
-        if re.search('[C|P]M', split_fslash(bam)):
+        bam_base = os.path.basename(bam)
+        if re.search('[C|P]M', bam_base:
             print("Sample {0} has a unknown gender based on chrY reads, but resolved as male based on sampleID".format(
-                split_fslash(bam))
+                bam_base)
             )
             return "male"
-        elif re.search('[C|P]F', split_fslash(bam)):
+        elif re.search('[C|P]F', os.path.basename(bam)):
             print("Sample {0} has a unknown gender based on chrY reads, but resolved as female based on sampleID".format(
-                split_fslash(bam))
+                bam_base)
             )
             return "female"
         else:
-            sys.exit("Sample {0} has a unknown gender and will not be analysed".format(split_fslash(bam)))
+            sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam_base))
 
 
 def multiprocess_ref(mp_list):
@@ -105,7 +107,7 @@ def make_refset(args):
     mp_list = []
     for model in analysis:
         for item in ref_gender_dic:
-            folder = "{0}/{1}_{2}_{3}".format(output_folder, model, item, split_fslash(str(args.output).rstrip("/")))
+            folder = "{0}/{1}_{2}_{3}".format(output_folder, model, item, os.path.basename(str(args.output).rstrip("/")))
             output_id = "{0}_{1}_{2}.EDref".format(model, item, args.prefix)
             os.mkdir(folder)
             for bam in ref_gender_dic[item]:
