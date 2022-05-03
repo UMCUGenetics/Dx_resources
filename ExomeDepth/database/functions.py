@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
+import pysam
+
 from database.database import connect_database
 from database.models import Sample
-
-import pysam
 
 
 def add_sample_to_db(flowcell_id, sample_id, refset):
