@@ -35,7 +35,7 @@ def get_gender(bam):
         return "male"
     else:
         bam_base = os.path.basename(bam)
-        if re.search('[C|P]M', bam_base:
+        if re.search('[C|P]M', bam_base):
             print("Sample {0} has a unknown gender based on chrY reads, but resolved as male based on sampleID".format(
                 bam_base)
             )
@@ -109,7 +109,7 @@ def make_refset(args):
         for item in ref_gender_dic:
             folder = "{0}/{1}_{2}_{3}".format(output_folder, model, item, os.path.basename(str(args.output).rstrip("/")))
             output_id = "{0}_{1}_{2}.EDref".format(model, item, args.prefix)
-            os.mkdir(folder)
+            os.makedirs(folder, exist_ok=True)
             for bam in ref_gender_dic[item]:
                 os.symlink("{bam}* {folder}".format(bam=bam, folder=folder))
             mp_list += [[folder, output_id, analysis[model]["target_bed"], analysis[model]["exon_bed"]]]
@@ -214,11 +214,9 @@ def call_cnv(args):
 
     """Call CNV from BAMs"""
     bam = format(os.path.abspath(args.inputbam))
-    output_folder = format(os.path.abspath(args.output))
+    output_folder = os.path.abspath(args.output)
     analysis = settings.analysis
-
-    if not os.path.isdir(output_folder):
-        os.mkdir(output_folder)
+    os.makedirs(output_folder, exist_ok=True)
 
     """Determine gender"""
     if args.refset_gender:  # Used gender if used as input parameter.
