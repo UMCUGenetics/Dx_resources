@@ -7,7 +7,7 @@ import settings
 
 
 def call_add_sample_to_db(args):
-    database.functions.add_sample_to_db(args.flowcell_id, args.sample_id, args.refset)
+    database.functions.add_sample_to_db(args.flowcell_id, args.sample_id, args.refset, args.print_message)
 
 
 def call_change_refset_in_db(args):
@@ -46,6 +46,7 @@ if __name__ == "__main__":
         '--refset', default=settings.refset,
         help='exomedepth reference set ID [default = settings.refset]'
     )
+    parser_add.add_argument('--print_message', default=True, help='print message if added to db or not [default = True]')
     parser_add.set_defaults(func=call_add_sample_to_db)
 
     """ Arguments add sample to database based on BAM file and return refset"""
