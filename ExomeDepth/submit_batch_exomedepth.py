@@ -13,7 +13,7 @@ import settings
 
 
 def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
-    bamfile = bam.rstrip("/").split("/")[-1]
+    bamfile = bam.split("/")[-1]
     sampleid = database.functions.get_sample_id(bam)
     bam_path = os.path.abspath(bam)
 
@@ -25,12 +25,15 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     os.makedirs("{output}/{sample}".format(output=args.outputfolder, sample=sampleid), exist_ok=True)
     os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
 
-    os.symlink("{bam=bam}", "{output}/{sample}/{bamfile}".format(
-        bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder
-    ))
-    os.symlink("{bam}.bai", "{output}/{sample}/{bamfile}.bai".format(
-        bam=bam, bamfile=bamfile, sample=sampleid, output=args.outputfolder
-    ))
+    os.symlink(
+        "{bam}".format(bam=bam),
+        "{output}/{sample}/{bamfile}".format(bam=bam, output=args.outputfolder, bamfile=bamfile, sample=sampleid)
+    )
+
+    os.symlink(
+        "{bam}.bai".format(bam=bam),
+        "{output}/{sample}/{bamfile}.bai".format(bam=bam, output=args.outputfolder, bamfile=bamfile, sample=sampleid)
+    )
 
     action = (
         "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} "
