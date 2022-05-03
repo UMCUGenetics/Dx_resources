@@ -28,7 +28,6 @@ def make_single_igv_file(args, sample_id, statistic, igv_extension, vcf_extensio
         snv_vcf = "../single_sample_vcf/{0}_{1}.vcf".format(args.sampleid, args.runid)  # SNV VCF file
 
     min_axis, mid_axis, max_axis = settings.igv_settings[statistic]  # Get axis values out of settings.py
-    fontsize = args.fontsize
 
     baf = "../baf/{0}_baf.igv".format(args.sampleid)
     igv_hc_ratio = "igv_tracks/HC_{0}_{1}_{2}_{3}".format(
@@ -63,7 +62,7 @@ def make_single_igv_file(args, sample_id, statistic, igv_extension, vcf_extensio
         'bam_coverage': "{0}_coverage".format(bam_path),  # BAM coverage track for BAM
         'bam_id': bam,
         'sample_id': sample_id,
-        'fontsize': fontsize
+        'fontsize': args.fontsize
     }
     new_file = template_file.substitute(substitute_dic)
     return new_file
@@ -155,7 +154,6 @@ def make_family_igv_file(args, statistic, igv_extension, vcf_extension, familyid
 
     """ Scale XML variables"""
     min_axis, mid_axis, max_axis = settings.igv_settings[statistic]  # Get axis values out of settings.py
-    fontsize = args.fontsize
 
     """ Substitue variables in IGV template"""
     substitute_dic = {
@@ -173,7 +171,7 @@ def make_family_igv_file(args, statistic, igv_extension, vcf_extension, familyid
         'upd_track_id': upd_track_id,
         'baf': baf_child,
         'bam': bam_child_path,
-        'fontsize': fontsize,
+        'fontsize': args.fontsize,
         'mid_axis': mid_axis,
         'max_axis': max_axis,
         'min_axis': min_axis,
