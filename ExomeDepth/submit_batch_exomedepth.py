@@ -20,19 +20,19 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
         refset = refset_dic[sampleid]
     else:
-        refset = database.functions.add_sample_to_db_and_return_refset_bam(bam_path, settings.refset, False)
+        refset = database.functions.add_sample_to_db_and_return_refset_bam(bam_path, settings.refset)[2]
 
     os.makedirs("{output}/{sample}".format(output=args.outputfolder, sample=sampleid), exist_ok=True)
     os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
 
     os.symlink(
         "{bam}".format(bam=bam),
-        "{output}/{sample}/{bamfile}".format(bam=bam, output=args.outputfolder, bamfile=bamfile, sample=sampleid)
+        "{output}/{sample}/{bamfile}".format(output=args.outputfolder, bamfile=bamfile, sample=sampleid)
     )
 
     os.symlink(
         "{bam}.bai".format(bam=bam),
-        "{output}/{sample}/{bamfile}.bai".format(bam=bam, output=args.outputfolder, bamfile=bamfile, sample=sampleid)
+        "{output}/{sample}/{bamfile}.bai".format(output=args.outputfolder, bamfile=bamfile, sample=sampleid)
     )
 
     action = (
@@ -63,7 +63,7 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     os.makedirs("{output}/logs".format(output=args.outputfolder), exist_ok=True)
     os.makedirs("{output}/igv_tracks".format(output=args.outputfolder), exist_ok=True)
     os.makedirs("{output}/UMCU/".format(output=args.outputfolder), exist_ok=True)
-    os.makedirs("{output}/HC/".format(output=args.outputfolder) , exist_ok=True)
+    os.makedirs("{output}/HC/".format(output=args.outputfolder), exist_ok=True)
 
     os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid=sampleid, output=args.outputfolder))
@@ -179,7 +179,10 @@ if __name__ == "__main__":
         """ Copy CNV summary file into archive folder """
         if(glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
            inputfolder=args.inputfolder, runid=args.runid))):
-            os.makedirs("{inputfolder}/QC/CNV/archive_{today}/".format(inputfolder=args.inputfolder, today=today), exist_ok=True)
+            os.makedirs("{inputfolder}/QC/CNV/archive_{today}/".format(
+                inputfolder=args.inputfolder, today=today
+                ), exist_ok=True
+            )
 
             os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(
                 inputfolder=args.inputfolder, runid=args.runid, today=today
@@ -219,7 +222,7 @@ if __name__ == "__main__":
     """ Make CNV summary file """
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
     os.makedirs("{inputfolder}/QC/CNV/".format(inputfolder=args.inputfolder), exist_ok=True)
- 
+
     write_summary = "{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
         inputfolder=args.inputfolder,
         runid=args.runid
