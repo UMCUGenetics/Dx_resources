@@ -6,40 +6,29 @@ from database.database import connect_database
 from database.models import Sample
 
 
-def add_sample_flowcell_to_db(sample_id, flowcell_id, refset, print_message=None):
+def add_sample_flowcell_to_db(sample_id, flowcell_id, refset):
     Session = connect_database()
     with Session() as session:
         sample = session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).one_or_none()
         if not sample:
             session.add(Sample(sample=sample_id, flowcell=flowcell_id, refset=refset))
             session.commit()
-            if print_message:
-                print("## Sample {0} with flowcell_id {1} and with refset {2} added to database".format(
-                   sample_id, flowcell_id, refset)
-                )                
-            return refset
+            return refset, True
         else:
-            if print_message:
-                print("## Sample {0} with flowcell_id {1} and with refset {2} already in database".format(
-                   sample_id, flowcell_id, refset)
-                )
-            return sample.refset
+            return sample.refset, False
 
 
-def add_sample_to_db(flowcell_id, sample_id, refset, print_message=None):
+def add_sample_to_db(flowcell_id, sample_id, refset):
     flowcell_id = get_flowcell_id(flowcell_id)
-    add_sample_flowcell_to_db(sample_id, flowcell_id, refset, print_message)
+    refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
+    return flowcell_id, sample_id, refset_db, added
 
 
-def add_sample_to_db_and_return_refset_bam(bam, refset, print_refset_stdout=None):
+def add_sample_to_db_and_return_refset_bam(bam, refset):
     sample_id = get_sample_id(bam)
     flowcell_id = get_flowcell_id_bam(bam)
-    refset_db = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
-
-    if print_refset_stdout:
-        print(refset_db)
-
-    return refset_db
+    refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
+    return flowcell_id, sample_id, refset_db, added
 
 
 def change_refset_in_db(flowcell_id, sample_id, refset):
@@ -55,43 +44,40 @@ def change_refset_in_db(flowcell_id, sample_id, refset):
             sample_update.refset = refset
             session.add(sample_update)
             session.commit()
-            print("## Changed refset of sample {0} with flowcell_id {1} to refset {2}".format(
-                sample_id, flowcell_id, refset)
-            )
+            return flowcell_id, sample_id, refset, True
+
         else:
-            print("## Sample {0} with flowcell_id {1} not in refset database".format(
-                sample_id, flowcell_id)
-            )
+            return flowcell_id, sample_id, refset, False
 
 
-def print_all_samples():
+def return_all_samples():
+    sample_list = []
     Session = connect_database()
     with Session() as session:
-        print("Name\tFlowcell\tRefset\tFamilyID")
         for item in session.query(Sample):
-            print("{0}\t{1}\t{2}".format(item.sample, item.flowcell, item.refset))
+            sample_list.append("{0}\t{1}\t{2}".format(item.sample, item.flowcell, item.refset))
+    return sample_list
 
 
-def print_refset(flowcell_id, sample_id):
+def parse_refset(flowcell_id, sample_id):
     Session = connect_database()
     with Session() as session:
         sample = session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).one_or_none()
         if sample:
-            print(sample.refset)
+            return sample.refset
         else:
-            print("## Sample {0} with flowcell_id {1} not detected in database".format(
-                sample_id, flowcell_id)
-            )
+            return None
+
 
 def query_refset(flowcell_id, sample_id):
     flowcell_id = get_flowcell_id(flowcell_id)
-    print_refset(flowcell_id, sample_id)
+    return parse_refset(flowcell_id, sample_id), flowcell_id
 
 
 def query_refset_bam(bam):
     flowcell_id = get_flowcell_id_bam(bam)
     sample_id = get_sample_id(bam)
-    print_refset(flowcell_id, sample_id)
+    return parse_refset(flowcell_id, sample_id), flowcell_id, sample_id
 
 
 def get_flowcell_id_bam(bam):
@@ -111,9 +97,9 @@ def delete_sample_db(flowcell_id, sample_id):
         if sample:
             session.delete(sample)
             session.commit()
-            print("## Deleted sample {0} with flowcell_id {1}.".format(sample_id, flowcell_id))
+            return True, flowcell_id
         else:
-            print("## Sample {0} with flowcell_id {1} not in database.".format(sample_id, flowcell_id))
+            return False, flowcell_id
 
 
 def get_flowcell_id(flowcells_arg):
@@ -125,7 +111,7 @@ def return_refset_bam(bam):
     sample_id = get_sample_id(bam)
     flowcell_id = get_flowcell_id_bam(bam)
     with Session() as session:
-        sample =  session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).one_or_none()
+        sample = session.query(Sample).filter(Sample.sample == sample_id).filter(Sample.flowcell == flowcell_id).one_or_none()
         if sample:
             return sample.refset
         else:
