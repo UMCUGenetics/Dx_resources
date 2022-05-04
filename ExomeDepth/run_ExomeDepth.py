@@ -213,7 +213,7 @@ def multiprocess_call(multiprocess_list):
 def call_cnv(args):
 
     """Call CNV from BAMs"""
-    bam = format(os.path.abspath(args.inputbam))
+    bam = os.path.abspath(args.inputbam)
     output_folder = os.path.abspath(args.output)
     analysis = settings.analysis
     os.makedirs(output_folder, exist_ok=True)
@@ -228,7 +228,7 @@ def call_cnv(args):
         refset = args.refset
     else:
         """ Add sample to database if not present, or query refset from db if present """
-        refset = database.functions.add_sample_to_db_and_return_refset_bam(bam, settings.refset, False)
+        refset = database.functions.add_sample_to_db_and_return_refset_bam(bam, settings.refset)[2]
 
     multiprocess_list = []
     for model in analysis:
