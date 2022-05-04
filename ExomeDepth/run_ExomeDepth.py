@@ -24,24 +24,24 @@ def valid_read(read):
 
 
 def get_gender(bam):
-    """Determine chrY ratio based on read count in bam (excl PAR)."""
+    """Determine chrX ratio based on read count in bam (excl PAR)."""
     with pysam.AlignmentFile(bam, "rb") as workfile:
-        yreads = float(sum([valid_read(read) for read in workfile.fetch(region=settings.gender_determination_locus_y)]))
+        xreads = float(sum([valid_read(read) for read in workfile.fetch(region=settings.locus_x)]))
         total = float(workfile.mapped)
-    yratio = float("%.2f" % ((yreads / total) * 100))
-    if yratio <= float(settings.gender_determination_y_ratio[0]):
+    xratio = float("%.4f" % ((xreads / total) * 100))
+    if xratio >= float(settings.ratio_x[1]):
         return "female"
-    elif yratio >= float(settings.gender_determination_y_ratio[1]):
+    elif xratio <= float(settings.ratio_x[0]):
         return "male"
     else:
         bam_base = os.path.basename(bam)
         if re.search('[C|P]M', bam_base):
-            print("Sample {0} has a unknown gender based on chrY reads, but resolved as male based on sampleID".format(
+            print("Sample {0} has a unknown gender based on chrX reads, but resolved as male based on sampleID".format(
                 bam_base)
             )
             return "male"
         elif re.search('[C|P]F', os.path.basename(bam)):
-            print("Sample {0} has a unknown gender based on chrY reads, but resolved as female based on sampleID".format(
+            print("Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID".format(
                 bam_base)
             )
             return "female"
@@ -90,8 +90,8 @@ def make_refset(args):
     bams = glob.glob("{}/**/*.bam".format(args.inputfolder), recursive=True)
     print("Number of BAM files detected = {0}".format(len(bams)))
 
-    """Get gender from chrY read count ratio."""
-    ref_gender_dic = {}  # Dictionary with gender of each sample
+    """Get gender from chrX read count ratio."""
+    ref_gender_dic = {}  #Dictionary with gender of each sample
     for bam in bams:
         gender = get_gender(bam)
         if gender != "unknown":
@@ -221,7 +221,7 @@ def call_cnv(args):
     """Determine gender"""
     if args.refset_gender:  # Used gender if used as input parameter.
         gender = args.refset_gender
-    else:  # Otherwise determine based on chrY count
+    else:  # Otherwise determine based on chrX count
         gender = get_gender(bam)
 
     if args.refset:  # Do not query database to query refset

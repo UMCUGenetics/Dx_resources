@@ -151,8 +151,8 @@ Script will combine exomedepth log files, and make summary statistics
 
 ### check_gender_bam.py ###
 Check gender of BAM files in a specific folder.\
-Consider male is nonPAR regions of chrY fraction >=0.12 and chrX <= 2.3.\
-Consider female is nonPAR regions of chrY fraction <=0.06 and chrX >= 4.0.\
+Consider male is nonPAR regions of chrY fraction >=0.12 and chrX <= 2.1\
+Consider female is nonPAR regions of chrY fraction <=0.02 and chrX >= 3.6\
 All other combinations are considerend unknown (these include i.e. XXY and X or sample with mosaik/large CNV, and/or contamination).
 ``` bash
 python check_gender_bam.py <inputfolder>

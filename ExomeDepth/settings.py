@@ -54,12 +54,12 @@ probability = {"HC": 0.0001, "UMCU": 0.5}
 
 # General settings
 ratio_threshold_del = 0.25
-par1 = [60001, 2699520]
-par2 = [154931044, 155260560]
-gender_determination_locus_y = 'Y:2649520-59034050'
-gender_determination_locus_x = 'X:2699520-154931044'
-gender_determination_y_ratio = [0.06, 0.12]
-gender_determination_x_ratio = [2.3, 3.7]
+par1 = [60001,2699520]
+par2 = [154931044,155260560]
+locus_y = 'Y:2649520-59034050'
+locus_x = 'X:2699520-154931044'
+ratio_y = [0.02, 0.12]
+ratio_x = [2.1, 3.6]
 normal_CN = {
     "female": {"auto": 2, "chrX": 2, "chrXpar": 2, "chrY": 0},
     "male": {"auto": 2, "chrX": 1, "chrXpar": 2, "chrY": 1}
