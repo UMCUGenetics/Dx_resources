@@ -46,7 +46,6 @@ def exomedepth_summary(exomedepth_logs, stdout=None):
     statistic_lines = ("\r\n{}\n{}\n{}\n\r\n{}\n{}\n{}\n").format(
         mean_CR_line, mean_PD_line, mean_TC_line, median_CR, median_PD, median_TC
     )
-      
 
     if stdout:
         print(statistic_lines)
@@ -84,3 +83,44 @@ def detect_merge(inputfolder, outputfile):
                     ))
 
     merge_file.close()
+
+
+def is_valid_read(read):
+    """Check if a read is properly mapped."""
+    if (read.mapping_quality >= 20 and read.reference_end and read.reference_start):
+        return True
+    return False
+
+
+def gender_check(bam, locus_y, locus_x, ratio_y_female, ratio_y_male, ratio_x_female, ratio_x_male):
+    """Determine chrX/chrY ratio based on read count in bam (excl PAR)."""
+    with pysam.AlignmentFile(bam, "rb") as bam_file:
+        y_reads = float(sum([is_valid_read(read) for read in bam_file.fetch(region=locus_y)]))
+        x_reads = float(sum([is_valid_read(read) for read in bam_file.fetch(region=locus_x)]))
+        total_reads = float(bam_file.mapped)
+        y_ratio_perc = (y_reads / total_reads) * 100
+        x_ratio_perc = (x_reads / total_reads) * 100
+
+        if (
+            y_ratio_perc <= ratio_y_female and
+            x_ratio_perc >= ratio_x_female
+        ):
+            return "female\t{y_ratio_perc:.4f}\t{x_ratio_perc:.4f}".format(
+                y_ratio_perc=y_ratio_perc,
+                x_ratio_perc=x_ratio_perc
+            )
+
+        elif (
+            y_ratio_perc >= ratio_y_male and
+            x_ratio_perc <= ratio_x_male
+        ):
+            return "male\t{y_ratio_perc:.4f}\t{x_ratio_perc:.4f}".format(
+                y_ratio_perc=y_ratio_perc,
+                x_ratio_perc=x_ratio_perc
+            )
+
+        else:
+            return "unknown or other sex chromosome combination\t{y_ratio_perc:.4f}\t{x_ratio_perc:.4f}".format(
+                y_ratio_perc=y_ratio_perc,
+                x_ratio_perc=x_ratio_perc
+            )
