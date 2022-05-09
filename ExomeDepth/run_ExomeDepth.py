@@ -91,7 +91,7 @@ def make_refset(args):
     print("Number of BAM files detected = {0}".format(len(bams)))
 
     """Get gender from chrX read count ratio."""
-    ref_gender_dic = {}  #Dictionary with gender of each sample
+    ref_gender_dic = {}  # Dictionary with gender of each sample
     for bam in bams:
         gender = get_gender(bam)
         if gender != "unknown":
@@ -299,7 +299,6 @@ def call_cnv(args):
                 qc_status=qc_status
             )
         )
-
         sample_model_log.close()
 
 
@@ -309,6 +308,15 @@ def call_exomedepth_summary(args):
 
 def call_detect_merge(args):
     utils.utils.detect_merge(args.inputfolder, args.outputfile)
+
+
+def call_gender_check(args):
+    bams = glob.glob("{}/**/*.bam".format(args.inputfolder), recursive=True)
+    for bam in bams:
+        result = utils.utils.gender_check(
+            bam, args.locus_y, args.locus_x, args.ratio_y_female, args.ratio_y_male, args.ratio_x_female, args.ratio_x_male
+        )
+        print("{}\t{}".format(bam, result))
 
 
 if __name__ == "__main__":
@@ -370,6 +378,45 @@ if __name__ == "__main__":
     parser_merge.add_argument('inputfolder', help='input folder which included BAM files')
     parser_merge.add_argument('outputfile', help='output filename of identified merge samples')
     parser_merge.set_defaults(func=call_detect_merge)
+
+    parser_gender_check = subparser.add_parser('gender_check', help='Perform gender check on BAM files')
+    parser_gender_check.add_argument('inputfolder', help='Path to root folder of analysis')
+    parser_gender_check.add_argument(
+        '--locus_y',
+        default=settings.locus_y,
+        help='Coordinates for includes region on chromosome X (default = locus_y in settings.py)'
+    )
+    parser_gender_check.add_argument(
+        '--locus_x',
+        default=settings.locus_x,
+        help='Threshold for maximum allowed CNV calls (default = locus_x in settings.py)'
+    )
+    parser_gender_check.add_argument(
+       '--ratio_y_female',
+       default=settings.ratio_y[0],
+       type=float,
+       help='Maximum Y ratio threshold females (default = ratio_y[0] in settings.py)'
+    )
+    parser_gender_check.add_argument(
+        '--ratio_y_male',
+        default=settings.ratio_y[1],
+        type=float,
+        help='Minimum Y ratio threshold males (default = ratio_y[1] in settings.py)'
+    )
+    parser_gender_check.add_argument(
+        '--ratio_x_male',
+        default=settings.ratio_x[0],
+        type=float,
+        help='Maximum X ratio threshold males (default = ratio_x[0] in settings.py)'
+    )
+    parser_gender_check.add_argument(
+        '--ratio_x_female',
+        default=settings.ratio_x[1],
+        type=float,
+        help='Minimum X ratio threshold females (default = ratio_x[1] in settings.py)'
+    )
+
+    parser_gender_check.set_defaults(func=call_gender_check)
 
     args = parser.parse_args()
     args.func(args)
