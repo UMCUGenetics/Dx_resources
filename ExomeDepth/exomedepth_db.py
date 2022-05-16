@@ -119,7 +119,9 @@ if __name__ == "__main__":
         '--refset', default=settings.refset,
         help='exomedepth reference set ID [default = settings.refset]'
     )
-    parser_add_return_bam.add_argument('--print_message_stdout', action='store_true', help='print message if added to db or not')
+    parser_add_return_bam.add_argument(
+        '--print_message_stdout', action='store_true', help='print message if added to db or not'
+    )
     parser_add_return_bam.add_argument('--print_refset_stdout', action='store_true', help='print refset in stdout]')
     parser_add_return_bam.set_defaults(func=call_add_sample_to_db_and_return_refset_bam)
 
