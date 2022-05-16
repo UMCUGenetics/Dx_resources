@@ -6,22 +6,22 @@ import database.functions
 import settings
 
 
-def print_message(method, sample_id=None, flowcell_id=None, refset=None):
-    if method == "not_detected_in_db":
+def print_message(status, sample_id=None, flowcell_id=None, refset=None):
+    if status == "not_detected_in_db":
         print("## Sample {0} with flowcell_id {1} not in refset database".format(sample_id, flowcell_id))
-    if method == "added_to_db":
+    elif status == "added_to_db":
         print("## Sample {0} with flowcell_id {1} and with refset {2} added to database".format(
             sample_id, flowcell_id, refset
         ))
-    if method == "present_in_db":
+    elif status == "present_in_db":
         print("## Sample {0} with flowcell_id {1} and with refset {2} already in database".format(
             sample_id, flowcell_id, refset
         ))
-    if method == "updated_db":
+    elif status == "updated_db":
         print("## Changed refset of sample {0} with flowcell_id {1} to refset {2}".format(
            sample_id, flowcell_id, refset
         ))
-    if method == "deleted_in_db":
+    elif status == "deleted_in_db":
         print("## Deleted sample {0} with flowcell_id {1}.".format(sample_id, flowcell_id))
 
 
@@ -36,7 +36,7 @@ def call_add_sample_to_db(args):
     flowcell_id, sample_id, refset_db, added = database.functions.add_sample_to_db(
         args.flowcell_id, args.sample_id, args.refset
     )
-    if args.print_message:
+    if args.print_message_stdout:
         print_added(flowcell_id, sample_id, refset_db, added)
     if args.print_refset_stdout:
         print(refset_db)
@@ -46,7 +46,7 @@ def call_add_sample_to_db_and_return_refset_bam(args):
     flowcell_id, sample_id, refset_db, added = database.functions.add_sample_to_db_and_return_refset_bam(
         args.bam, args.refset
     )
-    if args.print_message:
+    if args.print_message_stdout:
         print_added(flowcell_id, sample_id, refset_db, added)
     if args.print_refset_stdout:
         print(refset_db)
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         '--refset', default=settings.refset,
         help='exomedepth reference set ID [default = settings.refset]'
     )
-    parser_add.add_argument('--print_message', action='store_true', help='print message if added to db or not')
+    parser_add.add_argument('--print_message_stdout', action='store_true', help='print message if added to db or not')
     parser_add.add_argument('--print_refset_stdout', action='store_true', help='print refset in stdout')
     parser_add.set_defaults(func=call_add_sample_to_db)
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         '--refset', default=settings.refset,
         help='exomedepth reference set ID [default = settings.refset]'
     )
-    parser_add_return_bam.add_argument('--print_message', action='store_true', help='print message if added to db or not')
+    parser_add_return_bam.add_argument('--print_message_stdout', action='store_true', help='print message if added to db or not')
     parser_add_return_bam.add_argument('--print_refset_stdout', action='store_true', help='print refset in stdout]')
     parser_add_return_bam.set_defaults(func=call_add_sample_to_db_and_return_refset_bam)
 
