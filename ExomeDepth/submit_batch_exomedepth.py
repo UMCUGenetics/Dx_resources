@@ -71,8 +71,7 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     os.system("mv {output}/{sampleid}/UMCU*.vcf {output}/UMCU/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("rm -r {output}/{sample}".format(output=args.outputfolder, sample=sampleid))
 
-    sample_info = [sampleid, bamfile, refset]
-    return sample_info
+    return [sampleid, bamfile, refset]
 
 
 def parse_ped(ped_file):
@@ -179,9 +178,11 @@ if __name__ == "__main__":
         """ Copy CNV summary file into archive folder """
         if(glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
            inputfolder=args.inputfolder, runid=args.runid))):
-            os.makedirs("{inputfolder}/QC/CNV/archive_{today}/".format(
-                inputfolder=args.inputfolder, today=today
-                ), exist_ok=True
+            os.makedirs(
+                "{inputfolder}/QC/CNV/archive_{today}/".format(
+                    inputfolder=args.inputfolder, today=today
+                ),
+                exist_ok=True
             )
 
             os.system("mv {inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt {inputfolder}/QC/CNV/archive_{today}/".format(
