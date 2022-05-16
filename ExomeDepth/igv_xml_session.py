@@ -2,10 +2,9 @@
 
 import argparse
 import os
-
 from string import Template
-import database.functions
 
+import database.functions
 import settings
 
 
