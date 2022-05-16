@@ -36,14 +36,14 @@ def get_gender(bam):
     else:
         bam_base = os.path.basename(bam)
         if re.search('[C|P]M', bam_base):
-            print("Sample {0} has a unknown gender based on chrX reads, but resolved as male based on sampleID".format(
-                bam_base)
-            )
+            print(
+                "Sample {0} has a unknown gender based on chrX reads, but resolved as male based on sampleID"
+            ).format(bam_base)
             return "male"
         elif re.search('[C|P]F', os.path.basename(bam)):
-            print("Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID".format(
-                bam_base)
-            )
+            print(
+                "Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID"
+            ).format(bam_base)
             return "female"
         else:
             sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam_base))
@@ -53,27 +53,25 @@ def multiprocess_ref(mp_list):
 
     action = (
         "export SINGULARITYENV_R_LIBS={r_libs} && singularity exec -B {singularity_mnt} "
-        "{singularity_container} Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n".format(
-            r_libs=settings.r_library_path,
-            singularity_mnt=settings.singularity_mount_path,
-            singularity_container=settings.singularity_r_container,
-            refscript=settings.create_refset_r,
-            folder=mp_list[0],
-            outputid=mp_list[1],
-            targetbed=mp_list[2],
-            refgenome=settings.reference_genome,
-            exonbed=mp_list[3]
-            )
-        )
+        "{singularity_container} Rscript {refscript} {folder}/ {folder}/{outputid} {targetbed} {refgenome} {exonbed}\n"
+    ).format(
+        r_libs=settings.r_library_path,
+        singularity_mnt=settings.singularity_mount_path,
+        singularity_container=settings.singularity_r_container,
+        refscript=settings.create_refset_r,
+        folder=mp_list[0],
+        outputid=mp_list[1],
+        targetbed=mp_list[2],
+        refgenome=settings.reference_genome,
+        exonbed=mp_list[3]
+    )
     os.system(action)
 
 
 def make_refset(args):
 
     """Log all settings in setting.log file"""
-    log_file = "{output}/settings.log".format(
-        output=args.output
-        )
+    log_file = "{output}/settings.log".format(output=args.output)
     log_setting_file = open(log_file, "w")
     options = vars(args)
     for item in options:
@@ -129,14 +127,16 @@ def multiprocess_call(multiprocess_list):
         r_log_suffix = "{0}_{1}".format(args.vcf_filename_suffix, r_log_suffix)
         r_igv_suffix = "{0}_{1}".format(args.vcf_filename_suffix, r_igv_suffix)
 
-    log_file = "{output}/{model}_{refset}_{bam}_{run}_{setting_log_suffix}".format(
+    log_file = (
+        "{output}/{model}_{refset}_{bam}_{run}_{setting_log_suffix}"
+    ).format(
         output=multiprocess_list["output_folder"],
         model=multiprocess_list["model"],
         refset=multiprocess_list["refset"],
         bam=args.sample,
         run=args.run,
         setting_log_suffix=setting_log_suffix
-        )
+    )
     log_setting_file = open(log_file, "w")
     options = vars(args)
     for item in options:
@@ -147,65 +147,71 @@ def multiprocess_call(multiprocess_list):
     log_setting_file.close()
 
     """Perform ExomeDepth analysis"""
-    refset_R = "{refset_dir}/{model}_{gender}_{refset}.EDref".format(
+    refset_R = (
+        "{refset_dir}/{model}_{gender}_{refset}.EDref"
+    ).format(
         refset_dir=settings.refset_dir,
         model=multiprocess_list["model"],
         gender=multiprocess_list["gender"],
         refset=multiprocess_list["refset"]
-        )
+    )
 
     action = (
         "export SINGULARITYENV_R_LIBS={r_libs} && "
         "singularity exec -B {singularity_mnt} {singularity_container} "
         "Rscript {ed_r} {refset_R} {target_bed} {refgenome} {exon_bed} "
         "{prob} {bam} {model} {refset} {expected} {run} {r_log_suffix} "
-        "{r_igv_suffix} {sampleid}").format(
-            r_libs=settings.r_library_path,
-            singularity_mnt=settings.singularity_mount_path,
-            singularity_container=settings.singularity_r_container,
-            ed_r=settings.call_cnv_r,
-            refset_R=refset_R,
-            target_bed=multiprocess_list["target_bed"],
-            refgenome=settings.reference_genome,
-            exon_bed=multiprocess_list["exon_bed"],
-            prob=settings.probability[str(multiprocess_list["model"])],
-            bam=multiprocess_list["bam"],
-            model=multiprocess_list["model"],
-            refset=multiprocess_list["refset"],
-            expected=args.expectedCNVlength,
-            run=args.run,
-            r_log_suffix=r_log_suffix,
-            r_igv_suffix=r_igv_suffix,
-            sampleid=args.sample
-        )
+        "{r_igv_suffix} {sampleid}"
+    ).format(
+        r_libs=settings.r_library_path,
+        singularity_mnt=settings.singularity_mount_path,
+        singularity_container=settings.singularity_r_container,
+        ed_r=settings.call_cnv_r,
+        refset_R=refset_R,
+        target_bed=multiprocess_list["target_bed"],
+        refgenome=settings.reference_genome,
+        exon_bed=multiprocess_list["exon_bed"],
+        prob=settings.probability[str(multiprocess_list["model"])],
+        bam=multiprocess_list["bam"],
+        model=multiprocess_list["model"],
+        refset=multiprocess_list["refset"],
+        expected=args.expectedCNVlength,
+        run=args.run,
+        r_log_suffix=r_log_suffix,
+        r_igv_suffix=r_igv_suffix,
+        sampleid=args.sample
+    )
     os.system(action)
 
     """Perform csv to vcf conversion """
-    inputcsv = "{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(
+    inputcsv = (
+        "{0}/{1}_{2}_{3}_{4}_exome_calls.csv"
+    ).format(
         multiprocess_list["output_folder"],
         multiprocess_list["model"],
         multiprocess_list["refset"],
         args.sample,
         args.run
-        )
+    )
 
     action = (
         "python {csv2vcf} {inputcsv} {refset} {calling_model} {gender} "
-        " {sampleid} {template} {runid} ").format(
-            csv2vcf=settings.csv2vcf,
-            inputcsv=inputcsv,
-            refset=multiprocess_list["refset"],
-            calling_model=multiprocess_list["calling_model"],
-            gender=multiprocess_list["gender"],
-            sampleid=args.sample,
-            template=settings.vcf_template,
-            runid=args.run
-            )
+        " {sampleid} {template} {runid} "
+    ).format(
+        csv2vcf=settings.csv2vcf,
+        inputcsv=inputcsv,
+        refset=multiprocess_list["refset"],
+        calling_model=multiprocess_list["calling_model"],
+        gender=multiprocess_list["gender"],
+        sampleid=args.sample,
+        template=settings.vcf_template,
+        runid=args.run
+    )
 
     if args.vcf_filename_suffix:
-        action = "{action} --vcf_filename_suffix {vcf_filename_suffix}".format(
-            action=action, vcf_filename_suffix=args.vcf_filename_suffix
-        )
+        action = (
+            "{action} --vcf_filename_suffix {vcf_filename_suffix}"
+        ).format(action=action, vcf_filename_suffix=args.vcf_filename_suffix)
 
     os.system(action)
 
@@ -265,14 +271,16 @@ def call_cnv(args):
         if args.vcf_filename_suffix:
             vcf_suffix = "{}_{}".format(vcf_suffix, args.vcf_filename_suffix)
 
-        vcf = "{output}/{model}_{refset}_{sample}_{run}_{vcf_suffix}.vcf".format(
+        vcf = (
+            "{output}/{model}_{refset}_{sample}_{run}_{vcf_suffix}.vcf"
+        ).format(
             output=args.output,
             model=model,
             refset=refset,
             sample=args.sample,
             run=args.run,
             vcf_suffix=vcf_suffix
-            )
+        )
 
         stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
         correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
@@ -289,15 +297,15 @@ def call_cnv(args):
             qc_status = "{qc_status}\tWARNING:{qc_suffix}".format(qc_status=qc_status, qc_suffix=args.vcf_filename_suffix)
 
         sample_model_log.write(
-            "{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n".format(
-                sample=args.sample,
-                model=model,
-                refset=refset,
-                correlation=correlation,
-                del_dup_ratio=del_dup_ratio,
-                number_calls=number_calls,
-                qc_status=qc_status
-            )
+            "{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n"
+        ).format(
+            sample=args.sample,
+            model=model,
+            refset=refset,
+            correlation=correlation,
+            del_dup_ratio=del_dup_ratio,
+            number_calls=number_calls,
+            qc_status=qc_status
         )
         sample_model_log.close()
 
