@@ -7,6 +7,7 @@ import glob
 import sys
 from multiprocessing import Pool
 from datetime import date
+
 import database.functions
 import utils.utils
 import settings
@@ -169,7 +170,7 @@ if __name__ == "__main__":
                 archive_folder_exomedepth=archive_folder_exomedepth
             ))
 
-        """ Check if archive folder were already present in archived folder, and move the to the correct location."""
+        """ Check if archive folder is already present in archived folder, and move the to the correct location."""
         if glob.glob("{outputfolder}/archive_{today}/archive*".format(outputfolder=args.outputfolder, today=today)):
             os.system("mv {outputfolder}/archive_{today}/archive* {outputfolder}/".format(
                 outputfolder=args.outputfolder, today=today
