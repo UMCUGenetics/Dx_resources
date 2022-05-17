@@ -148,7 +148,7 @@ if __name__ == "__main__":
                     "calc_copynumber set to 0 (deletion call) or 1 (duplication call)"
                     ).format(
                         sample=str(args.sampleid),
-                        region=str("_".join(str(x) for x in region))
+                        region="_".join(str(x) for x in region)
                 ))
 
                 # CNV CN is set to 1, could also be >1 (but makes no biological sense)
@@ -169,7 +169,7 @@ if __name__ == "__main__":
                             sample=str(args.sampleid),
                             copynumber=str(float(calc_copynumber)),
                             rowtype=row_type,
-                            region=str("_".join(str(x) for x in region))
+                            region="_".join(str(x) for x in region)
                     ))
                     """Note: no correction here. should be bugfix in the ExomeDepth code"""
 
@@ -180,7 +180,7 @@ if __name__ == "__main__":
                         "CN > set to -1 for deletion, +1 for duplication"
                         ).format(
                             sample=str(args.sampleid),
-                            region=str("_".join(str(x) for x in region))
+                            region="_".join(str(x) for x in region)
                     ))
                     if row_type == "deletion":  # If deletion correct copynumber with -1
                         copynumber -= 1
