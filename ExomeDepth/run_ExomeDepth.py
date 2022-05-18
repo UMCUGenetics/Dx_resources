@@ -296,7 +296,7 @@ def call_cnv(args):
         if args.vcf_filename_suffix:
             qc_status = "{qc_status}\tWARNING:{qc_suffix}".format(qc_status=qc_status, qc_suffix=args.vcf_filename_suffix)
 
-        sample_model_log.write(
+        sample_model_log.write((
             "{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n"
         ).format(
             sample=args.sample,
@@ -306,7 +306,7 @@ def call_cnv(args):
             del_dup_ratio=del_dup_ratio,
             number_calls=number_calls,
             qc_status=qc_status
-        )
+        ))
         sample_model_log.close()
 
 
