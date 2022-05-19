@@ -41,9 +41,11 @@ def get_gender(bam):
             ).format(bam_base)
             return "male"
         elif re.search('[C|P]F', os.path.basename(bam)):
-            print(
+            print((
                 "Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID"
-            ).format(bam_base)
+            ).format(
+                bam_base
+            ))
             return "female"
         else:
             sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam_base))
@@ -184,9 +186,7 @@ def multiprocess_call(multiprocess_list):
     os.system(action)
 
     """Perform csv to vcf conversion """
-    inputcsv = (
-        "{0}/{1}_{2}_{3}_{4}_exome_calls.csv"
-    ).format(
+    inputcsv = "{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(
         multiprocess_list["output_folder"],
         multiprocess_list["model"],
         multiprocess_list["refset"],
