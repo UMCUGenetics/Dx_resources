@@ -393,7 +393,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.isdir(args.outputfolder):
-        os.mkdirs("{outputfolder}".format(outputfolder=args.outputfolder))
+        os.makedirs("{outputfolder}".format(outputfolder=args.outputfolder), exist_ok=True)
     merge_dic = make_merge_dic(args.merge_samples)
     event_dic, children, parents = slice_vcf(args, merge_dic)
     make_bed_detail(args, event_dic, children, parents)
