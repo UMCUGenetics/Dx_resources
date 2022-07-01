@@ -92,6 +92,9 @@ def call_print_all_samples(args):
     for line in sample_list:
         print(line)
 
+def call_fill_database(args):
+    database.functions.fill_database(args.path, args.conflicts)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -166,6 +169,19 @@ if __name__ == "__main__":
     parser_delete_sample.add_argument('sample_id', help='sample id')
     parser_delete_sample.add_argument('flowcell_id', nargs='+', help='flowcell barcode')
     parser_delete_sample.set_defaults(func=call_delete_sample_db)
+
+    """ Arguments fill database based on cohort sampels"""
+    parser_fill_database = subparser.add_parser(
+        'fill_database',
+        help='Fill database based on folder path and BAM files'
+    )
+    parser_fill_database.add_argument('path', help='path of folder to be included')
+    parser_fill_database.add_argument(
+        '--conflicts',
+        default="conflicts.txt", 
+        help='output file name containing conflicts that must be resolved manually (default = conflicts.txt)'
+    )
+    parser_fill_database.set_defaults(func=call_fill_database)
 
     args = parser.parse_args()
     args.func(args)
