@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import pysam
+import glob
 
 from database.database import connect_database
 from database.models import Sample
@@ -126,3 +127,85 @@ def get_sample_id(bam):
         sampleid = list(set(sampleid))
         sampleid = "_".join(sampleid)
     return sampleid
+
+
+def fill_database(path, conflicts):
+    folders = set(glob.glob("{}*".format(path), recursive=True))
+    print("Number of folders detected = {}".format(len(folders)))
+    qc_files = glob.glob("{}/QC/CNV/*exomedepth_summary.txt".format(path), recursive=True)
+
+    bam_files = []
+    qc_files = {}
+    for folder in folders:
+        qc_file = glob.glob("{}/QC/CNV/*exomedepth_summary.txt".format(folder), recursive=True)
+        if not qc_file:
+            print("WARNING: CNV QC file missing folder {} Skipping all samples in folder!".format(folder))
+            continue
+
+        if len(qc_file) > 1:
+            print("WARNING: Multiple QC files detected in folder {} Skipping all samples in folder!".format(folder))
+            continue
+
+        if folder not in qc_files:
+            qc_files[folder] = qc_file[0]
+        else:
+            "WARNING: folder {} has been detected multiple times. Skipping all samples in folder!".format(folder)
+
+        for nf_bam in glob.glob("{}/bam_files/*.bam".format(folder), recursive=True): #  Nextflow analysis
+            bam_files.append(nf_bam)
+        for iap_bam in glob.glob("{}/*/mapping/*realigned.bam".format(folder), recursive=True): # IAP analysis
+            bam_files.append(iap_bam)
+
+    print("Number of folders with qc_file detected = {}".format(len(qc_files)))
+    print("Number of BAM files detected = {}".format(len(bam_files)))
+
+
+    # Parse reference set for each sample from CNV QC summary file
+    sample_refset = parse_refset_qc_files(qc_files)
+
+    # Fill reference database for all samples (bam files) and resolve conflict
+    conflicts = add_database_bam(bam_files, sample_refset)
+    for conflict in conflicts:
+        print(conflict)
+
+
+def parse_refset_qc_files(qc_files):
+    sample_refset = {}
+    for qc_file in qc_files:
+        refset_qc = open(qc_files[qc_file], "r").readlines()
+        for line in refset_qc:
+            if "REFSET" in line:
+                splitline = line.rstrip().split(";")
+
+                #  Determine index position of REFSET=
+                header = []
+                for item in splitline:
+                    header.append(item.split("=")[0])
+                refset_index = header.index('REFSET')
+
+                #  Parse used reference set from QC file into dictionary
+                if splitline[0] not in sample_refset:
+                    if "WARNING" in line:
+                        sample_refset[splitline[0]] = [splitline[refset_index].replace("REFSET=", ""), line.rstrip().split("\t")[1:]]
+                    else:
+                        sample_refset[splitline[0]] = [splitline[refset_index].replace("REFSET=", "")]
+
+    return sample_refset
+
+
+def add_database_bam(bam_files, sample_refset):
+    conflicts = []
+    for bam in bam_files:
+        sample_id = get_sample_id(bam)
+        flowcell_id = get_flowcell_id_bam(bam)
+        refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, sample_refset[sample_id][0])
+        if len(sample_refset[sample_id]) > 1:
+            warning = sample_refset[sample_id][1]
+        else:
+            warning = "None"
+
+        if not added:
+            conflicts.append([sample_id, flowcell_id, sample_refset[sample_id], refset_db, warning])
+
+    return conflicts
+
