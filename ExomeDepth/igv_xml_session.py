@@ -239,7 +239,7 @@ def make_family_igv_session(args, igv_extension, vcf_extension):
         )
         write_file.write(make_family_igv_file(
             args, statistic, igv_extension, vcf_extension,
-            familyid, child, father, mother, child_bam, refsets
+            familyid, child, father, mother, os.path.basename(child_bam), refsets
             )
         )
         write_file.close()
