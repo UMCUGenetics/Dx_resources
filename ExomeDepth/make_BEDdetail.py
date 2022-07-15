@@ -3,6 +3,7 @@
 import os
 import subprocess
 import argparse
+import random
 from string import Template
 import statistics
 import vcf
@@ -49,6 +50,12 @@ def slice_vcf(args, merge_dic):
     event_dic = {}
     children = 0
     parents = 0
+
+    # Random shuffle to truly select random samples in subset (function calculate_statistics)
+    # Random shuffle has not influence on general statistics
+    if not args.random_off:
+        random.shuffle(vcf_files)
+
     for vcf_file in vcf_files:
         with open(vcf_file, 'r') as vcf_input_file:
             vcf_reader = vcf.Reader(vcf_input_file)
@@ -188,7 +195,8 @@ def slice_vcf(args, merge_dic):
                             "correlation": [],
                             "deldupratio": [],
                             "totalcalls": [],
-                            "gender": []
+                            "gender": [],
+                            "refset": []
                             },
                         "child": {
                             "count": 0,
@@ -197,7 +205,8 @@ def slice_vcf(args, merge_dic):
                             "correlation": [],
                             "deldupratio": [],
                             "totalcalls": [],
-                            "gender": []
+                            "gender": [],
+                            "refset": []
                             }
                         }
 
@@ -208,7 +217,7 @@ def slice_vcf(args, merge_dic):
                 event_dic[event][sampletype]["deldupratio"].append(deldupratio)
                 event_dic[event][sampletype]["totalcalls"].append(totalcalls)
                 event_dic[event][sampletype]["gender"].append(gender)  # Not used in output at the moment.
-
+                event_dic[event][sampletype]["refset"].append(refset)
     all_event_file.close()
     excluded_samples_file.close()
     return event_dic, children, parents
@@ -230,16 +239,22 @@ def calculate_statistics(data, status):
         'ratio_stdev_{0}'.format(status): "n/a",
         'bfs_{0}'.format(status): "n/a",
         'ratios_{0}'.format(status): "n/a",
+        'refsets_{0}'.format(status): "n/a"
         }
 
     if totalcount >= 1:  # 1 or more element(s) needed to calculate mean
-        """ Select first 20 elements of BF and Ratio. Sort on BF and sort Ratio accordingly. """
-        bfs_subset, ratios_subset = zip(*sorted(zip(data["bf"][0:20], data["ratio"][0:20])))
-        bfs = ' '.join(['%.1f' % elem for elem in bfs_subset])
-        ratios = ' '.join(['%.1f' % elem for elem in ratios_subset])
+        """ Subselection of first 20 BF, Ratio, Refset. Sort on BF and sort Ratio and Refset accordingly. """
+        bfs_subset, ratios_subset, refset_subset = zip(
+            *sorted(zip(data["bf"][0:20], data["ratio"][0:20], data["refset"][0:20]))
+        )
+
+        bfs = "<br>{}</br>".format('</br><br>'.join(['%.1f' % elem for elem in bfs_subset]))
+        ratios = "<br>{}</br>".format('</br><br>'.join(['%.1f' % elem for elem in ratios_subset]))
+        refsets = "<br>{}</br>".format('</br><br>'.join(refset_subset))
 
         stats["bfs_{0}".format(status)] = bfs
         stats["ratios_{0}".format(status)] = ratios
+        stats["refsets_{0}".format(status)] = refsets
 
         stats["correlation_avr_{0}".format(status)] = "%.3f" % (statistics.mean(data['correlation']))
         stats["deldup_avr_{0}".format(status)] = "%.0f" % (statistics.mean(data['deldupratio']))
@@ -253,7 +268,6 @@ def calculate_statistics(data, status):
             stats["totalcalls_stdev_{0}".format(status)] = "%.0f" % (statistics.stdev(data['totalcalls']))
             stats["bf_stdev_{0}".format(status)] = "%.1f" % (statistics.stdev(data['bf']))
             stats["ratio_stdev_{0}".format(status)] = "%.2f" % (statistics.stdev(data['ratio']))
-
     return stats
 
 
@@ -334,6 +348,7 @@ def make_bed_detail(args, event_dic, children, parents):
         substitute_dic = calculate_statistics(event_dic[cnv_event]["child"], 'child')
         """ calculate statistics for parents """
         substitute_dic.update(calculate_statistics(event_dic[cnv_event]["parent"], 'parent'))
+
         template_file = Template(open(settings.html).read())
         new_file = template_file.substitute(substitute_dic)
         event.append("".join(new_file.split("\n")))
@@ -389,6 +404,13 @@ if __name__ == "__main__":
     parser.add_argument(
         '--correlqc', default=settings.correlation, type=float,
         help='Threshold for minimum allowed correlation score (default = 0.98)'
+    )
+    parser.add_argument(
+        '--random_off', action='store_true',
+        help=(
+            'Do not apply randomisation in VCF-file order.'
+            ' This is usefull for validation purposes if same results are needed (default = random selection on'
+        )
     )
     args = parser.parse_args()
 
