@@ -93,8 +93,31 @@ def call_print_all_samples(args):
         print(line)
 
 def call_fill_database(args):
-    database.functions.fill_database(args.path, args.conflicts)
+    # Get QC and BAM files for path
+    qc_files, bam_files = database.functions.get_qc_bam_files(args.path)
 
+    # Parse reference set for each sample from CNV QC summary file
+    sample_refset = database.functions.parse_refset_qc_files(qc_files)
+
+    # Fill reference database for all samples (bam files) and resolve conflict
+    not_added = database.functions.add_database_bam(bam_files, sample_refset)
+
+    # Resolve conflicts
+    #unresolved = database.functions.resolve_conflicts(conflicts, sample_refset)
+
+
+    #for conflict in unresolved:
+    #    print(conflict)
+
+
+
+
+
+    #conflict_write_file = open (args.conflict_file, "w")
+    #for conflict in conflicts:
+    #    conflict_write_file.write(conflict)
+    #    print("jrrp", conflict)
+    #conflict_write_file.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -177,7 +200,7 @@ if __name__ == "__main__":
     )
     parser_fill_database.add_argument('path', help='path of folder to be included')
     parser_fill_database.add_argument(
-        '--conflicts',
+        '--conflict_file',
         default="conflicts.txt", 
         help='output file name containing conflicts that must be resolved manually (default = conflicts.txt)'
     )
