@@ -129,7 +129,7 @@ def get_sample_id(bam):
     return sampleid
 
 
-def fill_database(path, conflicts):
+def get_qc_bam_files(path):
     folders = set(glob.glob("{}*".format(path), recursive=True))
     print("Number of folders detected = {}".format(len(folders)))
     qc_files = glob.glob("{}/QC/CNV/*exomedepth_summary.txt".format(path), recursive=True)
@@ -153,26 +153,21 @@ def fill_database(path, conflicts):
 
         for nf_bam in glob.glob("{}/bam_files/*.bam".format(folder), recursive=True): #  Nextflow analysis
             bam_files.append(nf_bam)
+
         for iap_bam in glob.glob("{}/*/mapping/*realigned.bam".format(folder), recursive=True): # IAP analysis
             bam_files.append(iap_bam)
 
     print("Number of folders with qc_file detected = {}".format(len(qc_files)))
     print("Number of BAM files detected = {}".format(len(bam_files)))
 
-
-    # Parse reference set for each sample from CNV QC summary file
-    sample_refset = parse_refset_qc_files(qc_files)
-
-    # Fill reference database for all samples (bam files) and resolve conflict
-    conflicts = add_database_bam(bam_files, sample_refset)
-    for conflict in conflicts:
-        print(conflict)
-
+    return qc_files, bam_files
+ 
 
 def parse_refset_qc_files(qc_files):
     sample_refset = {}
     for qc_file in qc_files:
         refset_qc = open(qc_files[qc_file], "r").readlines()
+        print(len(refset_qc))
         for line in refset_qc:
             if "REFSET" in line:
                 splitline = line.rstrip().split(";")
@@ -184,28 +179,103 @@ def parse_refset_qc_files(qc_files):
                 refset_index = header.index('REFSET')
 
                 #  Parse used reference set from QC file into dictionary
-                if splitline[0] not in sample_refset:
-                    if "WARNING" in line:
-                        sample_refset[splitline[0]] = [splitline[refset_index].replace("REFSET=", ""), line.rstrip().split("\t")[1:]]
-                    else:
-                        sample_refset[splitline[0]] = [splitline[refset_index].replace("REFSET=", "")]
+                refset_sample = splitline[refset_index].replace("REFSET=", "")
 
+
+                if splitline[0] not in sample_refset:
+                    print(splitline[0])
+                    if "WARNING" in line:
+                        sample_refset[splitline[0]] = [[refset_sample, ",".join(line.rstrip().split("\t")[1:])]]
+                    else:
+                        sample_refset[splitline[0]] = [[refset_sample]]
+                else:
+                    print(sample_refset[splitline[0]], line)
+                    for refset in sample_refset[splitline[0]]:
+                        if refset[0] != refset_sample:  # include refset if different from one(s) in dictionary.
+                            if "WARNING" in line:
+                                sample_refset[splitline[0]].append([[refset_sample], ",".join(line.rstrip().split("\t")[1:])])
+                            else:
+                                sample_refset[splitline[0]].append([refset_sample])
+
+    for item in sample_refset:
+        print("jrrp", item, sample_refset[item], len(sample_refset[item]))
     return sample_refset
 
 
 def add_database_bam(bam_files, sample_refset):
-    conflicts = []
+    not_added = []
     for bam in bam_files:
+        print("Processing bam {}".format(bam))
         sample_id = get_sample_id(bam)
         flowcell_id = get_flowcell_id_bam(bam)
-        refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, sample_refset[sample_id][0])
-        if len(sample_refset[sample_id]) > 1:
-            warning = sample_refset[sample_id][1]
+
+        if len(sample_refset[sample_id])> 1:
+            refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, sample_refset[sample_id][0])
         else:
-            warning = "None"
+            print("jrrp", sample_refset[sample_id])
 
-        if not added:
-            conflicts.append([sample_id, flowcell_id, sample_refset[sample_id], refset_db, warning])
+        if not added:  # Add to conflict if sample has not been loaded in database
+            #warning = "None"
+            #if len(sample_refset[sample_id]) > 1:
+            #    warning = sample_refset[sample_id][1]
+            #conflicts.append([sample_id, flowcell_id, sample_refset[sample_id], refset_db, warning])
+            not_added.append([sample_id, flowcell_id, refset_db, sample_refset[sample_id]])
 
-    return conflicts
+    return not_added
 
+
+def resolve_conflicts(not_added, sample_refset):
+    unresolved = []
+
+    for not_add in not_added:
+        print(not_add, sample_refset[not_add[0]])
+
+
+        #if conflict[3][0] == conflict conflict[4]: 
+        
+
+
+        #for item in conflict[2]:
+        #    print("jrrp",item)
+            
+
+
+        #if sample_refset[conflict[0]]:
+        #    refset_list = []
+        #    for item in sample_refset[conflict[0]]:
+        #        ignore = False
+        #        for warning in item[1]:
+        #            if "DO_NOT_USE_MergeSample" in warning:
+        #                ignore = True
+
+        #else:
+        #    print("Sample {} not detected in qc_files".format(conflict[0]))
+        #    continue
+
+    #for conflict in conflicts:
+    #    if splitline[4] in qc_dic:
+    #        refset_list = []
+    #        for item in qc_dic[splitline[4]]:
+    #            ignore = False
+    #            ignore = 0
+    #            for warning in item[1]:
+    #                if "DO_NOT_USE_MergeSample" in warning:
+    #                    ignore = True
+    #                    ignore += 1
+    #            if ignore == False:
+    #                refset_list.append(item[0])
+    
+    #        if len(refset_list) == 1:  # Only 1 unique refset that is not a merge sample:  this must be the correct refset.
+    #            action = (
+    #                "source /diaggen/software/development/Dx_resources_v700/ExomeDepth/venv/bin/activate &&"
+    #                "/diaggen/software/development/Dx_resources_v700/ExomeDepth/exomedepth_db.py change_refset {} {} {} "
+    #            ).format(splitline[4], splitline[7], refset_list[0])
+    #            os.system(action)
+    #        else:  # Needs manual resolve
+    #            print("Not resolved, check manually {} {} {}".format(splitline[4], splitline[7], refset_list))
+
+    #    else: # In case sampleID is not detected in QC summary
+    #        print("Sample not detected\t{}".format(splitline[4]))
+
+
+    return unresolved
