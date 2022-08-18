@@ -51,8 +51,6 @@ def slice_vcf(args, merge_dic):
     children = 0
     parents = 0
 
-    # Random shuffle to truly select random samples in subset (function calculate_statistics)
-    # Random shuffle has not influence on general statistics
     if not args.random_off:
         random.shuffle(vcf_files)
 
