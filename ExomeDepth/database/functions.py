@@ -132,8 +132,6 @@ def get_sample_id(bam):
 def get_qc_bam_files(path):
     folders = set(glob.glob("{}*".format(path), recursive=True))
     print("Number of folders detected = {}".format(len(folders)))
-    qc_files = glob.glob("{}/QC/CNV/*exomedepth_summary.txt".format(path), recursive=True)
-
     bam_files = []
     qc_files = {}
     for folder in folders:
@@ -166,79 +164,90 @@ def get_qc_bam_files(path):
 def parse_refset_qc_files(qc_files):
     sample_refset = {}
     for qc_file in qc_files:
-        refset_qc = open(qc_files[qc_file], "r").readlines()
-        print(len(refset_qc))
-        for line in refset_qc:
-            if "REFSET" in line:
-                splitline = line.rstrip().split(";")
+        print(qc_files[qc_file])
+        with open(qc_files[qc_file], 'r') as refset_qc:
+            for line in refset_qc.readlines():
+                if "REFSET" in line:
+                    splitline = line.rstrip().split(";")
 
-                #  Determine index position of REFSET=
-                header = []
-                for item in splitline:
-                    header.append(item.split("=")[0])
-                refset_index = header.index('REFSET')
+                    #  Determine index position of "REFSET="
+                    header = []
+                    for item in splitline:
+                        header.append(item.split("=")[0])
+                    refset_index = header.index('REFSET')
 
-                #  Parse used reference set from QC file into dictionary
-                refset_sample = splitline[refset_index].replace("REFSET=", "")
+                    #  Parse used reference set from QC file into dictionary
+                    refset_sample = splitline[refset_index].replace("REFSET=", "")
+                    sample_id = splitline[0] 
 
-
-                if splitline[0] not in sample_refset:
-                    print(splitline[0])
+                    warning = "none"
                     if "WARNING" in line:
-                        sample_refset[splitline[0]] = [[refset_sample, ",".join(line.rstrip().split("\t")[1:])]]
-                    else:
-                        sample_refset[splitline[0]] = [[refset_sample]]
-                else:
-                    print(sample_refset[splitline[0]], line)
-                    for refset in sample_refset[splitline[0]]:
-                        if refset[0] != refset_sample:  # include refset if different from one(s) in dictionary.
-                            if "WARNING" in line:
-                                sample_refset[splitline[0]].append([[refset_sample], ",".join(line.rstrip().split("\t")[1:])])
-                            else:
-                                sample_refset[splitline[0]].append([refset_sample])
+                        warning = ",".join(line.rstrip().split("\t")[1:])
 
-    for item in sample_refset:
-        print("jrrp", item, sample_refset[item], len(sample_refset[item]))
+                    if sample_id not in sample_refset:
+                        sample_refset[sample_id] = {refset_sample : [warning]}
+                    else:
+                        if refset_sample not in sample_refset[sample_id]:
+                            sample_refset[sample_id][refset_sample] = [warning]
+                        else:
+                            sample_refset[sample_id][refset_sample] += [warning]
+                
+    #for item in sample_refset:
+    #    print("jrrp", item, sample_refset[item])
+
     return sample_refset
 
 
 def add_database_bam(bam_files, sample_refset):
-    not_added = []
+    conflicts = {"warning":{}, "present":{}, "multiple":{}}
     for bam in bam_files:
         print("Processing bam {}".format(bam))
         sample_id = get_sample_id(bam)
         flowcell_id = get_flowcell_id_bam(bam)
 
-        if len(sample_refset[sample_id])> 1:
-            refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, sample_refset[sample_id][0])
-        else:
-            print("jrrp", sample_refset[sample_id])
+        if len(sample_refset[sample_id]) == 1:  # Only one refset known for sample in  all parsed samples
+            refset = list(sample_refset[sample_id].keys())[0]
+            if "none" not in sample_refset[sample_id][refset]:  # None needs to be present, otherwise warning only sample 
+                refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset) 
+                if not added and refset_db != refset:  #Already present in db with different refset
+                    conflicts["present"][sample_id] = [flowcell_id, refset_db, refset, sample_refset[sample_id][refset]]
+            else:  # check if warning only sample is already in db
+                refset_db = parse_refset (flowcell_id, sample_id)
+                if not refset_db:
+                    conflicts["warning"][sample_id] = [flowcell_id, refset_db, refset, sample_refset[sample_id][refset]]
+        else: # multiple refset detected
+            non_warning_refsets = []
+            for refset in sample_refset[sample_id]:
+                if "none" in sample_refset[sample_id][refset]:  # Select refsets that have at least one analysis without a warning
+                    non_warning_refsets.append(refset)
+            if len(non_warning_refsets) == 1:  # Only one refset without warning, thus likely the correct one
+                refset = non_warning_refsets[0]
+                refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
+                if not added and refset_db != refset:  #Already present in db with different refset
+                    conflicts["warning"][sample_id] = [flowcell_id, refset_db, refset, sample_refset[sample_id][refset]]
+            else:
+                #conflicts = []
+                #for refset in sample_refset[sample_id]:
+                #    conflicts.append([refset , sample_refset[sample_id][refset]])  
+                #not_added["multiple"][sample_id] = [flowcell_id, "not_present", conflicts]
+                conflicts["multiple"][sample_id] = [flowcell_id, "not_present", non_warning_refsets, "none"]
+                
+    #for item in not_added:
+    #    print(item, not_added[item])
 
-        if not added:  # Add to conflict if sample has not been loaded in database
-            #warning = "None"
-            #if len(sample_refset[sample_id]) > 1:
-            #    warning = sample_refset[sample_id][1]
-            #conflicts.append([sample_id, flowcell_id, sample_refset[sample_id], refset_db, warning])
-            not_added.append([sample_id, flowcell_id, refset_db, sample_refset[sample_id]])
-
-    return not_added
+    return conflicts
 
 
-def resolve_conflicts(not_added, sample_refset):
-    unresolved = []
-
-    for not_add in not_added:
-        print(not_add, sample_refset[not_add[0]])
-
+#def resolve_conflicts(not_added, sample_refset):
+#    unresolved = []
+#
+#    for not_add in not_added:
+#        print(not_add, sample_refset[not_add[0]])
 
         #if conflict[3][0] == conflict conflict[4]: 
         
-
-
         #for item in conflict[2]:
         #    print("jrrp",item)
-            
-
 
         #if sample_refset[conflict[0]]:
         #    refset_list = []
@@ -278,4 +287,4 @@ def resolve_conflicts(not_added, sample_refset):
     #        print("Sample not detected\t{}".format(splitline[4]))
 
 
-    return unresolved
+    #return unresolved
