@@ -97,10 +97,19 @@ def call_fill_database(args):
     qc_files, bam_files = database.functions.get_qc_bam_files(args.path)
 
     # Parse reference set for each sample from CNV QC summary file
+    print("##### started parse_refset_qc_files")
     sample_refset = database.functions.parse_refset_qc_files(qc_files)
+    print("##### finished parse_refset_qc_files")
 
     # Fill reference database for all samples (bam files) and resolve conflict
-    not_added = database.functions.add_database_bam(bam_files, sample_refset)
+    print("##### started add_database_bam")
+    conflicts = database.functions.add_database_bam(bam_files, sample_refset)
+    print("##### started add_database_bam")
+
+    for item in conflicts:
+        for sample in conflicts[item]:
+            print(conflicts[item][sample])
+            print("{}\t{}\t{}\t{}\t{}\t{}".format(item, sample, conflicts[item][sample][0], conflicts[item][sample][1], conflicts[item][sample][2], "\t".join(conflicts[item][sample][3])))
 
     # Resolve conflicts
     #unresolved = database.functions.resolve_conflicts(conflicts, sample_refset)
