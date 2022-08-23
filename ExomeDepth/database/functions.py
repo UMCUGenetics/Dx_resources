@@ -181,7 +181,7 @@ def add_database_bam(bam_files, sample_refset, conflicts):
         sample_id = get_sample_id(bam)
         flowcell_id = get_flowcell_id_bam(bam)
         refset = list(sample_refset[sample_id].keys())[0]
-        if "WARNING" in sample_refset[sample_id]:
+        if "WARNING" in "".join(sample_refset[sample_id][refset]):
             refset_db = parse_refset(flowcell_id, sample_id)
             if not refset_db:
                 conflicts["warning"][sample_id] = [flowcell_id, refset_db, refset, bam]
