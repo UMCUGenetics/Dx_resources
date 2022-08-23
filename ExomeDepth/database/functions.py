@@ -128,6 +128,7 @@ def get_sample_id(bam):
         sampleid = "_".join(sampleid)
     return sampleid
 
+
 def get_folder_sorted(path):
     folders = sorted(set(glob.glob("{}*".format(path), recursive=True)))
     return folders
@@ -140,10 +141,10 @@ def get_qc_bam_files(folder):
         print("WARNING: CNV QC file missing of multiple detected in folder {} Skipping all samples in folder!".format(folder))
         return None, None, True
 
-    for nf_bam in glob.glob("{}/bam_files/*.bam".format(folder), recursive=True): #  Nextflow analysis
+    for nf_bam in glob.glob("{}/bam_files/*.bam".format(folder), recursive=True):  # Nextflow analysis
         bam_files.append(nf_bam)
 
-    for iap_bam in glob.glob("{}/*/mapping/*realigned.bam".format(folder), recursive=True): # IAP analysis
+    for iap_bam in glob.glob("{}/*/mapping/*realigned.bam".format(folder), recursive=True):  # IAP analysis
         bam_files.append(iap_bam)
 
     return qc_file[0], bam_files, False
@@ -167,7 +168,7 @@ def parse_refset_qc_file(qc_file):
                     warning = ",".join(line.rstrip().split("\t")[1:])
 
                 if sample_id not in sample_refset:
-                    sample_refset[sample_id] = {refset_sample : [warning]}
+                    sample_refset[sample_id] = {refset_sample: [warning]}
                 else:
                     print("WARNING, sample {} present twice in same run.".format(sample_id))
                     continue
@@ -181,7 +182,7 @@ def add_database_bam(bam_files, sample_refset, conflicts):
         flowcell_id = get_flowcell_id_bam(bam)
         refset = list(sample_refset[sample_id].keys())[0]
         if "WARNING" in sample_refset[sample_id]:
-            refset_db = parse_refset (flowcell_id, sample_id)
+            refset_db = parse_refset(flowcell_id, sample_id)
             if not refset_db:
                 conflicts["warning"][sample_id] = [flowcell_id, refset_db, refset, bam]
         else:
@@ -189,6 +190,5 @@ def add_database_bam(bam_files, sample_refset, conflicts):
             if not added:
                 if refset_db != refset:
                     conflicts["present"][sample_id] = [flowcell_id, refset_db, refset, bam]
-
 
     return conflicts
