@@ -139,7 +139,7 @@ anno$my.min.norm.prop <- anno$my.min.norm / anno$total.counts
 anno$my.max.norm.prop <- anno$my.max.norm / anno$total.counts
 head(anno)
 chroms <- anno$chromosome
-starts <- anno$start
+starts <- anno$start - 1
 ends <- anno$end
 name <- anno$name
 freq <- anno$freq
