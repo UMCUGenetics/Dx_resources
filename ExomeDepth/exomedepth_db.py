@@ -93,40 +93,21 @@ def call_print_all_samples(args):
         print(line)
 
 def call_fill_database(args):
-    # Get QC and BAM files for path
-    qc_files, bam_files = database.functions.get_qc_bam_files(args.path)
+    folders = database.functions.get_folder_sorted(args.path)
+    conflicts = {"warning":{}, "present":{}}
+    for folder in folders:
+        qc_file, bam_files, warning = database.functions.get_qc_bam_files(folder)
+        if warning:
+            continue
+        sample_refset = database.functions.parse_refset_qc_file(qc_file)
+        conflicts = database.functions.add_database_bam(bam_files, sample_refset, conflicts)
 
-    # Parse reference set for each sample from CNV QC summary file
-    print("##### started parse_refset_qc_files")
-    sample_refset = database.functions.parse_refset_qc_files(qc_files)
-    print("##### finished parse_refset_qc_files")
+    with open(args.conflict_file, "w") as outputfile:
+        outputfile.write("Conflict\tSample\tFlowcellID\tRefsetDB\tRefsetSample\tBAM\n")
+        for conflict in conflicts:
+            for sample in conflicts[conflict]:
+                outputfile.write("{}\t{}\t{}\n".format(conflict, sample, "\t".join(conflicts[conflict][sample])))
 
-    # Fill reference database for all samples (bam files) and resolve conflict
-    print("##### started add_database_bam")
-    conflicts = database.functions.add_database_bam(bam_files, sample_refset)
-    print("##### started add_database_bam")
-
-    for item in conflicts:
-        for sample in conflicts[item]:
-            print(conflicts[item][sample])
-            print("{}\t{}\t{}\t{}\t{}\t{}".format(item, sample, conflicts[item][sample][0], conflicts[item][sample][1], conflicts[item][sample][2], "\t".join(conflicts[item][sample][3])))
-
-    # Resolve conflicts
-    #unresolved = database.functions.resolve_conflicts(conflicts, sample_refset)
-
-
-    #for conflict in unresolved:
-    #    print(conflict)
-
-
-
-
-
-    #conflict_write_file = open (args.conflict_file, "w")
-    #for conflict in conflicts:
-    #    conflict_write_file.write(conflict)
-    #    print("jrrp", conflict)
-    #conflict_write_file.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
