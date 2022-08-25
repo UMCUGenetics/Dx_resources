@@ -181,10 +181,14 @@ def add_database_bam(bam_files, sample_refset, conflicts):
         sample_id = get_sample_id(bam)
         flowcell_id = get_flowcell_id_bam(bam)
         refset = list(sample_refset[sample_id].keys())[0]
-        if "WARNING" in "".join(sample_refset[sample_id][refset]):
+        joined_warning = "".join(sample_refset[sample_id][refset])
+        if "WARNING" in joined_warning:
             refset_db = parse_refset(flowcell_id, sample_id)
             if not refset_db:
-                conflicts["warning"][sample_id] = [flowcell_id, refset_db, refset, bam]
+                if "DO_NOT_USE_MergeSample" in joined_warning:  # Other warning used correct refset in reanalysis
+                    conflicts["warning"][sample_id] = [flowcell_id, "not_in_db", refset, bam]
+                else:
+                    refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
         else:
             refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
             if not added:
