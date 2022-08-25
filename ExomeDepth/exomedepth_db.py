@@ -88,7 +88,7 @@ def call_delete_sample_db(args):
 
 def call_print_all_samples(args):
     sample_list = database.functions.return_all_samples()
-    print("Name\tFlowcell\tRefset\tFamilyID")
+    print("Name\tFlowcell\tRefset")
     for line in sample_list:
         print(line)
 
