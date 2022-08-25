@@ -111,7 +111,9 @@ def make_refset(args):
             output_id = "{0}_{1}_{2}.EDref".format(model, item, args.prefix)
             os.makedirs(folder, exist_ok=True)
             for bam in ref_gender_dic[item]:
-                os.symlink("{bam}* {folder}".format(bam=bam, folder=folder))
+                bam_file = os.path.basename(bam)
+                os.symlink("{}".format(bam), "{}/{}".format(folder, bam_file))
+                os.symlink("{}.bai".format(bam), "{}/{}.bai".format(folder, bam_file))
             mp_list += [[folder, output_id, analysis[model]["target_bed"], analysis[model]["exon_bed"]]]
 
     with Pool(processes=int(args.simjobs)) as pool:
