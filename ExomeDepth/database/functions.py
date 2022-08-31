@@ -191,8 +191,7 @@ def add_database_bam(bam_files, sample_refset, conflicts):
                     refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
         else:
             refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
-            if not added:
-                if refset_db != refset:
-                    conflicts["present"][sample_id] = [flowcell_id, refset_db, refset, bam]
+            if not added and refset_db != refset:
+                conflicts["present"][sample_id] = [flowcell_id, refset_db, refset, bam]
 
     return conflicts
