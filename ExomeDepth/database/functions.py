@@ -137,15 +137,15 @@ def get_folders(path):
 
 def get_qc_bam_files(folder):
     bam_files = []
-    qc_file = glob.glob("{}/QC/CNV/*exomedepth_summary.txt".format(folder), recursive=True)
+    qc_file = glob.glob("{}/QC/CNV/*exomedepth_summary.txt".format(folder))
     if not qc_file or len(qc_file) > 1:
         print("WARNING: CNV QC file missing of multiple detected in folder {} Skipping all samples in folder!".format(folder))
         return None, None, True
 
-    for nf_bam in glob.glob("{}/bam_files/*.bam".format(folder), recursive=True):  # Nextflow analysis
+    for nf_bam in glob.glob("{}/bam_files/*.bam".format(folder)):  # Nextflow analysis
         bam_files.append(nf_bam)
 
-    for iap_bam in glob.glob("{}/*/mapping/*realigned.bam".format(folder), recursive=True):  # IAP analysis
+    for iap_bam in glob.glob("{}/*/mapping/*realigned.bam".format(folder)):  # IAP analysis
         bam_files.append(iap_bam)
 
     return qc_file[0], bam_files, False
