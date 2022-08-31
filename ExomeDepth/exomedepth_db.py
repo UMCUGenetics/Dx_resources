@@ -94,10 +94,10 @@ def print_all_samples(args):
 
 
 def fill_database(args):
-    folders = database.functions.get_folder_sorted(args.path)
+    folders = database.functions.get_folders(args.path)
     conflicts = {"warning": {}, "present": {}}
     for folder in folders:
-        qc_file, bam_files, warning = database.functions.get_qc_bam_files(folder)
+        qc_file, bam_files, warning = database.functions.get_qc_bam_files("{}/{}".format(args.path, folder))
         if warning:
             continue
         sample_refset = database.functions.parse_refset_qc_file(qc_file)
