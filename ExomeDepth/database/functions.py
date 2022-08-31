@@ -159,9 +159,8 @@ def parse_refset_qc_file(qc_file):
                 splitline = line.rstrip().split(";")
                 sample_id = splitline[0]
                 warning = ""
-                header = []
-                for item in splitline:
-                    header.append(item.split("=")[0])
+                
+                header = [item.split("=")[0] for item in splitline]
                 refset_index = header.index('REFSET')
                 refset_sample = splitline[refset_index].replace("REFSET=", "")
 
