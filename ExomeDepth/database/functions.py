@@ -2,6 +2,7 @@
 
 import pysam
 import glob
+import os
 
 from database.database import connect_database
 from database.models import Sample
@@ -129,8 +130,8 @@ def get_sample_id(bam):
     return sampleid
 
 
-def get_folder_sorted(path):
-    folders = sorted(set(glob.glob("{}*".format(path), recursive=True)))
+def get_folders(path):
+    folders = sorted([x[1] for x in os.walk(path)][0])
     return folders
 
 
