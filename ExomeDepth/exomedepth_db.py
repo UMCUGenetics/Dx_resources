@@ -103,11 +103,10 @@ def fill_database(args):
         sample_refset = database.functions.parse_refset_qc_file(qc_file)
         conflicts = database.functions.add_database_bam(bam_files, sample_refset, conflicts)
 
-    with open(args.conflict_file, "w") as outputfile:
-        outputfile.write("Conflict\tSample\tFlowcellID\tRefsetDB\tRefsetSample\tBAM\n")
-        for conflict in conflicts:
-            for sample in conflicts[conflict]:
-                outputfile.write("{}\t{}\t{}\n".format(conflict, sample, "\t".join(conflicts[conflict][sample])))
+    args.conflict_file.write("Conflict\tSample\tFlowcellID\tRefsetDB\tRefsetSample\tBAM\n")
+    for conflict in conflicts:
+        for sample in conflicts[conflict]:
+            args.conflict_file.write("{}\t{}\t{}\n".format(conflict, sample, "\t".join(conflicts[conflict][sample])))
 
 
 if __name__ == "__main__":
@@ -193,8 +192,10 @@ if __name__ == "__main__":
     parser_fill_database.add_argument(
         '--conflict_file',
         default="conflicts.txt",
+        type=argparse.FileType('w', encoding='UTF-8'),
         help='output file name containing conflicts that must be resolved manually (default = conflicts.txt)'
     )
+
     parser_fill_database.set_defaults(func=fill_database)
 
     args = parser.parse_args()
