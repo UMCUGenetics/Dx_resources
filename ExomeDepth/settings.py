@@ -30,7 +30,7 @@ reffile_repo = "/hpc/diaggen/software/production/Dx_tracks"
 reffile_dir = "{}/ExomeDepth".format(reffile_repo)
 
 # Reference set
-refset = "RS-SSv7-2022-1"               # Annotation for HC and UMCU refsets
+refset = "RS-SSv7-2022-2"               # Annotation for HC and UMCU refsets
 callingmodel_HC = "HC_SSv7-2021-1"      # High Confident track annotation
 callingmodel_UMCU = "UMCU"              # UMCU track annotation
 
@@ -54,8 +54,8 @@ probability = {"HC": 0.0001, "UMCU": 0.5}
 
 # General settings
 ratio_threshold_del = 0.25
-par1 = [60001,2699520]
-par2 = [154931044,155260560]
+par1 = [60001, 2699520]
+par2 = [154931044, 155260560]
 locus_y = 'Y:2649520-59034050'
 locus_x = 'X:2699520-154931044'
 ratio_y = [0.02, 0.12]
