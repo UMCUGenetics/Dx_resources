@@ -131,7 +131,7 @@ def get_sample_id(bam):
 
 
 def get_folders(path):
-    folders = sorted([x[1] for x in os.walk(path)][0])
+    folders = sorted([file for file in os.listdir(path) if os.path.isdir(file)])
     return folders
 
 
