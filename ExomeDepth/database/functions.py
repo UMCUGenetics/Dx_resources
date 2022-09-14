@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 
 import pysam
+import glob
+import os
 
 from database.database import connect_database
 from database.models import Sample
@@ -126,3 +128,70 @@ def get_sample_id(bam):
         sampleid = list(set(sampleid))
         sampleid = "_".join(sampleid)
     return sampleid
+
+
+def get_folders(path):
+    folders = sorted([file for file in os.listdir(path) if os.path.isdir(os.path.join(path, file))])
+    return folders
+
+
+def get_qc_bam_files(folder):
+    bam_files = []
+    qc_file = glob.glob(f'{folder}/QC/CNV/*exomedepth_summary.txt')
+    if not qc_file or len(qc_file) > 1:
+        print("WARNING: CNV QC file missing of multiple detected in folder {} Skipping all samples in folder!".format(folder))
+        return None, None, True
+
+    for nf_bam in glob.glob(f'{folder}/bam_files/*.bam'):  # Nextflow analysis
+        bam_files.append(nf_bam)
+
+    for iap_bam in glob.glob(f'{folder}/*/mapping/*realigned.bam'):  # IAP analysis
+        bam_files.append(iap_bam)
+
+    return qc_file[0], bam_files, False
+
+
+def parse_refset_qc_file(qc_file):
+    sample_refset = {}
+    with open(qc_file, 'r') as refset_qc:
+        for line in refset_qc.readlines():
+            if "REFSET" in line:
+                splitline = line.rstrip().split(";")
+                sample_id = splitline[0]
+                warning = ""
+
+                header = [item.split("=")[0] for item in splitline]
+                refset_index = header.index('REFSET')
+                refset_sample = splitline[refset_index].replace("REFSET=", "")
+
+                if "WARNING" in line:
+                    warning = ",".join(line.rstrip().split("\t")[1:])
+
+                if sample_id not in sample_refset:
+                    sample_refset[sample_id] = {refset_sample: [warning]}
+                else:
+                    print("WARNING, sample {} present twice in same run.".format(sample_id))
+                    continue
+
+    return sample_refset
+
+
+def add_database_bam(bam_files, sample_refset, conflicts):
+    for bam in bam_files:
+        sample_id = get_sample_id(bam)
+        flowcell_id = get_flowcell_id_bam(bam)
+        refset = list(sample_refset[sample_id].keys())[0]
+        joined_warning = "".join(sample_refset[sample_id][refset])
+        if "WARNING" in joined_warning:
+            refset_db = parse_refset(flowcell_id, sample_id)
+            if not refset_db:
+                if "DO_NOT_USE_MergeSample" in joined_warning:  # Other warning used correct refset in reanalysis
+                    conflicts["warning"][sample_id] = [flowcell_id, "not_in_db", refset, bam]
+                else:
+                    refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
+        else:
+            refset_db, added = add_sample_flowcell_to_db(sample_id, flowcell_id, refset)
+            if not added and refset_db != refset:
+                conflicts["present"][sample_id] = [flowcell_id, refset_db, refset, bam]
+
+    return conflicts
