@@ -379,7 +379,7 @@ if __name__ == "__main__":
     parser.add_argument('outputfile', help='output prefix filename')
     parser.add_argument(
         'merge_samples',
-        help='Path to file including all merge samples (tab delimited file with column 1 = sampleID, 2 = run/projectID'
+        help='Path to file including all merge samples (tab delimited file with column 1 = sampleID, 2 = run/projectID)'
     )
     parser.add_argument(
         '--totalcallsqc_min', default=settings.number_calls[0], type=int,
@@ -405,7 +405,7 @@ if __name__ == "__main__":
         '--random_off', action='store_true',
         help=(
             'Do not apply randomisation in VCF-file order.'
-            ' This is usefull for validation purposes if same results are needed (default = random selection on'
+            ' This is usefull for validation purposes if same results are needed (default = random selection on)'
         )
     )
     args = parser.parse_args()
