@@ -146,9 +146,9 @@ if __name__ == "__main__":
                 print((
                     "WARNING: {sample} chromosome Y CNV detected (region = {region}) in female, "
                     "calc_copynumber set to 0 (deletion call) or 1 (duplication call)"
-                    ).format(
-                        sample=str(args.sampleid),
-                        region="_".join(str(x) for x in region)
+                ).format(
+                    sample=str(args.sampleid),
+                    region="_".join(str(x) for x in region)
                 ))
 
                 # CNV CN is set to 1, could also be >1 (but makes no biological sense)
@@ -165,11 +165,11 @@ if __name__ == "__main__":
                     print((
                         "WARNING: {sample} CNV copynumber estimation {copynumber} "
                         "does not match CNV type {rowtype} for region {region}"
-                        ).format(
-                            sample=str(args.sampleid),
-                            copynumber=str(float(calc_copynumber)),
-                            rowtype=row_type,
-                            region="_".join(str(x) for x in region)
+                    ).format(
+                        sample=str(args.sampleid),
+                        copynumber=str(float(calc_copynumber)),
+                        rowtype=row_type,
+                        region="_".join(str(x) for x in region)
                     ))
                     """Note: no correction here. should be bugfix in the ExomeDepth code"""
 
@@ -178,9 +178,9 @@ if __name__ == "__main__":
                     print((
                         "WARNING: {sample} true copynumber for region {region} is same as normal "
                         "CN > set to -1 for deletion, +1 for duplication"
-                        ).format(
-                            sample=str(args.sampleid),
-                            region="_".join(str(x) for x in region)
+                    ).format(
+                        sample=str(args.sampleid),
+                        region="_".join(str(x) for x in region)
                     ))
                     if row_type == "deletion":  # If deletion correct copynumber with -1
                         copynumber -= 1

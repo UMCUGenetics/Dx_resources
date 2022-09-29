@@ -36,16 +36,14 @@ def get_gender(bam):
     else:
         bam_base = os.path.basename(bam)
         if re.search('[C|P]M', bam_base):
-            print(
+            print((
                 "Sample {0} has a unknown gender based on chrX reads, but resolved as male based on sampleID"
-            ).format(bam_base)
+            ).format(bam_base))
             return "male"
         elif re.search('[C|P]F', os.path.basename(bam)):
             print((
                 "Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID"
-            ).format(
-                bam_base
-            ))
+            ).format(bam_base))
             return "female"
         else:
             sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam_base))
