@@ -71,6 +71,12 @@ chromosome_order = {
     '16': 15, '17': 16, '18': 17, '19': 18, '20': 19, '21': 20,
     '22': 21, 'X': 22, 'Y': 23, 'MT': 24
 }
+force_gender = "male"
+
+# Clarity settings
+monster_udp = 'Dx Monsternummer'
+geslacht_udp = 'Dx Geslacht'
+gender_translation = {"vrouw":"female", "man":"male", "onbekend": "unknown"}
 
 # IGV session settings:
 template_single_xml = str(cwd)+"/templates/igv_session_template_single.xml"
@@ -93,3 +99,4 @@ reanalysis_dic = {
 
 # Database settings
 database = 'sqlite:////hpc/diaggen/data/databases/ExomeDepth_db/exomedepth_db.sqlite'
+
