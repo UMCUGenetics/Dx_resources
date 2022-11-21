@@ -1,13 +1,13 @@
 #! /usr/bin/env python3
 
 import os
-import sys
 import subprocess
 import re
 import argparse
 import glob
 from multiprocessing import Pool
 import pysam
+from genologics.lims import Lims
 
 import database.functions
 import utils.utils
@@ -23,30 +23,41 @@ def valid_read(read):
         return False
 
 
-def get_gender(bam):
+def get_gender_clarity(bam):
+    """Get sample gender from Clarity LIMS."""
+    sample_id = re.split("CM|CF|PF|PM|CO", database.functions.get_sample_id(bam))[-1]
+    gender_translation = settings.gender_translation
+    lims_client = Lims(settings.clarity_baseuri, settings.clarity_username, settings.clarity_password)
+    samples = lims_client.get_samples(udf={settings.monster_udf: sample_id})
+    gender_list = []
+    for sample in samples:
+        gender_list.append(gender_translation[sample.udf[settings.geslacht_udf].lower()])
+    if len(set(gender_list)) == 1:
+        return list(set(gender_list))[0]
+    else:
+        return "unkown"
+
+
+def get_gender(bam, force=False):
     """Determine chrX ratio based on read count in bam (excl PAR)."""
     with pysam.AlignmentFile(bam, "rb") as workfile:
         xreads = float(sum([valid_read(read) for read in workfile.fetch(region=settings.locus_x)]))
         total = float(workfile.mapped)
     xratio = float("%.4f" % ((xreads / total) * 100))
+    qc_status_gender = ''
     if xratio >= float(settings.ratio_x[1]):
-        return "female"
+        return "female", qc_status_gender
     elif xratio <= float(settings.ratio_x[0]):
-        return "male"
+        return "male", qc_status_gender
     else:
-        bam_base = os.path.basename(bam)
-        if re.search('[C|P]M', bam_base):
-            print((
-                "Sample {0} has a unknown gender based on chrX reads, but resolved as male based on sampleID"
-            ).format(bam_base))
-            return "male"
-        elif re.search('[C|P]F', os.path.basename(bam)):
-            print((
-                "Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID"
-            ).format(bam_base))
-            return "female"
-        else:
-            sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam_base))
+        # Query Clarity for gender
+        gender = get_gender_clarity(bam)
+        if gender == "unknown" and force is True:
+            gender = settings.force_gender
+            qc_status_gender = "WARNING:GenderForcedTo{}".format(settings.force_gender)
+        if force is True:
+            return gender, qc_status_gender
+        return gender
 
 
 def multiprocess_ref(mp_list):
@@ -225,10 +236,11 @@ def call_cnv(args):
     os.makedirs(output_folder, exist_ok=True)
 
     """Determine gender"""
+    qc_status_gender = ''
     if args.refset_gender:  # Used gender if used as input parameter.
         gender = args.refset_gender
-    else:  # Otherwise determine based on chrX count
-        gender = get_gender(bam)
+    else:  # Otherwise determine based on chrX, Clarity LIMS, or force
+        gender, qc_status_gender = get_gender(bam, force=True)
 
     if args.refset:  # Do not query database to query refset
         refset = args.refset
@@ -285,7 +297,7 @@ def call_cnv(args):
         stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
         correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
 
-        qc_status = ""
+        qc_status = qc_status_gender
         if args.qc_stats:
             if(correlation < float(settings.correlation) or
                number_calls < int(settings.number_calls[0]) or
