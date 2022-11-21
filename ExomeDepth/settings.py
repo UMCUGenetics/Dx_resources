@@ -3,6 +3,11 @@
 # Location of repository
 cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth"
 
+#Clarity settings
+clarity_baseuri = ''
+clarity_username = ''
+clarity_password = ''
+
 # R script for RefSet and CNV calling
 call_cnv_r = str(cwd)+"/Rscripts/Exomedepth_callCNVs.R"
 create_refset_r = str(cwd)+"/Rscripts/Exomedepth_create_Ref_set.R"
