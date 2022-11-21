@@ -3,7 +3,7 @@
 # Location of repository
 cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth"
 
-#Clarity settings
+# Clarity settings
 clarity_baseuri = ''
 clarity_username = ''
 clarity_password = ''
@@ -81,7 +81,7 @@ force_gender = "male"
 # Clarity settings
 monster_udp = 'Dx Monsternummer'
 geslacht_udp = 'Dx Geslacht'
-gender_translation = {"vrouw":"female", "man":"male", "onbekend": "unknown"}
+gender_translation = {"vrouw": "female", "man": "male", "onbekend": "unknown"}
 
 # IGV session settings:
 template_single_xml = str(cwd)+"/templates/igv_session_template_single.xml"
@@ -104,4 +104,3 @@ reanalysis_dic = {
 
 # Database settings
 database = 'sqlite:////hpc/diaggen/data/databases/ExomeDepth_db/exomedepth_db.sqlite'
-
