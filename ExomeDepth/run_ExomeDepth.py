@@ -22,10 +22,20 @@ def valid_read(read):
     else:
         return False
 
+def get_sampleid(bam):
+    bam_sample_id = database.functions.get_sample_id(bam)
+    sample_id = split_sampleid(bam_sample_id)
+    return sample_id
+
+
+def split_sampleid(sample_id):
+    sample_id = re.split("CM|CF|PF|PM|CO", sample_id)[-1]
+    return sample_id
+
 
 def get_gender_clarity(bam):
     """Get sample gender from Clarity LIMS."""
-    sample_id = re.split("CM|CF|PF|PM|CO", database.functions.get_sample_id(bam))[-1]
+    sample_id = get_sampleid(bam)
     gender_translation = settings.gender_translation
     lims_client = Lims(settings.clarity_baseuri, settings.clarity_username, settings.clarity_password)
     samples = lims_client.get_samples(udf={settings.monster_udf: sample_id})
