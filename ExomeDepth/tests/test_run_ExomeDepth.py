@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import sys
-import pytest
-import re
+import os
 
-sys.path.append("../../ExomeDepth")
-from run_ExomeDepth import split_sampleid
+import pytest
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../ExomeDepth'))
+from run_ExomeDepth import get_sampleid
 
 
 @pytest.mark.parametrize("sample_id, expected", [
@@ -16,8 +17,6 @@ from run_ExomeDepth import split_sampleid
     ("U175754CC2022D12878", "U175754CC2022D12878"),
     ("2022D12878", "2022D12878"),
 ])
-
-
 def test_split_sampleid(sample_id, expected):
-    sample_id = split_sampleid(sample_id) 
+    sample_id = get_sampleid(sample_id)
     assert sample_id == expected
