@@ -79,8 +79,8 @@ chromosome_order = {
 force_gender = "male"
 
 # Clarity settings
-monster_udp = 'Dx Monsternummer'
-geslacht_udp = 'Dx Geslacht'
+monster_udf = 'Dx Monsternummer'
+geslacht_udf = 'Dx Geslacht'
 gender_translation = {"vrouw": "female", "man": "male", "onbekend": "unknown"}
 
 # IGV session settings:
