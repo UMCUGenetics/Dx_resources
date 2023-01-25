@@ -38,7 +38,7 @@ def get_gender_clarity(bam):
     for sample in samples:
         gender_list.append(gender_translation[sample.udf[settings.geslacht_udf].lower()])
     if len(set(gender_list)) == 1:
-        return list(set(gender_list))[0]
+        return gender_list[0]
     else:
         return "unkown"
 
