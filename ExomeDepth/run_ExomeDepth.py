@@ -59,7 +59,7 @@ def get_gender(bam, force=False):
         gender = get_gender_clarity(bam)
         if gender == "unknown" and force is True:
             gender = settings.force_gender
-            qc_status_gender = "WARNING:GenderForcedTo{}".format(settings.force_gender)
+            qc_status_gender = f"WARNING:GenderForcedTo{settings.force_gender}"
         if force is True:
             return gender, qc_status_gender
         return gender
