@@ -238,6 +238,8 @@ if __name__ == "__main__":
         action = "python {0} single_igv {1} {2} {3} {4} --bam {5}".format(
             settings.igv_xml, args.outputfolder, item[0], args.runid, item[2], item[1]
         )
+        if item[0] in suffix_dic:
+            action = "{action} --vcf_filename_suffix {suffix}".format(action=action, suffix=suffix_dic[item[0]])
         os.system(action)
 
     """ Make family IGV session(s)"""
@@ -247,4 +249,6 @@ if __name__ == "__main__":
             action = "python {0} family_igv {1} {2} {3} {4} {5}".format(
                 settings.igv_xml, args.outputfolder, args.pedfile, args.runid, item[0], " ".join(bams)
             )
+            if item[0] in suffix_dic:
+                action = "{action} --vcf_filename_suffix {suffix}".format(action=action, suffix=suffix_dic[item[0]])
             os.system(action)
