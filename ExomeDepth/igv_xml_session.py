@@ -74,7 +74,7 @@ def make_family_igv_file(args, statistic, igv_extension, vcf_extension, familyid
     """ Data files XML variables """
     if args.pipeline == "iap":  # For analysis based on IAP
         bam_child_path = "../{0}/mapping/{1}".format(child, child_bam)  # BAM path
-        snv_vcf_child = "../single_sample_vcf/{0}.filtered_variuants.vcf".format(child)  # SNV VCF file child
+        snv_vcf_child = "../single_sample_vcf/{0}.filtered_variants.vcf".format(child)  # SNV VCF file child
         snv_vcf_father = "../single_sample_vcf/{0}.filtered_variants.vcf".format(father)  # SNV VCF file father
         snv_vcf_mother = "../single_sample_vcf/{0}.filtered_variants.vcf".format(mother)  # SNV VCF file mother
 
