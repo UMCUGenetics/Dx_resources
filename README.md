@@ -1,8 +1,6 @@
 # Repository with standalone wrapper scripts
 
 
-**cleanup_Dx scripts**: used to perform additional (cleanup)steps within the IAP output folders for EXOME, GENOME, and MIP folder.
-
 
 **get_stats_from_flagstat.pl**:	is used within the cleanup_Dx scripts (EXOME and GENOME) to calculate flagstats statistics.
 
@@ -10,7 +8,7 @@
 folder **ExomeDepth**:	contains the wrapper scripts for Exomedepth CNV analysis\
 			see ExomeDepth/README.md for more information
 
-
+folder **ParseCNVQC**: contains script to make summary of CNV QC's and send mail. Note: this tool is not for diagnostic use!
 
 **/GIAB_rtgtools/compare_vcf_to_giab_truth.pl**: is used for GIAB comparisons: see GENOOM160
 
