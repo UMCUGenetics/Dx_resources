@@ -46,11 +46,17 @@ def make_mail(today, daysago, attachment, run_status):
     subject = 'CNV QC summary {}'.format(today)
     text = '<html><body><p> CNV QC summary {} from the last {} days'.format(today, daysago)
     text = '{}<br><br>Likely complete runs:'.format(text)
-    for run in run_status["full"]:
-        text = '{}<br>&nbsp;&nbsp;&nbsp;&nbsp;{}'.format(text, run)
+    if run_status["full"]:
+        for run in run_status["full"]:
+            text = '{}<br>&nbsp;&nbsp;&nbsp;&nbsp;{}'.format(text, run)
+    else:
+        text = '{}<br>&nbsp;&nbsp;&nbsp;&nbsp;none'.format(text)
     text = '{}<br><br>Likely partial runs:'.format(text)
-    for run in run_status["partial"]:
-        text = '{}<br>&nbsp;&nbsp;&nbsp;&nbsp;{}'.format(text, run)
+    if run_status["partial"]:
+        for run in run_status["partial"]:
+            text = '{}<br>&nbsp;&nbsp;&nbsp;&nbsp;{}'.format(text, run)
+    else:
+        text = '{}<br>&nbsp;&nbsp;&nbsp;&nbsp;none'.format(text)
     text = '{}<br><br><b>This analysis is not for diagnostic use.</b>'.format(text)
     text = '{}</p></body></html>'.format(text)
     send_email(settings.email_from, settings.email_to, subject, text, attachment)
@@ -122,7 +128,7 @@ if __name__ == "__main__":
                 sample_section = False
                 for line in samplesheet:
                     if sample_section:
-                        if "SSV7" in line.upper() or "NICU" in line.upper():
+                        if "SSV7" in line.upper() or "NICU" in line.upper():  # Only select SSv7 and NICU samples
                             number_samples_run += 1
                     if "Sample_ID" not in line:
                         continue
@@ -210,15 +216,15 @@ if __name__ == "__main__":
 
             failed_perc = float("%.2f" % ((total_failed/total_assesed) * 100))
             passed_perc = 100 - failed_perc
-            outputfile.write("{}\t{}\t{}\t{}\t{}".format(
-                folder.split("/")[-1], failed_perc, passed_perc, int(total_assesed), int(total_run))
+            outputfile.write("{}\t{}\t{}\t{}\t{}").format(
+                folder.split("/")[-1], failed_perc, passed_perc, int(total_assesed), int(total_run)
             )
             if total_run > 0:
                 if (total_assesed/total_run) < args.threshold:
                     outputfile.write(
-                        "\tWARNING: number of samples within run is less than {}% of total in samplesheet.".format(
-                            args.threshold * 100
-                        )
+                        "\tWARNING: number of samples within run is less than {}% of total in samplesheet."
+                    ).format(
+                        args.threshold * 100
                     )
                     run_status["partial"].append(folder.split("/")[-1])
                 else:
