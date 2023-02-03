@@ -232,7 +232,7 @@ if __name__ == "__main__":
         for warning in warnings:
             outputfile.write("WARNING:{}\n".format(warning))
 
-    if args.windows:
+    if args.windows_nl:
         output_windows = "{}/CNV_QC_summary_{}_win.tsv".format(args.outputfolder, today)
         os.system("sed 's/\./,/g' {} > {}".format(output, output_windows))
         make_mail(today, args.daysago, output_windows, run_status)
