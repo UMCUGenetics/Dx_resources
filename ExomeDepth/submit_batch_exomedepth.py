@@ -81,7 +81,7 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     )
 
     ed_igv = "{output}/igv_tracks/HC_{refset}_{sampleid}_{run}".format(
-        output=args.outputfolder, 
+        output=args.outputfolder,
         refset=refset,
         sampleid=sampleid,
         run=run
@@ -89,8 +89,8 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
 
     if sampleid in suffix_dic:
         hc_cnv_vcf = "{}_{}.vcf".format(hc_cnv_vcf, suffix_dic[sampleid])
-        ed_igv = "{}_{}_ref.igv".format(ed_igv, suffix_dic[sampleid]) 
-    else:  
+        ed_igv = "{}_{}_ref.igv".format(ed_igv, suffix_dic[sampleid])
+    else:
         hc_cnv_vcf = "{}.vcf".format(hc_cnv_vcf)
         ed_igv = "{}_ref.igv".format(ed_igv)
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     for baf_file in glob.glob("{}/baf/*.igv".format(args.inputfolder), recursive=True):
         baf_files.append(os.path.basename(baf_file))
 
-    upd_files =[]
+    upd_files = []
     for upd_file in glob.glob("{}/upd/*.igv".format(args.inputfolder), recursive=True):
         upd_files.append(os.path.basename(upd_file))
 
@@ -266,7 +266,7 @@ if __name__ == "__main__":
         cnv_vcf_files.append(os.path.basename(item[3]))
         igv_files.append(os.path.basename(item[4]))
 
-    bam_files = [] 
+    bam_files = []
     for bam in bams:
         bam_files.append(os.path.basename(bam))
 
@@ -286,7 +286,7 @@ if __name__ == "__main__":
         " ".join(upd_files),
         " ".join(baf_files)
     )
- 
+
     if args.reanalysis:
         "{action} --reanalysis {reanalysis}".format(action=action, reanalysis=args.reanalysis)
 
