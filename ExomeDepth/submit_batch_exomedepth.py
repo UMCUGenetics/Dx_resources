@@ -136,15 +136,15 @@ if __name__ == "__main__":
         sys.exit("no bam files detected")
 
     snv_vcf_files = []
-    for snv_vcf_file in glob.glob("{}/single_sample_vcf/*.vcf".format(args.inputfolder), recursive=True):
+    for snv_vcf_file in glob.glob(f"{args.inputfolder}/single_sample_vcf/*.vcf", recursive=True):
         snv_vcf_files.append(os.path.basename(snv_vcf_file))
 
     baf_files = []
-    for baf_file in glob.glob("{}/baf/*.igv".format(args.inputfolder), recursive=True):
+    for baf_file in glob.glob(f"{args.inputfolder}/baf/*.igv", recursive=True):
         baf_files.append(os.path.basename(baf_file))
 
     upd_files = []
-    for upd_file in glob.glob("{}/upd/*.igv".format(args.inputfolder), recursive=True):
+    for upd_file in glob.glob(f"{args.inputfolder}/upd/*.igv", recursive=True):
         upd_files.append(os.path.basename(upd_file))
 
     if any(len(lst) != len(bams) for lst in [snv_vcf_files, baf_files]):
