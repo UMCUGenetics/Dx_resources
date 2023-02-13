@@ -73,20 +73,8 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     os.system("mv {output}/{sampleid}/UMCU*.vcf {output}/UMCU/".format(sampleid=sampleid, output=args.outputfolder))
     os.system("rm -r {output}/{sample}".format(output=args.outputfolder, sample=sampleid))
 
-    hc_cnv_vcf = "{output}/HC/HC_{refset}_{sampleid}_{run}_exome_calls".format(
-        output=args.outputfolder,
-        refset=refset,
-        sampleid=sampleid,
-        run=run,
-    )
-
-    ed_igv = "{output}/igv_tracks/HC_{refset}_{sampleid}_{run}".format(
-        output=args.outputfolder,
-        refset=refset,
-        sampleid=sampleid,
-        run=run
-    )
-
+    hc_cnv_vcf = f"{args.outputfolder}/HC/HC_{refset}_{sampleid}_{run}_exome_calls"
+    ed_igv = f"{args.outputfolder}/igv_tracks/HC_{refset}_{sampleid}_{run}"
     if sampleid in suffix_dic:
         hc_cnv_vcf = "{}_{}.vcf".format(hc_cnv_vcf, suffix_dic[sampleid])
         ed_igv = "{}_{}_ref.igv".format(ed_igv, suffix_dic[sampleid])
