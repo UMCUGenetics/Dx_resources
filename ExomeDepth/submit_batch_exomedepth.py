@@ -79,8 +79,8 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
         hc_cnv_vcf = "{}_{}.vcf".format(hc_cnv_vcf, suffix_dic[sampleid])
         ed_igv = "{}_{}_ref.igv".format(ed_igv, suffix_dic[sampleid])
     else:
-        hc_cnv_vcf = "{}.vcf".format(hc_cnv_vcf)
-        ed_igv = "{}_ref.igv".format(ed_igv)
+        hc_cnv_vcf = f"{hc_cnv_vcf}.vcf"
+        ed_igv = f"{ed_igv}_ref.igv"
 
     return [sampleid, bamfile, refset, hc_cnv_vcf, ed_igv]
 
