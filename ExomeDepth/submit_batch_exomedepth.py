@@ -244,7 +244,7 @@ if __name__ == "__main__":
             settings.igv_xml, args.outputfolder, item[0], args.runid, item[2], item[1]
         )
         if item[0] in suffix_dic:
-            action = "{action} --reanalysis {reanalysis}".format(action=action, reanalysis=args.reanalysis)
+            action = f"{action} --reanalysis {args.reanalysis}"
         os.system(action)
 
     """ Make family IGV session(s)"""
@@ -276,6 +276,6 @@ if __name__ == "__main__":
     )
 
     if args.reanalysis:
-        "{action} --reanalysis {reanalysis}".format(action=action, reanalysis=args.reanalysis)
+        f"{action} --reanalysis {args.reanalysis}"
 
     os.system(action)
