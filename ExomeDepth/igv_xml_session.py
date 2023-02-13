@@ -197,7 +197,7 @@ def make_family_igv_session(args):
             if child in "".join(args.bam_files):  # Makes sure sample in within analysis, not only in PED file
                 for statistic in settings.igv_settings:
                     session = "FAM{0}_{1}_{2}_{3}_igv.xml".format(familyid, child, statistic, args.runid)
-                    with open("{0}/{1}".format(args.output, session), "w") as family_file:
+                    with open(f"{args.output}/{session}", "w") as family_file:
                         family_file.write(make_family_igv_file(args, familyid, child, father, mother, statistic))
 
 
