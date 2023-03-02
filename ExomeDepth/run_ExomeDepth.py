@@ -40,7 +40,7 @@ def get_gender_clarity(bam):
     if len(set(gender_list)) == 1:
         return gender_list[0]
     else:
-        return "unkown"
+        return "unknown"
 
 
 def get_gender(bam, force=False):
