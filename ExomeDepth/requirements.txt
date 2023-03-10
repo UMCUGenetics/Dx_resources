@@ -7,3 +7,5 @@ PyVCF==0.6.8
 six==1.14.0
 SQLAlchemy==1.4.17
 SQLAlchemy-Utils==0.37.6
+genologics==0.3.20
+pytest==7.0.1

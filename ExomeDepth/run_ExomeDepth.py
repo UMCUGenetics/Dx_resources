@@ -1,13 +1,13 @@
 #! /usr/bin/env python3
 
 import os
-import sys
 import subprocess
 import re
 import argparse
 import glob
 from multiprocessing import Pool
 import pysam
+from genologics.lims import Lims
 
 import database.functions
 import utils.utils
@@ -23,30 +23,46 @@ def valid_read(read):
         return False
 
 
-def get_gender(bam):
+def get_sampleid(sample_id):
+    sample_id = re.split("CM|CF|PF|PM|CO", sample_id)[-1]
+    return sample_id
+
+
+def get_gender_clarity(bam):
+    """Get sample gender from Clarity LIMS."""
+    sample_id = get_sampleid(database.functions.get_sample_id(bam))
+    gender_translation = settings.gender_translation
+    lims_client = Lims(settings.clarity_baseuri, settings.clarity_username, settings.clarity_password)
+    samples = lims_client.get_samples(udf={settings.monster_udf: sample_id})
+    gender_list = []
+    for sample in samples:
+        gender_list.append(gender_translation[sample.udf[settings.geslacht_udf].lower()])
+    if len(set(gender_list)) == 1:
+        return gender_list[0]
+    else:
+        return "unknown"
+
+
+def get_gender(bam, force=False):
     """Determine chrX ratio based on read count in bam (excl PAR)."""
     with pysam.AlignmentFile(bam, "rb") as workfile:
         xreads = float(sum([valid_read(read) for read in workfile.fetch(region=settings.locus_x)]))
         total = float(workfile.mapped)
     xratio = float("%.4f" % ((xreads / total) * 100))
+    qc_status_gender = ""
     if xratio >= float(settings.ratio_x[1]):
-        return "female"
+        return "female", qc_status_gender
     elif xratio <= float(settings.ratio_x[0]):
-        return "male"
+        return "male", qc_status_gender
     else:
-        bam_base = os.path.basename(bam)
-        if re.search('[C|P]M', bam_base):
-            print((
-                "Sample {0} has a unknown gender based on chrX reads, but resolved as male based on sampleID"
-            ).format(bam_base))
-            return "male"
-        elif re.search('[C|P]F', os.path.basename(bam)):
-            print((
-                "Sample {0} has a unknown gender based on chrX reads, but resolved as female based on sampleID"
-            ).format(bam_base))
-            return "female"
-        else:
-            sys.exit("Sample {0} has a unknown gender and will not be analysed".format(bam_base))
+        # Query Clarity for gender
+        gender = get_gender_clarity(bam)
+        if gender == "unknown" and force:
+            gender = settings.force_gender
+            qc_status_gender = f"\tWARNING:GenderForcedTo{settings.force_gender}"
+        if force:
+            return gender, qc_status_gender
+        return gender
 
 
 def multiprocess_ref(mp_list):
@@ -225,10 +241,11 @@ def call_cnv(args):
     os.makedirs(output_folder, exist_ok=True)
 
     """Determine gender"""
+    qc_status_gender = ""
     if args.refset_gender:  # Used gender if used as input parameter.
         gender = args.refset_gender
-    else:  # Otherwise determine based on chrX count
-        gender = get_gender(bam)
+    else:  # Otherwise determine based on chrX, Clarity LIMS, or force
+        gender, qc_status_gender = get_gender(bam, force=True)
 
     if args.refset:  # Do not query database to query refset
         refset = args.refset
@@ -285,7 +302,7 @@ def call_cnv(args):
         stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
         correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
 
-        qc_status = ""
+        qc_status = qc_status_gender
         if args.qc_stats:
             if(correlation < float(settings.correlation) or
                number_calls < int(settings.number_calls[0]) or
@@ -331,97 +348,97 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers()
 
-    parser_refset = subparser.add_parser('makeref', help='Make ExomeDepth reference set')
-    parser_refset.add_argument('output', help='Output folder for reference set files')
-    parser_refset.add_argument('inputfolder', help='Input folder containing BAM files')
-    parser_refset.add_argument('prefix', help='Prefix for reference set (e.g. Jan2020)')
+    parser_refset = subparser.add_parser("makeref", help="Make ExomeDepth reference set")
+    parser_refset.add_argument("output", help="Output folder for reference set files")
+    parser_refset.add_argument("inputfolder", help="Input folder containing BAM files")
+    parser_refset.add_argument("prefix", help="Prefix for reference set (e.g. Jan2020)")
     parser_refset.add_argument(
-        '--simjobs', default=4,
-        help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 4]'
+        "--simjobs", default=4,
+        help="number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 4]"
     )
     parser_refset.set_defaults(func=make_refset)
 
-    parser_cnv = subparser.add_parser('callcnv', help='Call CNV with ExomeDepth basedon BAM file')
-    parser_cnv.add_argument('output', help='output folder for CNV calling')
-    parser_cnv.add_argument('inputbam', help='Input BAM file')
-    parser_cnv.add_argument('run', help='Name of the run')
-    parser_cnv.add_argument('sample', help='Sample name')
-    parser_cnv.add_argument('--refset', help='Reference set to be used (e.g. CREv2-2021-2).')
+    parser_cnv = subparser.add_parser("callcnv", help="Call CNV with ExomeDepth basedon BAM file")
+    parser_cnv.add_argument("output", help="output folder for CNV calling")
+    parser_cnv.add_argument("inputbam", help="Input BAM file")
+    parser_cnv.add_argument("run", help="Name of the run")
+    parser_cnv.add_argument("sample", help="Sample name")
+    parser_cnv.add_argument("--refset", help="Reference set to be used (e.g. CREv2-2021-2).")
     parser_cnv.add_argument(
-        '--template', default=settings.template_single_xml,
-        help='Template XML for single sample IGV session. Default = template_single_xml in settings.py'
+        "--template", default=settings.template_single_xml,
+        help="Template XML for single sample IGV session. Default = template_single_xml in settings.py"
     )
     parser_cnv.add_argument(
-        '--pipeline', default='nf', choices=['nf', 'iap'],
-        help='pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline'
+        "--pipeline", default="nf", choices=["nf", "iap"],
+        help="pipeline used for sample processing (nf = nexflow (default), IAP = illumina analysis pipeline"
     )
     parser_cnv.add_argument(
-        '--simjobs', default=2,
-        help='number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 2]'
+        "--simjobs", default=2,
+        help="number of simultaneous samples to proces. Note: make sure similar threads are reseved in session! [default = 2]"
     )
     parser_cnv.add_argument(
-        '--refset_gender', choices=['male', 'female'],
-        help='force specific use of female/male reference set in analysis'
+        "--refset_gender", choices=["male", "female"],
+        help="force specific use of female/male reference set in analysis"
     )
     parser_cnv.add_argument(
-        '--vcf_filename_suffix',
-        help='suffix to be included in VCF filename. Do not include spaces or underscores in suffix'
+        "--vcf_filename_suffix",
+        help="suffix to be included in VCF filename. Do not include spaces or underscores in suffix"
     )
     parser_cnv.add_argument(
-        '--expectedCNVlength', default=settings.expectedCNVlength,
-        help='expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]'
+        "--expectedCNVlength", default=settings.expectedCNVlength,
+        help="expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]"
     )
     parser_cnv.add_argument(
-        '--qc_stats', action='store_true',
-        help='switch on QC check for exomedepth VCF stats (default = off)'
+        "--qc_stats", action="store_true",
+        help="switch on QC check for exomedepth VCF stats (default = off)"
     )
     parser_cnv.set_defaults(func=call_cnv)
 
-    parser_summary = subparser.add_parser('summary', help='Make ExomeDepth summary file')
-    parser_summary.add_argument('exomedepth_logs', nargs='*', help='Exomedepth log files')
-    parser_summary.add_argument('--print_stdout', default=True, help='print output in stdout [default = True]')
+    parser_summary = subparser.add_parser("summary", help="Make ExomeDepth summary file")
+    parser_summary.add_argument("exomedepth_logs", nargs="*", help="Exomedepth log files")
+    parser_summary.add_argument("--print_stdout", default=True, help="print output in stdout [default = True]")
     parser_summary.set_defaults(func=call_exomedepth_summary)
 
-    parser_merge = subparser.add_parser('identify_merge', help='Identify merge samples')
-    parser_merge.add_argument('inputfolder', help='input folder which included BAM files')
-    parser_merge.add_argument('outputfile', help='output filename of identified merge samples')
+    parser_merge = subparser.add_parser("identify_merge", help="Identify merge samples")
+    parser_merge.add_argument("inputfolder", help="input folder which included BAM files")
+    parser_merge.add_argument("outputfile", help="output filename of identified merge samples")
     parser_merge.set_defaults(func=call_detect_merge)
 
-    parser_gender_check = subparser.add_parser('gender_check', help='Perform gender check on BAM files')
-    parser_gender_check.add_argument('inputfolder', help='Path to root folder of analysis')
+    parser_gender_check = subparser.add_parser("gender_check", help="Perform gender check on BAM files")
+    parser_gender_check.add_argument("inputfolder", help="Path to root folder of analysis")
     parser_gender_check.add_argument(
-        '--locus_y',
+        "--locus_y",
         default=settings.locus_y,
-        help='Coordinates for includes region on chromosome X (default = locus_y in settings.py)'
+        help="Coordinates for includes region on chromosome X (default = locus_y in settings.py)"
     )
     parser_gender_check.add_argument(
-        '--locus_x',
+        "--locus_x",
         default=settings.locus_x,
-        help='Threshold for maximum allowed CNV calls (default = locus_x in settings.py)'
+        help="Threshold for maximum allowed CNV calls (default = locus_x in settings.py)"
     )
     parser_gender_check.add_argument(
-       '--ratio_y_female',
+       "--ratio_y_female",
        default=settings.ratio_y[0],
        type=float,
-       help='Maximum Y ratio threshold females (default = ratio_y[0] in settings.py)'
+       help="Maximum Y ratio threshold females (default = ratio_y[0] in settings.py)"
     )
     parser_gender_check.add_argument(
-        '--ratio_y_male',
+        "--ratio_y_male",
         default=settings.ratio_y[1],
         type=float,
-        help='Minimum Y ratio threshold males (default = ratio_y[1] in settings.py)'
+        help="Minimum Y ratio threshold males (default = ratio_y[1] in settings.py)"
     )
     parser_gender_check.add_argument(
-        '--ratio_x_male',
+        "--ratio_x_male",
         default=settings.ratio_x[0],
         type=float,
-        help='Maximum X ratio threshold males (default = ratio_x[0] in settings.py)'
+        help="Maximum X ratio threshold males (default = ratio_x[0] in settings.py)"
     )
     parser_gender_check.add_argument(
-        '--ratio_x_female',
+        "--ratio_x_female",
         default=settings.ratio_x[1],
         type=float,
-        help='Minimum X ratio threshold females (default = ratio_x[1] in settings.py)'
+        help="Minimum X ratio threshold females (default = ratio_x[1] in settings.py)"
     )
 
     parser_gender_check.set_defaults(func=call_gender_check)
