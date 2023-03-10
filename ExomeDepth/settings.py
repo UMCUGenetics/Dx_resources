@@ -3,6 +3,11 @@
 # Location of repository
 cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth"
 
+# Clarity settings
+clarity_baseuri = ""
+clarity_username = ""
+clarity_password = ""
+
 # R script for RefSet and CNV calling
 call_cnv_r = str(cwd)+"/Rscripts/Exomedepth_callCNVs.R"
 create_refset_r = str(cwd)+"/Rscripts/Exomedepth_create_Ref_set.R"
@@ -56,8 +61,8 @@ probability = {"HC": 0.0001, "UMCU": 0.5}
 ratio_threshold_del = 0.25
 par1 = [60001, 2699520]
 par2 = [154931044, 155260560]
-locus_y = 'Y:2649520-59034050'
-locus_x = 'X:2699520-154931044'
+locus_y = "Y:2649520-59034050"
+locus_x = "X:2699520-154931044"
 ratio_y = [0.02, 0.12]
 ratio_x = [2.1, 3.6]
 normal_CN = {
@@ -66,11 +71,17 @@ normal_CN = {
 }
 expectedCNVlength = 1000000
 chromosome_order = {
-    '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7,
-    '9': 8, '10': 9, '11': 10, '12': 11, '13': 12, '14': 13, '15': 14,
-    '16': 15, '17': 16, '18': 17, '19': 18, '20': 19, '21': 20,
-    '22': 21, 'X': 22, 'Y': 23, 'MT': 24
+    "1": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 7,
+    "9": 8, "10": 9, "11": 10, "12": 11, "13": 12, "14": 13, "15": 14,
+    "16": 15, "17": 16, "18": 17, "19": 18, "20": 19, "21": 20,
+    "22": 21, "X": 22, "Y": 23, "MT": 24
 }
+force_gender = "male"
+
+# Clarity settings
+monster_udf = "Dx Monsternummer"
+geslacht_udf = "Dx Geslacht"
+gender_translation = {"vrouw": "female", "man": "male", "onbekend": "unknown"}
 
 # IGV session settings:
 template_single_xml = str(cwd)+"/templates/igv_session_template_single.xml"
@@ -92,4 +103,4 @@ reanalysis_dic = {
     }
 
 # Database settings
-database = 'sqlite:////hpc/diaggen/data/databases/ExomeDepth_db/exomedepth_db.sqlite'
+database = "sqlite:////hpc/diaggen/data/databases/ExomeDepth_db/exomedepth_db.sqlite"
