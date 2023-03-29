@@ -232,6 +232,65 @@ def multiprocess_call(multiprocess_list):
     os.system(action)
 
 
+def log_stats(model, gender, refset, qc_status_gender, args):
+    stats_log_suffix = "_"
+    if args.vcf_filename_suffix:
+        stats_log_suffix = "{0}{1}_".format(stats_log_suffix, args.vcf_filename_suffix)
+
+    sample_model_log = open((
+        "{output}/{model}_{sample}{stats_log_suffix}stats.log"
+    ).format(
+        output=args.output,
+        model=model,
+        stats_log_suffix=stats_log_suffix,
+        sample=args.sample
+    ), "w")
+
+    """ Get stats from VCF """
+    vcf_suffix = "exome_calls"
+    if args.vcf_filename_suffix:
+        vcf_suffix = "{}_{}".format(vcf_suffix, args.vcf_filename_suffix)
+
+    vcf = (
+        "{output}/{model}_{refset}_{sample}_{run}_{vcf_suffix}.vcf"
+    ).format(
+        output=args.output,
+        model=model,
+        refset=refset,
+        sample=args.sample,
+        run=args.run,
+        vcf_suffix=vcf_suffix
+    )
+
+    stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
+    correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
+
+    qc_status = qc_status_gender
+    if args.qc_stats:
+        if(correlation < float(settings.correlation) or
+           number_calls < int(settings.number_calls[0]) or
+           number_calls > int(settings.number_calls[1]) or
+           del_dup_ratio < float(settings.del_dup_ratio[0]) or
+           del_dup_ratio > float(settings.del_dup_ratio[1])):
+            qc_status = "{qc_status}\tWARNING:QC_FAIL".format(qc_status=qc_status)
+
+    if args.vcf_filename_suffix:
+        qc_status = "{qc_status}\tWARNING:{qc_suffix}".format(qc_status=qc_status, qc_suffix=args.vcf_filename_suffix)
+
+    sample_model_log.write((
+        "{sample}\t{model}\t{refset}\t{gender}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n"
+    ).format(
+        sample=args.sample,
+        model=model,
+        refset=refset,
+        gender=gender,
+        correlation=correlation,
+        del_dup_ratio=del_dup_ratio,
+        number_calls=number_calls,
+        qc_status=qc_status
+    ))
+    sample_model_log.close()
+
 def call_cnv(args):
 
     """Call CNV from BAMs"""
@@ -271,60 +330,7 @@ def call_cnv(args):
 
     """Make log for stats of each model """
     for model in analysis:
-
-        stats_log_suffix = "_"
-        if args.vcf_filename_suffix:
-            stats_log_suffix = "{0}{1}_".format(stats_log_suffix, args.vcf_filename_suffix)
-
-        sample_model_log = open("{output}/{model}_{sample}{stats_log_suffix}stats.log".format(
-            output=args.output,
-            model=model,
-            stats_log_suffix=stats_log_suffix,
-            sample=args.sample
-            ), "w")
-
-        """ Get stats from VCF """
-        vcf_suffix = "exome_calls"
-        if args.vcf_filename_suffix:
-            vcf_suffix = "{}_{}".format(vcf_suffix, args.vcf_filename_suffix)
-
-        vcf = (
-            "{output}/{model}_{refset}_{sample}_{run}_{vcf_suffix}.vcf"
-        ).format(
-            output=args.output,
-            model=model,
-            refset=refset,
-            sample=args.sample,
-            run=args.run,
-            vcf_suffix=vcf_suffix
-        )
-
-        stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
-        correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
-
-        qc_status = qc_status_gender
-        if args.qc_stats:
-            if(correlation < float(settings.correlation) or
-               number_calls < int(settings.number_calls[0]) or
-               number_calls > int(settings.number_calls[1]) or
-               del_dup_ratio < float(settings.del_dup_ratio[0]) or
-               del_dup_ratio > float(settings.del_dup_ratio[1])):
-                qc_status = "{qc_status}\tWARNING:QC_FAIL".format(qc_status=qc_status)
-        if args.vcf_filename_suffix:
-            qc_status = "{qc_status}\tWARNING:{qc_suffix}".format(qc_status=qc_status, qc_suffix=args.vcf_filename_suffix)
-
-        sample_model_log.write((
-            "{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n"
-        ).format(
-            sample=args.sample,
-            model=model,
-            refset=refset,
-            correlation=correlation,
-            del_dup_ratio=del_dup_ratio,
-            number_calls=number_calls,
-            qc_status=qc_status
-        ))
-        sample_model_log.close()
+        log_stats(model, gender, refset, qc_status_gender, args)
 
 
 def call_exomedepth_summary(args):
