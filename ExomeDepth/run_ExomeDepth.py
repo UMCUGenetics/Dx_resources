@@ -327,14 +327,6 @@ def call_cnv(args):
         )
         correlation, del_dup_ratio, number_calls = return_vcf_stats(vcf)
 
-         if args.qc_stats:
-            if(correlation < float(settings.correlation) or
-               number_calls < int(settings.number_calls[0]) or
-               number_calls > int(settings.number_calls[1]) or
-               del_dup_ratio < float(settings.del_dup_ratio[0]) or
-               del_dup_ratio > float(settings.del_dup_ratio[1])):
-                qc_status = "{qc_status}\tWARNING:QC_FAIL".format(qc_status=qc_status)
-
         write_log_stats(
             stats_log_suffix, vcf_suffix, qc_status, correlation, del_dup_ratio,
             number_calls, args.output, model, args.sample, refset, gender
@@ -401,10 +393,6 @@ if __name__ == "__main__":
     parser_cnv.add_argument(
         "--expectedCNVlength", default=settings.expectedCNVlength,
         help="expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]"
-    )
-    parser_cnv.add_argument(
-        "--qc_stats", action="store_true",
-        help="switch on QC check for exomedepth VCF stats (default = off)"
     )
     parser_cnv.set_defaults(func=call_cnv)
 
