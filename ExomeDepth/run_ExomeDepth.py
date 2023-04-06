@@ -241,7 +241,7 @@ def return_vcf_stats(vcf):
 def write_log_stats(
         stats_log_suffix, vcf_suffix, qc_status, correlation, del_dup_ratio,
         number_calls, output, model, sample, refset, gender
-    ):
+        ):
 
     sample_model_log_file = (
         "{output}/{model}_{sample}{stats_log_suffix}stats.log"
@@ -266,6 +266,7 @@ def write_log_stats(
             qc_status=qc_status
         ))
 
+
 def call_cnv(args):
 
     """Call CNV from BAMs"""
@@ -275,11 +276,11 @@ def call_cnv(args):
     os.makedirs(output_folder, exist_ok=True)
 
     """Determine gender"""
-    qc_status_gender = ""
+    qc_status = ""
     if args.refset_gender:  # Used gender if used as input parameter.
         gender = args.refset_gender
     else:  # Otherwise determine based on chrX, Clarity LIMS, or force
-        gender, qc_status_gender = get_gender(bam, force=True)
+        gender, qc_status = get_gender(bam, force=True)
 
     if args.refset:  # Do not query database to query refset
         refset = args.refset
@@ -309,14 +310,6 @@ def call_cnv(args):
         stats_log_suffix = "{0}{1}_".format(stats_log_suffix, args.vcf_filename_suffix)
         vcf_suffix = "{}_{}".format(vcf_suffix, args.vcf_filename_suffix)
 
-    if args.qc_stats:
-        if(correlation < float(settings.correlation) or
-           number_calls < int(settings.number_calls[0]) or
-           number_calls > int(settings.number_calls[1]) or
-           del_dup_ratio < float(settings.del_dup_ratio[0]) or
-           del_dup_ratio > float(settings.del_dup_ratio[1])):
-            qc_status = "{qc_status}\tWARNING:QC_FAIL".format(qc_status=qc_status)
-
     if args.vcf_filename_suffix:
         qc_status = "{qc_status}\tWARNING:{qc_suffix}".format(qc_status=qc_status, qc_suffix=args.vcf_filename_suffix)
 
@@ -334,7 +327,19 @@ def call_cnv(args):
         )
         correlation, del_dup_ratio, number_calls = return_vcf_stats(vcf)
 
-        write_log_stats(stats_log_suffix, vcf_suffix, qc_status, correlation, del_dup_ratio, number_calls, args.output, model, args.sample, refset, gender)
+         if args.qc_stats:
+            if(correlation < float(settings.correlation) or
+               number_calls < int(settings.number_calls[0]) or
+               number_calls > int(settings.number_calls[1]) or
+               del_dup_ratio < float(settings.del_dup_ratio[0]) or
+               del_dup_ratio > float(settings.del_dup_ratio[1])):
+                qc_status = "{qc_status}\tWARNING:QC_FAIL".format(qc_status=qc_status)
+
+        write_log_stats(
+            stats_log_suffix, vcf_suffix, qc_status, correlation, del_dup_ratio,
+            number_calls, args.output, model, args.sample, refset, gender
+        )
+
 
 def call_exomedepth_summary(args):
     utils.utils.exomedepth_summary(args.exomedepth_logs, args.print_stdout)
