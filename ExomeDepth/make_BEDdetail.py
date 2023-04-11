@@ -37,6 +37,7 @@ def get_familystatus_clarity(sampleid):
     else:
         return "unknown"
 
+
 def get_familystatus_sampleid(sampleid):
     if any([child_tag in sampleid for child_tag in ['CM', 'CF', 'CO']]):
         return "child"
@@ -63,7 +64,7 @@ def slice_vcf(args, merge_dic):
         )
 
         event_dic = {}
-        count_familystatus = {"child":0, "parent": 0}
+        count_familystatus = {"child": 0, "parent": 0}
 
         if not args.random_off:
             random.shuffle(vcf_files)
@@ -127,8 +128,8 @@ def slice_vcf(args, merge_dic):
                             sampleid=sampleid,
                             runid=runid
                         )
-                    ) 
-               
+                    )
+
                 count_familystatus[sampletype] += 1
 
                 if 'gender_refset' in vcf_reader.metadata:
