@@ -26,7 +26,7 @@ def make_merge_dic(merge_samples):
 
 
 def get_familystatus_clarity(sampleid):
-    """Get sample gender from Clarity LIMS."""
+    """Get family status from Clarity LIMS."""
     lims_client = Lims(settings.clarity_baseuri, settings.clarity_username, settings.clarity_password)
     samples = lims_client.get_samples(udf={settings.monster_udf: sampleid})
     familystatus = []
@@ -129,6 +129,7 @@ def slice_vcf(args, merge_dic):
                             runid=runid
                         )
                     )
+                    continue
 
                 count_familystatus[sampletype] += 1
 
