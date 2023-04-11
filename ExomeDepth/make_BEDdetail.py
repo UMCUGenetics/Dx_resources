@@ -7,6 +7,9 @@ import random
 from string import Template
 import statistics
 import vcf
+
+from genologics.lims import Lims
+
 import settings
 
 
@@ -22,14 +25,25 @@ def make_merge_dic(merge_samples):
     return merge_dic
 
 
-def is_child(sampleid):
+def get_familystatus_clarity(sampleid):
+    """Get sample gender from Clarity LIMS."""
+    lims_client = Lims(settings.clarity_baseuri, settings.clarity_username, settings.clarity_password)
+    samples = lims_client.get_samples(udf={settings.monster_udf: sampleid})
+    familystatus = []
+    for sample in samples:
+        familystatus.append(settings.family_translation[sample.udf[settings.familie_udf].lower()])
+    if len(set(familystatus)) == 1:
+        return familystatus[0]
+    else:
+        return "unknown"
+
+def get_familystatus_sampleid(sampleid):
     if any([child_tag in sampleid for child_tag in ['CM', 'CF', 'CO']]):
-        return True
-
-
-def is_parent(sampleid):
-    if any([parent_tag in sampleid for parent_tag in ['PM', 'PF', 'PO']]):
-        return True
+        return "child"
+    elif any([parent_tag in sampleid for parent_tag in ['PM', 'PF', 'PO']]):
+        return "parent"
+    else:
+        return "unknown"
 
 
 def slice_vcf(args, merge_dic):
@@ -49,8 +63,7 @@ def slice_vcf(args, merge_dic):
         )
 
         event_dic = {}
-        children = 0
-        parents = 0
+        count_familystatus = {"child":0, "parent": 0}
 
         if not args.random_off:
             random.shuffle(vcf_files)
@@ -105,20 +118,18 @@ def slice_vcf(args, merge_dic):
                     continue
 
                 """ Determine Child or Parent status based on sampleid. """
-                if is_child(sampleid):
-                    sampletype = "child"
-                    children += 1
-                elif is_parent(sampleid):
-                    sampletype = "parent"
-                    parents += 1
-                else:
+                sampletype = get_familystatus_sampleid(sampleid)
+                if sampletype == "unknown":
+                    sampletype = get_familystatus_clarity(sampleid)
+                if sampletype == "unknown":
                     excluded_samples_file.write(
                         "Sample {sampleid} run {runid} is excluded as no child or parent status could be determined\n".format(
                             sampleid=sampleid,
                             runid=runid
                         )
-                    )
-                    continue
+                    ) 
+               
+                count_familystatus[sampletype] += 1
 
                 if 'gender_refset' in vcf_reader.metadata:
                     gender = vcf_reader.metadata['gender_refset'][0]
@@ -161,11 +172,7 @@ def slice_vcf(args, merge_dic):
                                 runid=runid
                             )
                         )
-
-                        if sampletype == "child":
-                            children -= 1
-                        elif sampletype == "parent":
-                            parents -= 1
+                        count_familystatus[sampletype] -= 1
                         break
 
                     all_event_file.write((
@@ -219,7 +226,7 @@ def slice_vcf(args, merge_dic):
                     event_dic[event][sampletype]["totalcalls"].append(totalcalls)
                     event_dic[event][sampletype]["gender"].append(gender)  # Not used in output at the moment.
                     event_dic[event][sampletype]["refset"].append(refset)
-    return event_dic, children, parents
+    return event_dic, count_familystatus["child"], count_familystatus["parent"]
 
 
 def calculate_statistics(data, status):
