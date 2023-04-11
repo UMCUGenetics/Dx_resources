@@ -81,7 +81,9 @@ force_gender = "male"
 # Clarity settings
 monster_udf = "Dx Monsternummer"
 geslacht_udf = "Dx Geslacht"
+familie_udf = "Dx Familie status"
 gender_translation = {"vrouw": "female", "man": "male", "onbekend": "unknown"}
+family_translation = {"kind": "child", "ouder": "parent"}
 
 # IGV session settings:
 template_single_xml = str(cwd)+"/templates/igv_session_template_single.xml"
