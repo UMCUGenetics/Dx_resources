@@ -31,12 +31,16 @@ def parse_ped(ped_file):
     return samples
 
 
-def make_reanalysis(reanalysis_file):
+def parse_reanalysis_file(reanalysis_file):
     reanalysis = {}
     for line in reanalysis_file:
-        splitline = line.split()
-        if splitline[0] not in reanalysis:
-            reanalysis[splitline[0]] = {"refset": splitline[1], "suffix": splitline[2]}
+        sampleid, refset, suffix = (
+            lambda sampleid, refset, suffix = None:(sampleid, refset, suffix)
+        )(
+            *line.strip().split()
+        )
+
+        reanalysis[sampleid] = {"refset": refset, "suffix": suffix}
     return reanalysis
 
 
@@ -101,13 +105,14 @@ def make_single_igv_session(args):
         elif args.pipeline == "nf":  # For NF pipeline.
             bam = "{0}.bam".format(args.sampleid.split(",")[0])  # Bam file
 
+    igv_extension = "ref.igv"
+    vcf_extension = "exome_calls.vcf"
+
     if args.reanalysis:
-        reanalysis = make_reanalysis(args.reanalysis)
-        igv_extension = "{}_ref.igv".format(settings.reanalysis_dic[reanalysis[args.sampleid]['suffix']][1])
-        vcf_extension = "exome_calls_{}.vcf".format(settings.reanalysis_dic[reanalysis[args.sampleid]['suffix']][1])
-    else:
-        igv_extension = "ref.igv"
-        vcf_extension = "exome_calls.vcf"
+        reanalysis = parse_reanalysis_file(args.reanalysis)
+        if reanalysis[args.sampleid]['suffix']:
+            igv_extension = "{}_ref.igv".format(settings.reanalysis_dic[reanalysis[args.sampleid]['suffix']][1])
+            vcf_extension = "exome_calls_{}.vcf".format(settings.reanalysis_dic[reanalysis[args.sampleid]['suffix']][1])
 
     for statistic in settings.igv_settings:
         write_file = open("{0}/{1}_{2}_{3}_igv.xml".format(
