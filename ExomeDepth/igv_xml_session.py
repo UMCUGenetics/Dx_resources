@@ -124,10 +124,10 @@ def make_single_igv_session(args):
         write_file.close()
 
 
-def get_file(sample, files):
-    for return_file in files:
-        if sample in return_file:
-            return return_file
+def get_file(pattern, file_paths):
+    for file_path in file_paths:
+        if pattern in file_path:
+            return file_path
 
 
 def make_family_igv_file(args, familyid, child, father, mother, statistic):
