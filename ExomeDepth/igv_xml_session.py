@@ -127,24 +127,24 @@ def make_single_igv_session(args):
 def get_file(pattern, file_paths):
     for file_path in file_paths:
         if pattern in file_path:
-            return file_path
+            return os.path.basename(file_path)
 
 
 def make_family_igv_file(args, familyid, child, father, mother, statistic):
     template_file = Template(open(args.template_xml).read())
 
-    upd_file = os.path.basename(get_file(child, args.upd_files))
-    baf_file = os.path.basename(get_file(child, args.baf_files))
-    bam_file_child = os.path.basename(get_file(child, args.bam_files))
-    hc_ratio_child_file = os.path.basename(get_file(child, args.igv_files))
-    hc_ratio_father_file = os.path.basename(get_file(father, args.igv_files))
-    hc_ratio_mother_file = os.path.basename(get_file(mother, args.igv_files))
-    snv_vcf_child_file = os.path.basename(get_file(child, args.snv_vcf_files))
-    snv_vcf_father_file = os.path.basename(get_file(father, args.snv_vcf_files))
-    snv_vcf_mother_file = os.path.basename(get_file(mother, args.snv_vcf_files))
-    hc_cnv_vcf_child_file = os.path.basename(get_file(child, args.cnv_vcf_files))
-    hc_cnv_vcf_father_file = os.path.basename(get_file(father, args.cnv_vcf_files))
-    hc_cnv_vcf_mother_file = os.path.basename(get_file(mother, args.cnv_vcf_files))
+    upd_file = get_file(child, args.upd_files)
+    baf_file = get_file(child, args.baf_files)
+    bam_file_child = get_file(child, args.bam_files)
+    hc_ratio_child_file = get_file(child, args.igv_files)
+    hc_ratio_father_file = get_file(father, args.igv_files)
+    hc_ratio_mother_file = get_file(mother, args.igv_files)
+    snv_vcf_child_file = get_file(child, args.snv_vcf_files)
+    snv_vcf_father_file = get_file(father, args.snv_vcf_files)
+    snv_vcf_mother_file = get_file(mother, args.snv_vcf_files)
+    hc_cnv_vcf_child_file = get_file(child, args.cnv_vcf_files)
+    hc_cnv_vcf_father_file = get_file(father, args.cnv_vcf_files)
+    hc_cnv_vcf_mother_file = get_file(mother, args.cnv_vcf_files)
 
     #  Scale XML variables
     min_axis, mid_axis, max_axis = settings.igv_settings[statistic]  # Get axis values out of settings.py
