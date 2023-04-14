@@ -216,16 +216,16 @@ if __name__ == "__main__":
 
             failed_perc = float("%.2f" % ((total_failed/total_assesed) * 100))
             passed_perc = 100 - failed_perc
-            outputfile.write("{}\t{}\t{}\t{}\t{}").format(
+            outputfile.write("{}\t{}\t{}\t{}\t{}".format(
                 folder.split("/")[-1], failed_perc, passed_perc, int(total_assesed), int(total_run)
-            )
+            ))
             if total_run > 0:
                 if (total_assesed/total_run) < args.threshold:
-                    outputfile.write(
+                    outputfile.write((
                         "\tWARNING: number of samples within run is less than {}% of total in samplesheet."
                     ).format(
                         args.threshold * 100
-                    )
+                    ))
                     run_status["partial"].append(folder.split("/")[-1])
                 else:
                     run_status["full"].append(folder.split("/")[-1])
