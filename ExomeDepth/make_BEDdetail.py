@@ -3,6 +3,7 @@
 import os
 import subprocess
 import argparse
+import random
 from string import Template
 import statistics
 import vcf
@@ -32,185 +33,192 @@ def is_parent(sampleid):
 
 
 def slice_vcf(args, merge_dic):
-    vcf_files = subprocess.getoutput("find -L {input} -type f -iname \"*vcf\"".format(input=args.inputfolder)).split()
-    all_event_file = open(
-        "{output}/{outputfile}_all_events.txt".format(output=args.outputfolder, outputfile=args.outputfile),
-        "w"
+    vcf_files = subprocess.getoutput("find -L {input} -type f -iname \"*vcf\"".format(
+        input=args.inputfolder
+    )).split()
+    all_event_file = "{output}/{outputfile}_all_events.txt".format(
+        output=args.outputfolder, outputfile=args.outputfile
     )
-    all_event_file.write(
-        "sampleID\tchromosome\tstart\tstop\tgender\trefset\tcalltype\t"
-        "ntargets\tsvlen\tratio\tccn\tbf\tcorrelation\tdeldupratio\ttotalcalls\trefsamples\n"
+    excluded_samples_file = "{output}/{outputfile}_excluded_samples.txt".format(
+        output=args.outputfolder, outputfile=args.outputfile
     )
-    excluded_samples_file = open(
-        "{output}/{outputfile}_excluded_samples.txt".format(output=args.outputfolder, outputfile=args.outputfile),
-        "w"
-    )
+    with open(all_event_file, "w") as all_event_file, open(excluded_samples_file, "w") as excluded_samples_file:
+        all_event_file.write(
+            "sampleID\tchromosome\tstart\tstop\tgender\trefset\tcalltype\t"
+            "ntargets\tsvlen\tratio\tccn\tbf\tcorrelation\tdeldupratio\ttotalcalls\trefsamples\n"
+        )
 
-    event_dic = {}
-    children = 0
-    parents = 0
-    for vcf_file in vcf_files:
-        with open(vcf_file, 'r') as vcf_input_file:
-            vcf_reader = vcf.Reader(vcf_input_file)
-            sampleid = vcf_reader.samples[0]
+        event_dic = {}
+        children = 0
+        parents = 0
 
-            if 'runid' in vcf_reader.metadata:
-                runid = vcf_reader.metadata['runid'][0]
-            else:  # get runid from sample name (legacy version)
-                runid = "_".join(vcf_file.split("/")[-1].split("bam")[1].split("_")[1:-2])
+        if not args.random_off:
+            random.shuffle(vcf_files)
 
-            if sampleid in merge_dic and runid in merge_dic[sampleid]:
-                """ Check if sample in specific run is merge sample. If so, exclude """
-                excluded_samples_file.write("Sample {sampleid} run {runid} is excluded being merge sample\n".format(
-                    sampleid=sampleid,
-                    runid=runid)
-                )
-                continue
+        for vcf_file in vcf_files:
+            with open(vcf_file, 'r') as vcf_input_file:
+                vcf_reader = vcf.Reader(vcf_input_file)
+                sampleid = vcf_reader.samples[0]
 
-            if "giab" in sampleid.lower() or "control" in sampleid.lower():
-                """ Remove GIAB and Control samples as these should not be included in the results """
-                excluded_samples_file.write("Sample {sampleid} run {runid} is excluded being GIAB or Control sample\n".format(
-                    sampleid=sampleid,
-                    runid=runid)
-                )
-                continue
+                if 'runid' in vcf_reader.metadata:
+                    runid = vcf_reader.metadata['runid'][0]
+                else:  # get runid from sample name (legacy version)
+                    runid = "_".join(vcf_file.split("/")[-1].split("bam")[1].split("_")[1:-2])
 
-            if sampleid not in vcf_file:
-                excluded_samples_file.write((
-                    "Sample {sampleid} form run {runid} does not have the same ID "
-                    "in VCF file {vcf_file} and is excluded\n"
+                if sampleid in merge_dic and runid in merge_dic[sampleid]:
+                    """ Check if sample in specific run is merge sample. If so, exclude """
+                    excluded_samples_file.write("Sample {sampleid} run {runid} is excluded being merge sample\n".format(
+                        sampleid=sampleid,
+                        runid=runid)
+                    )
+                    continue
+
+                if "giab" in sampleid.lower() or "control" in sampleid.lower():
+                    """ Remove GIAB and Control samples as these should not be included in the results """
+                    excluded_samples_file.write((
+                        "Sample {sampleid} run {runid} is excluded being GIAB or Control sample\n"
                     ).format(
                         sampleid=sampleid,
-                        runid=runid,
-                        vcf_file=vcf_file
+                        runid=runid)
                     )
-                )
-                continue
+                    continue
 
-            if len(vcf_reader.samples) > 1:  # multisample VCF
-                excluded_samples_file.write(
-                    "VCF {vcf_file} from run {runid} is excluded because vcf was a multisample VCF\n".format(
-                        vcf_file=vcf_file,
-                        runid=runid
+                if sampleid not in vcf_file:
+                    excluded_samples_file.write((
+                        "Sample {sampleid} form run {runid} does not have the same ID "
+                        "in VCF file {vcf_file} and is excluded\n"
+                        ).format(
+                            sampleid=sampleid,
+                            runid=runid,
+                            vcf_file=vcf_file
+                        )
                     )
-                )
-                continue
+                    continue
 
-            """ Determine Child or Parent status based on sampleid. """
-            if is_child(sampleid):
-                sampletype = "child"
-                children += 1
-            elif is_parent(sampleid):
-                sampletype = "parent"
-                parents += 1
-            else:
-                excluded_samples_file.write(
-                    "Sample {sampleid} run {runid} is excluded as no child or parent status could be determined\n".format(
-                        sampleid=sampleid,
-                        runid=runid
-                    )
-                )
-                continue
-
-            if 'gender_refset' in vcf_reader.metadata:
-                gender = vcf_reader.metadata['gender_refset'][0]
-                refset = vcf_reader.metadata['exomedepth_reference'][0]
-            else:  # get gender and refset based on legacy
-                edreference = vcf_reader.metadata['EDreference'][0]
-                gender = edreference.split("_")[1]
-                refset = edreference.split("_")[2]
-
-            for record in vcf_reader:
-                """ General fields """
-                chrom = record.CHROM
-                start = record.POS
-
-                """ Info Field """
-                calltype = record.INFO['SVTYPE']
-                ntargets = record.INFO['NTARGETS']
-                svlen = record.INFO['SVLEN']
-                stop = record.INFO['END']
-
-                """ Format fields """
-                correl = float(record.genotype(sampleid)['CR'])
-                deldupratio = float(record.genotype(sampleid)['PD'])
-                totalcalls = int(record.genotype(sampleid)['TC'])
-                refsamples = int(record.genotype(sampleid)['RS'])
-                ratio = float(record.genotype(sampleid)['RT'])
-                ccn = float(record.genotype(sampleid)['CCN'])
-                bf = float(record.genotype(sampleid)['BF'])
-
-                if(
-                    totalcalls < args.totalcallsqc_min or
-                    totalcalls > args.totalcallsqc_max or
-                    correl < args.correlqc or
-                    deldupratio < args.deldupratioqc_min or
-                    deldupratio > args.deldupratioqc_max
-                ):
+                if len(vcf_reader.samples) > 1:  # multisample VCF
                     excluded_samples_file.write(
-                        "Sample {sampleid} run {runid} is excluded because not all QC are above threshold\n".format(
+                        "VCF {vcf_file} from run {runid} is excluded because vcf was a multisample VCF\n".format(
+                            vcf_file=vcf_file,
+                            runid=runid
+                        )
+                    )
+                    continue
+
+                """ Determine Child or Parent status based on sampleid. """
+                if is_child(sampleid):
+                    sampletype = "child"
+                    children += 1
+                elif is_parent(sampleid):
+                    sampletype = "parent"
+                    parents += 1
+                else:
+                    excluded_samples_file.write(
+                        "Sample {sampleid} run {runid} is excluded as no child or parent status could be determined\n".format(
                             sampleid=sampleid,
                             runid=runid
                         )
                     )
+                    continue
 
-                    if sampletype == "child":
-                        children -= 1
-                    elif sampletype == "parent":
-                        parents -= 1
-                    break
+                if 'gender_refset' in vcf_reader.metadata:
+                    gender = vcf_reader.metadata['gender_refset'][0]
+                    refset = vcf_reader.metadata['exomedepth_reference'][0]
+                else:  # get gender and refset based on legacy
+                    edreference = vcf_reader.metadata['EDreference'][0]
+                    gender = edreference.split("_")[1]
+                    refset = edreference.split("_")[2]
 
-                all_event_file.write((
-                    "{sampleid}\t{chrom}\t{start}\t{stop}\t"
-                    "{gender}\t{refset}\t{calltype}\t{ntargets}\t"
-                    "{svlen}\t{ratio}\t{ccn}\t{bf}\t{correl}\t"
-                    "{deldupratio}\t{totalcalls}\t{refsamples}\n").format(
-                        sampleid=sampleid, chrom=chrom, start=start, stop=stop,
-                        gender=gender, refset=refset, calltype=calltype, ntargets=ntargets,
-                        svlen=svlen, ratio=ratio, ccn=ccn, bf=bf, correl=correl,
-                        deldupratio=deldupratio, totalcalls=totalcalls, refsamples=refsamples
-                ))
+                for record in vcf_reader:
+                    """ General fields """
+                    chrom = record.CHROM
+                    start = record.POS
 
-                event = "{chrom}_{start}_{stop}_{calltype}_{ntargets}".format(
-                    chrom=chrom,
-                    start=start,
-                    stop=stop,
-                    calltype=calltype,
-                    ntargets=ntargets
-                )
+                    """ Info Field """
+                    calltype = record.INFO['SVTYPE']
+                    ntargets = record.INFO['NTARGETS']
+                    svlen = record.INFO['SVLEN']
+                    stop = record.INFO['END']
 
-                if event not in event_dic:
-                    event_dic[event] = {
-                        "parent": {
-                            "count": 0,
-                            "bf": [],
-                            "ratio": [],
-                            "correlation": [],
-                            "deldupratio": [],
-                            "totalcalls": [],
-                            "gender": []
-                            },
-                        "child": {
-                            "count": 0,
-                            "bf": [],
-                            "ratio": [],
-                            "correlation": [],
-                            "deldupratio": [],
-                            "totalcalls": [],
-                            "gender": []
+                    """ Format fields """
+                    correl = float(record.genotype(sampleid)['CR'])
+                    deldupratio = float(record.genotype(sampleid)['PD'])
+                    totalcalls = int(record.genotype(sampleid)['TC'])
+                    refsamples = int(record.genotype(sampleid)['RS'])
+                    ratio = float(record.genotype(sampleid)['RT'])
+                    ccn = float(record.genotype(sampleid)['CCN'])
+                    bf = float(record.genotype(sampleid)['BF'])
+
+                    if(
+                        totalcalls < args.totalcallsqc_min or
+                        totalcalls > args.totalcallsqc_max or
+                        correl < args.correlqc or
+                        deldupratio < args.deldupratioqc_min or
+                        deldupratio > args.deldupratioqc_max
+                    ):
+                        excluded_samples_file.write(
+                            "Sample {sampleid} run {runid} is excluded because not all QC are above threshold\n".format(
+                                sampleid=sampleid,
+                                runid=runid
+                            )
+                        )
+
+                        if sampletype == "child":
+                            children -= 1
+                        elif sampletype == "parent":
+                            parents -= 1
+                        break
+
+                    all_event_file.write((
+                        "{sampleid}\t{chrom}\t{start}\t{stop}\t"
+                        "{gender}\t{refset}\t{calltype}\t{ntargets}\t"
+                        "{svlen}\t{ratio}\t{ccn}\t{bf}\t{correl}\t"
+                        "{deldupratio}\t{totalcalls}\t{refsamples}\n").format(
+                            sampleid=sampleid, chrom=chrom, start=start, stop=stop,
+                            gender=gender, refset=refset, calltype=calltype, ntargets=ntargets,
+                            svlen=svlen, ratio=ratio, ccn=ccn, bf=bf, correl=correl,
+                            deldupratio=deldupratio, totalcalls=totalcalls, refsamples=refsamples
+                    ))
+
+                    event = "{chrom}_{start}_{stop}_{calltype}_{ntargets}".format(
+                        chrom=chrom,
+                        start=start,
+                        stop=stop,
+                        calltype=calltype,
+                        ntargets=ntargets
+                    )
+
+                    if event not in event_dic:
+                        event_dic[event] = {
+                            "parent": {
+                                "count": 0,
+                                "bf": [],
+                                "ratio": [],
+                                "correlation": [],
+                                "deldupratio": [],
+                                "totalcalls": [],
+                                "gender": [],
+                                "refset": []
+                                },
+                            "child": {
+                                "count": 0,
+                                "bf": [],
+                                "ratio": [],
+                                "correlation": [],
+                                "deldupratio": [],
+                                "totalcalls": [],
+                                "gender": [],
+                                "refset": []
+                                }
                             }
-                        }
 
-                event_dic[event][sampletype]["count"] += 1
-                event_dic[event][sampletype]["bf"].append(bf)
-                event_dic[event][sampletype]["ratio"].append(ratio)
-                event_dic[event][sampletype]["correlation"].append(correl)
-                event_dic[event][sampletype]["deldupratio"].append(deldupratio)
-                event_dic[event][sampletype]["totalcalls"].append(totalcalls)
-                event_dic[event][sampletype]["gender"].append(gender)  # Not used in output at the moment.
-
-    all_event_file.close()
-    excluded_samples_file.close()
+                    event_dic[event][sampletype]["count"] += 1
+                    event_dic[event][sampletype]["bf"].append(bf)
+                    event_dic[event][sampletype]["ratio"].append(ratio)
+                    event_dic[event][sampletype]["correlation"].append(correl)
+                    event_dic[event][sampletype]["deldupratio"].append(deldupratio)
+                    event_dic[event][sampletype]["totalcalls"].append(totalcalls)
+                    event_dic[event][sampletype]["gender"].append(gender)  # Not used in output at the moment.
+                    event_dic[event][sampletype]["refset"].append(refset)
     return event_dic, children, parents
 
 
@@ -230,16 +238,22 @@ def calculate_statistics(data, status):
         'ratio_stdev_{0}'.format(status): "n/a",
         'bfs_{0}'.format(status): "n/a",
         'ratios_{0}'.format(status): "n/a",
+        'refsets_{0}'.format(status): "n/a"
         }
 
     if totalcount >= 1:  # 1 or more element(s) needed to calculate mean
-        """ Select first 20 elements of BF and Ratio. Sort on BF and sort Ratio accordingly. """
-        bfs_subset, ratios_subset = zip(*sorted(zip(data["bf"][0:20], data["ratio"][0:20])))
-        bfs = ' '.join(['%.1f' % elem for elem in bfs_subset])
-        ratios = ' '.join(['%.1f' % elem for elem in ratios_subset])
+        """ Subselection of first 20 BF, Ratio, Refset. Sort on BF and sort Ratio and Refset accordingly. """
+        bfs_subset, ratios_subset, refset_subset = zip(
+            *sorted(zip(data["bf"][0:20], data["ratio"][0:20], data["refset"][0:20]))
+        )
+
+        bfs = "<br>{}</br>".format('</br><br>'.join(['%.1f' % elem for elem in bfs_subset]))
+        ratios = "<br>{}</br>".format('</br><br>'.join(['%.1f' % elem for elem in ratios_subset]))
+        refsets = "<br>{}</br>".format('</br><br>'.join(refset_subset))
 
         stats["bfs_{0}".format(status)] = bfs
         stats["ratios_{0}".format(status)] = ratios
+        stats["refsets_{0}".format(status)] = refsets
 
         stats["correlation_avr_{0}".format(status)] = "%.3f" % (statistics.mean(data['correlation']))
         stats["deldup_avr_{0}".format(status)] = "%.0f" % (statistics.mean(data['deldupratio']))
@@ -253,112 +267,109 @@ def calculate_statistics(data, status):
             stats["totalcalls_stdev_{0}".format(status)] = "%.0f" % (statistics.stdev(data['totalcalls']))
             stats["bf_stdev_{0}".format(status)] = "%.1f" % (statistics.stdev(data['bf']))
             stats["ratio_stdev_{0}".format(status)] = "%.2f" % (statistics.stdev(data['ratio']))
-
     return stats
 
 
 def make_bed_detail(args, event_dic, children, parents):
-    event_file_ucsc = open(
-        "{outputfolder}/{outputfile}_UCSC.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),
-        "w"
+    event_file_ucsc = "{outputfolder}/{outputfile}_UCSC.bed".format(
+        outputfolder=args.outputfolder, outputfile=args.outputfile
     )
-    event_file_igv = open(
-        "{outputfolder}/{outputfile}_IGV.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),
-        "w"
+    event_file_igv = "{outputfolder}/{outputfile}_IGV.bed".format(
+        outputfolder=args.outputfolder, outputfile=args.outputfile
     )
-    event_file_alissa = open(
-        "{outputfolder}/{outputfile}_Alissa.bed".format(outputfolder=args.outputfolder, outputfile=args.outputfile),
-        "w"
+    event_file_alissa = "{outputfolder}/{outputfile}_Alissa.bed".format(
+        outputfolder=args.outputfolder, outputfile=args.outputfile
     )
+    with \
+         open(event_file_ucsc, "w") as event_file_ucsc, \
+         open(event_file_igv, "w") as event_file_igv, \
+         open(event_file_alissa, "w") as event_file_alissa:
 
-    """ Write header in BED file """
-    event_file_ucsc.write((
-        "track name=\"{outputfile}\" type=\"bedDetail\" description=\"CNVs called by Exomedepth using {outputfile} callset. "
-        "#Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n"
-        ).format(
-            outputfile=args.outputfile,
-            children=children,
-            parents=parents
+        """ Write header in BED file """
+        event_file_ucsc.write((
+            "track name=\"{outputfile}\" type=\"bedDetail\" description=\"CNVs called by Exomedepth "
+            "using {outputfile} callset. #Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n"
+            ).format(
+                outputfile=args.outputfile,
+                children=children,
+                parents=parents
+            )
         )
-    )
-    event_file_igv.write((
-        "track name=\"{outputfile}\" type=\"bed\" description=\"CNVs called by Exomedepth using {outputfile} callset. "
-        "#Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n"
-        ).format(
-            outputfile=args.outputfile,
-            children=children,
-            parents=parents
+        event_file_igv.write((
+            "track name=\"{outputfile}\" type=\"bed\" description=\"CNVs called by Exomedepth using {outputfile} callset. "
+            "#Child={children} #Parents={parents} \" visibility=3 itemRgb=\"On\"\n"
+            ).format(
+                outputfile=args.outputfile,
+                children=children,
+                parents=parents
+            )
         )
-    )
-    total_events = []
-    alissa_events = []
-    for cnv_event in event_dic:
-        chrom, start, stop, calltype, ntargets = cnv_event.split("_")
-        """ Make start 0-based for BED file """
-        alissa_event = [chrom, start, stop]  # needs to be 1-based
-        start = int(start) - 1
-        event = [chrom, start, stop]  # Add fields Chromosome, start, stop
-        total_count = int(event_dic[cnv_event]["parent"]["count"]) + int(event_dic[cnv_event]["child"]["count"])
-        all_counts_ratio = event_dic[cnv_event]["parent"]["ratio"] + event_dic[cnv_event]["child"]["ratio"]
-        all_counts_bf = event_dic[cnv_event]["parent"]["bf"] + event_dic[cnv_event]["child"]["bf"]
-        median_ratio = statistics.median(all_counts_ratio)
-        median_bf = statistics.median(all_counts_bf)
+        total_events = []
+        alissa_events = []
+        for cnv_event in event_dic:
+            chrom, start, stop, calltype, ntargets = cnv_event.split("_")
+            """ Make start 0-based for BED file """
+            alissa_event = [chrom, start, stop]  # needs to be 1-based
+            start = int(start) - 1
+            event = [chrom, start, stop]  # Add fields Chromosome, start, stop
+            total_count = int(event_dic[cnv_event]["parent"]["count"]) + int(event_dic[cnv_event]["child"]["count"])
+            all_counts_ratio = event_dic[cnv_event]["parent"]["ratio"] + event_dic[cnv_event]["child"]["ratio"]
+            all_counts_bf = event_dic[cnv_event]["parent"]["bf"] + event_dic[cnv_event]["child"]["bf"]
+            median_ratio = statistics.median(all_counts_ratio)
+            median_bf = statistics.median(all_counts_bf)
 
-        summary = "{total_count}x:RT={median_ratio:.2f}:BF={median_bf:.0f}:NT={ntargets}".format(
-            total_count=total_count,
-            median_ratio=median_ratio,
-            median_bf=median_bf,
-            ntargets=ntargets
-        )
+            summary = "{total_count}x:RT={median_ratio:.2f}:BF={median_bf:.0f}:NT={ntargets}".format(
+                total_count=total_count,
+                median_ratio=median_ratio,
+                median_bf=median_bf,
+                ntargets=ntargets
+            )
 
-        event.append(summary)  # Add field 'name'
+            event.append(summary)  # Add field 'name'
 
-        """ Append unused but necessary columns for bed file """
-        event.extend([0, '.', start, stop])  # Add fields Score, Strand, thickStart, thickEnd
+            """ Append unused but necessary columns for bed file """
+            event.extend([0, '.', start, stop])  # Add fields Score, Strand, thickStart, thickEnd
 
-        """ Append color code based on DEL (red) or DUP (blue) """
-        if median_ratio >= 1:
-            color = "0,0,255"  # Add field itemRgb for duplication
-            alissa_event.append('DUP')
-        else:
-            color = "255,0,0"  # Add field itemRgb for deletion
-            alissa_event.append('DEL')
-        event.append(color)
+            """ Append color code based on DEL (red) or DUP (blue) """
+            if median_ratio >= 1:
+                color = "0,0,255"  # Add field itemRgb for duplication
+                alissa_event.append('DUP')
+            else:
+                color = "255,0,0"  # Add field itemRgb for deletion
+                alissa_event.append('DEL')
+            event.append(color)
 
-        """ Append blockCount, blockSizes, blockStarts. """
-        """ Note that these are not used for ntargets as start/stop for exons is unknown """
-        event.extend([1, int(stop) - int(start), 0])  # Add fields blockCount, blockSizes, and blockStarts
+            # Append blockCount, blockSizes, blockStarts.
+            # Note that these are not used for ntargets as start/stop for exons is unknown.
+            event.extend([1, int(stop) - int(start), 0])  # Add fields blockCount, blockSizes, and blockStarts
 
-        """ Append custom annotation field as html in BEDdetail format """
-        """ calculate statistics for children """
-        substitute_dic = calculate_statistics(event_dic[cnv_event]["child"], 'child')
-        """ calculate statistics for parents """
-        substitute_dic.update(calculate_statistics(event_dic[cnv_event]["parent"], 'parent'))
-        template_file = Template(open(settings.html).read())
-        new_file = template_file.substitute(substitute_dic)
-        event.append("".join(new_file.split("\n")))
-        total_events.append(event)
-        alissa_event.append(total_count)
-        alissa_events.append(alissa_event)
+            #  Append custom annotation field as html in BEDdetail format
+            #  Calculate statistics for children.
+            substitute_dic = calculate_statistics(event_dic[cnv_event]["child"], 'child')
+            #  Calculate statistics for parents.
+            substitute_dic.update(calculate_statistics(event_dic[cnv_event]["parent"], 'parent'))
 
-    total_events.sort(key=lambda pos: (settings.chromosome_order[pos[0]], int(pos[1]), int(pos[2])))
-    alissa_events.sort(key=lambda pos: (settings.chromosome_order[pos[0]], int(pos[1]), int(pos[2])))
+            template_file = Template(open(settings.html).read())
+            new_file = template_file.substitute(substitute_dic)
+            event.append("".join(new_file.split("\n")))
+            total_events.append(event)
+            alissa_event.append(total_count)
+            alissa_events.append(alissa_event)
 
-    for event in total_events:
-        event[0] = "chr{original}".format(original=event[0])
-        joined_event = "\t".join([str(i) for i in event])
-        event_file_ucsc.write("{joined}\n".format(joined=joined_event))
+        total_events.sort(key=lambda pos: (settings.chromosome_order[pos[0]], int(pos[1]), int(pos[2])))
+        alissa_events.sort(key=lambda pos: (settings.chromosome_order[pos[0]], int(pos[1]), int(pos[2])))
 
-        joined_event_igv = "\t".join([str(i) for i in event[0:-1]])
-        event_file_igv.write("{joined}\n".format(joined=joined_event_igv))
+        for event in total_events:
+            event[0] = "chr{original}".format(original=event[0])
+            joined_event = "\t".join([str(i) for i in event])
+            event_file_ucsc.write("{joined}\n".format(joined=joined_event))
 
-    for alissa_event in alissa_events:
-        joined_alissa_event = "\t".join([str(i) for i in alissa_event])
-        event_file_alissa.write("{joined}\n".format(joined=joined_alissa_event))
+            joined_event_igv = "\t".join([str(i) for i in event[0:-1]])
+            event_file_igv.write("{joined}\n".format(joined=joined_event_igv))
 
-    event_file_ucsc.close()
-    event_file_igv.close()
-    event_file_alissa.close()
+        for alissa_event in alissa_events:
+            joined_alissa_event = "\t".join([str(i) for i in alissa_event])
+            event_file_alissa.write("{joined}\n".format(joined=joined_alissa_event))
 
 
 if __name__ == "__main__":
@@ -368,7 +379,7 @@ if __name__ == "__main__":
     parser.add_argument('outputfile', help='output prefix filename')
     parser.add_argument(
         'merge_samples',
-        help='Path to file including all merge samples (tab delimited file with column 1 = sampleID, 2 = run/projectID'
+        help='Path to file including all merge samples (tab delimited file with column 1 = sampleID, 2 = run/projectID)'
     )
     parser.add_argument(
         '--totalcallsqc_min', default=settings.number_calls[0], type=int,
@@ -389,6 +400,13 @@ if __name__ == "__main__":
     parser.add_argument(
         '--correlqc', default=settings.correlation, type=float,
         help='Threshold for minimum allowed correlation score (default = 0.98)'
+    )
+    parser.add_argument(
+        '--random_off', action='store_true',
+        help=(
+            'Do not apply randomisation in VCF-file order.'
+            ' This is usefull for validation purposes if same results are needed (default = random selection on)'
+        )
     )
     args = parser.parse_args()
 
