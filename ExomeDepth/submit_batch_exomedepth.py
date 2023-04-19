@@ -52,11 +52,11 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
 
     if sampleid in gender_dic:
         gender = gender_dic[sampleid]
-        action = "{action} --refset_gender {gender}".format(action=action, gender=gender)
+        action = f"{action} --refset_gender {gender}"
 
     if sampleid in suffix_dic:
         suffix = suffix_dic[sampleid]
-        action = "{action} --vcf_filename_suffix {suffix}".format(action=action, suffix=suffix)
+        action = f"{action} --vcf_filename_suffix {suffix}"
 
     os.system(action)
 
@@ -76,8 +76,8 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     hc_cnv_vcf = f"{args.outputfolder}/HC/HC_{refset}_{sampleid}_{run}_exome_calls"
     ed_igv = f"{args.outputfolder}/igv_tracks/HC_{refset}_{sampleid}_{run}"
     if sampleid in suffix_dic:
-        hc_cnv_vcf = "{}_{}.vcf".format(hc_cnv_vcf, suffix_dic[sampleid])
-        ed_igv = "{}_{}_ref.igv".format(ed_igv, suffix_dic[sampleid])
+        hc_cnv_vcf = f"{hc_cnv_vcf}_{suffix_dic[sampleid]}.vcf"
+        ed_igv = f"{ed_igv}_{suffix_dic[sampleid]}_ref.igv"
     else:
         hc_cnv_vcf = f"{hc_cnv_vcf}.vcf"
         ed_igv = f"{ed_igv}_ref.igv"
