@@ -215,9 +215,7 @@ if __name__ == "__main__":
 
             failed_perc = float("%.2f" % ((total_failed/total_assesed) * 100))
             passed_perc = 100 - failed_perc
-            outputfile.write((
-                "{}\t{}\t{}\t{}\t{}"
-            ).format(
+            outputfile.write("{}\t{}\t{}\t{}\t{}".format(
                 folder.split("/")[-1], failed_perc, passed_perc, int(total_assesed), int(total_run)
             ))
             if total_run > 0:
