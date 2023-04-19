@@ -318,8 +318,6 @@ def call_cnv(args):
     if args.vcf_filename_suffix:
         stats_log_suffix = "{0}{1}_".format(stats_log_suffix, args.vcf_filename_suffix)
         vcf_suffix = "{}_{}".format(vcf_suffix, args.vcf_filename_suffix)
-
-    if args.vcf_filename_suffix:
         qc_status = "{qc_status}\tWARNING:{qc_suffix}".format(qc_status=qc_status, qc_suffix=args.vcf_filename_suffix)
 
     """Make log for stats of each model """
