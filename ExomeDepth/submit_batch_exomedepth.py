@@ -119,16 +119,16 @@ if __name__ == "__main__":
 
     """Find BAM files to be processed"""
     if args.pipeline == "iap":
-        bams = (
+        bam_files = (
             set(glob.glob("{}/**/*.realigned.bam".format(args.inputfolder), recursive=True))
             - set(glob.glob("{}/[eE]xome[dD]epth*/**/*.realigned.bam".format(args.inputfolder), recursive=True))
         )
     elif args.pipeline == "nf":
-        bams = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)
+        bam_files = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)
 
-    print("Number of BAM files = "+str(len(bams)))
+    print("Number of BAM files = "+str(len(bam_files)))
 
-    if bams:
+    if bam_files:
         os.system("echo \"{user} {today}\tExomeDepth reanalysis performed\" >> {inputfolder}/logbook.txt".format(
             user=user, today=today, inputfolder=args.inputfolder)
         )
@@ -147,11 +147,11 @@ if __name__ == "__main__":
     for upd_file in glob.glob(f"{args.inputfolder}/upd/*.igv", recursive=True):
         upd_files.append(os.path.basename(upd_file))
 
-    if any(len(lst) != len(bams) for lst in [snv_vcf_files, baf_files]):
+    if any(len(file_list) != len(bam_files) for file_list in [snv_vcf_files, baf_files]):
         sys.exit((
             "unequal number of files found: bams={0}, snvVCF={1}, baf={2}"
         ).format(
-            len(bams), len(snv_vcf_files), len(baf_files)
+            len(bam_files), len(snv_vcf_files), len(baf_files)
         ))
 
     """ Check if previous exomedepth analysis is already present """
@@ -254,9 +254,9 @@ if __name__ == "__main__":
         cnv_vcf_files.append(os.path.basename(item[3]))
         igv_files.append(os.path.basename(item[4]))
 
-    bam_files = []
-    for bam in bams:
-        bam_files.append(os.path.basename(bam))
+    bam_file_basenames = []
+    for bam in bam_files:
+        bam_file_basenames.append(os.path.basename(bam))
 
     action = (
         "python {0} family_igv {1} {2} {3} --bam_files {4} "
@@ -267,7 +267,7 @@ if __name__ == "__main__":
         args.outputfolder,
         args.pedfile,
         args.runid,
-        " ".join(bam_files),
+        " ".join(bam_file_basenames),
         " ".join(snv_vcf_files),
         " ".join(cnv_vcf_files),
         " ".join(igv_files),
