@@ -239,9 +239,18 @@ def return_vcf_stats(vcf):
 
 
 def write_log_stats(
-        stats_log_suffix, vcf_suffix, qc_status, correlation, del_dup_ratio,
-        number_calls, output, model, sample, refset, gender
-        ):
+        stats_log_suffix,
+        vcf_suffix,
+        qc_status,
+        correlation,
+        del_dup_ratio,
+        number_calls,
+        output,
+        model,
+        sample,
+        refset,
+        gender
+     ):
 
     sample_model_log_file = (
         "{output}/{model}_{sample}{stats_log_suffix}stats.log"
