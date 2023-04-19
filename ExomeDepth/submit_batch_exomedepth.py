@@ -239,20 +239,20 @@ if __name__ == "__main__":
         write_file_summary.write(utils.utils.exomedepth_summary(logs))
 
     """ Make single sample IGV sessions for all samples """
-    for item in sampleinfo:
+    for analysis in sampleinfo:
         action = "python {0} single_igv {1} {2} {3} {4} --bam {5}".format(
-            settings.igv_xml, args.outputfolder, item[0], args.runid, item[2], item[1]
+            settings.igv_xml, args.outputfolder, analysis[0], args.runid, analysis[2], analysis[1]
         )
-        if item[0] in suffix_dic:
+        if analysis[0] in suffix_dic:
             action = f"{action} --reanalysis {args.reanalysis}"
         os.system(action)
 
     """ Make family IGV session(s)"""
     cnv_vcf_files = []
     igv_files = []
-    for item in sampleinfo:
-        cnv_vcf_files.append(os.path.basename(item[3]))
-        igv_files.append(os.path.basename(item[4]))
+    for analysis in sampleinfo:
+        cnv_vcf_files.append(os.path.basename(analysis[3]))
+        igv_files.append(os.path.basename(analysis[4]))
 
     bam_file_basenames = []
     for bam in bam_files:
