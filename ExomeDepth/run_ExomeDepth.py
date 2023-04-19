@@ -232,7 +232,7 @@ def multiprocess_call(multiprocess_list):
     os.system(action)
 
 
-def return_vcf_stats(vcf):
+def get_vcf_stats(vcf):
     stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
     correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
     return correlation, del_dup_ratio, number_calls
@@ -334,7 +334,7 @@ def call_cnv(args):
             run=args.run,
             vcf_suffix=vcf_suffix
         )
-        correlation, del_dup_ratio, number_calls = return_vcf_stats(vcf)
+        correlation, del_dup_ratio, number_calls = get_vcf_stats(vcf)
 
         write_log_stats(
             stats_log_suffix, vcf_suffix, qc_status, correlation, del_dup_ratio,
