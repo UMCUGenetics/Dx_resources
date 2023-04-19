@@ -92,8 +92,8 @@ def make_single_igv_file(args, sample_id, statistic, igv_extension, vcf_extensio
         'sample_id': sample_id,
         'fontsize': args.fontsize
     }
-    new_file = template_file.substitute(substitute_dic)
-    return new_file
+    vcf_file = template_file.substitute(substitute_dic)
+    return vcf_file
 
 
 def make_single_igv_session(args):
@@ -196,14 +196,15 @@ def make_family_igv_session(args):
     for sample in samples:
         if len(samples[sample]['parents']) == 2:  # Sample = child both with parents
             familyid = samples[sample]['family']
-            child = sample
             father = samples[sample]['parents'][0]
             mother = samples[sample]['parents'][1]
-            if child in "".join(args.bam_files):  # Makes sure sample in within analysis, not only in PED file
+            joined_bams = "".join(args.bam_files)
+            if sample in joined_bams and father in joined_bams and mother in joined_bams:  
+                # Makes sure sample, father, and mother are in within analysis, not only in PED file
                 for statistic in settings.igv_settings:
-                    session = "FAM{0}_{1}_{2}_{3}_igv.xml".format(familyid, child, statistic, args.runid)
+                    session = "FAM{0}_{1}_{2}_{3}_igv.xml".format(familyid, sample, statistic, args.runid)
                     with open(f"{args.output}/{session}", "w") as family_file:
-                        family_file.write(make_family_igv_file(args, familyid, child, father, mother, statistic))
+                        family_file.write(make_family_igv_file(args, familyid, sample, father, mother, statistic))
 
 
 if __name__ == "__main__":
@@ -241,32 +242,32 @@ if __name__ == "__main__":
     parser_family.add_argument(
         '--bam_files',
         nargs='+',
-        help='full path to BAM files of all family members of child (space seperated)'
+        help='full path to BAM files of all family members including child and parents (space seperated)'
     )
     parser_family.add_argument(
         '--snv_vcf_files',
         nargs='+',
-        help='full path to GATK snv VCF files of all family members of child (space seperated)'
+        help='full path to GATK snv VCF files of all family members including child and parents (space seperated)'
     )
     parser_family.add_argument(
         '--cnv_vcf_files',
         nargs='+',
-        help='full path to CNV VCF files of all family members of child (space seperated)'
+        help='full path to CNV VCF files of all family members including child and parents (space seperated)'
     )
     parser_family.add_argument(
         '--igv_files',
         nargs='+',
-        help='full path to igv tracks all family members of child (space seperated)'
+        help='full path to igv tracks all family members including child and parents (space seperated)'
     )
     parser_family.add_argument(
         '--upd_files',
         nargs='+',
-        help='full path to UPD tracks of all family members of child (space seperated)'
+        help='full path to UPD tracks of all family members including child and parents (space seperated)'
     )
     parser_family.add_argument(
         '--baf_files',
         nargs='+',
-        help='full path to BAF tracks of all family members of child (space seperated)'
+        help='full path to BAF tracks of all family members including child and parents (space seperated)'
     )
     parser_family.add_argument(
         '--reanalysis',
