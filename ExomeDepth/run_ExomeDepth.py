@@ -62,7 +62,7 @@ def get_gender(bam, force=False):
             qc_status_gender = f"\tWARNING:GenderForcedTo{settings.force_gender}"
         if force:
             return gender, qc_status_gender
-        return gender
+        return gender, qc_status_gender
 
 
 def multiprocess_ref(mp_list):
@@ -107,7 +107,7 @@ def make_refset(args):
     """Get gender from chrX read count ratio."""
     ref_gender_dic = {}  # Dictionary with gender of each sample
     for bam in bams:
-        gender = get_gender(bam)
+        gender = get_gender(bam)[0]
         if gender != "unknown":
             if gender not in ref_gender_dic:
                 ref_gender_dic[gender] = [bam]
