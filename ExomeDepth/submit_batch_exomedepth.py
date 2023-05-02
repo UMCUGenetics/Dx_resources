@@ -24,30 +24,14 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     else:
         refset = database.functions.add_sample_to_db_and_return_refset_bam(bam_path, settings.refset)[2]
 
-    os.makedirs("{output}/{sample}".format(output=args.outputfolder, sample=sampleid), exist_ok=True)
-    os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
-
-    os.symlink(
-        "{bam}".format(bam=bam),
-        "{output}/{sample}/{bamfile}".format(output=args.outputfolder, bamfile=bamfile, sample=sampleid)
-    )
-
-    os.symlink(
-        "{bam}.bai".format(bam=bam),
-        "{output}/{sample}/{bamfile}.bai".format(output=args.outputfolder, bamfile=bamfile, sample=sampleid)
-    )
+    os.makedirs(f"{args.outputfolder}/{sampleid}", exist_ok=True)
+    os.chdir(f"{args.outputfolder}/{sampleid}")
+    os.symlink(f"{bam}", f"{args.outputfolder}/{sampleid}/{bamfile}")
+    os.symlink(f"{bam}.bai", f"{args.outputfolder}/{sampleid}/{bamfile}.bai")
 
     action = (
-        "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} "
-        "--refset {refset} --expectedCNVlength {length} --pipeline {pipeline}").format(
-            exomedepth=args.exomedepth,
-            output=args.outputfolder,
-            inputbam=bamfile,
-            run=run,
-            sample=sampleid,
-            refset=refset,
-            length=args.expectedCNVlength,
-            pipeline=args.pipeline
+        f"python {args.exomedepth} callcnv {args.outputfolder}/{sampleid} {bamfile} {run} {sampleid} "
+        "--refset {refset} --expectedCNVlength {args.expectedCNVlength} --pipeline {args.pipeline}"
         )
 
     if sampleid in gender_dic:
@@ -60,18 +44,18 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
 
     os.system(action)
 
-    os.chdir("{output}".format(output=args.outputfolder))
+    os.chdir(f"{args.outputfolder}")
 
-    os.makedirs("{output}/logs".format(output=args.outputfolder), exist_ok=True)
-    os.makedirs("{output}/igv_tracks".format(output=args.outputfolder), exist_ok=True)
-    os.makedirs("{output}/UMCU/".format(output=args.outputfolder), exist_ok=True)
-    os.makedirs("{output}/HC/".format(output=args.outputfolder), exist_ok=True)
+    os.makedirs(f"{args.outputfolderoutput}/logs", exist_ok=True)
+    os.makedirs(f"{args.outputfolder}/igv_tracks", exist_ok=True)
+    os.makedirs(f"{args.outputfolder}/UMCU/", exist_ok=True)
+    os.makedirs(f"{args.outputfolder}/HC/", exist_ok=True)
 
-    os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid=sampleid, output=args.outputfolder))
-    os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid=sampleid, output=args.outputfolder))
-    os.system("mv {output}/{sampleid}/HC*.vcf {output}/HC/".format(sampleid=sampleid, output=args.outputfolder))
-    os.system("mv {output}/{sampleid}/UMCU*.vcf {output}/UMCU/".format(sampleid=sampleid, output=args.outputfolder))
-    os.system("rm -r {output}/{sample}".format(output=args.outputfolder, sample=sampleid))
+    os.system(f"mv {args.outputfolder}/{sampleid}/*.log {args.outputfolder}/logs/")
+    os.system(f"mv {args.outputfolder}/{sampleid}/*.igv {args.outputfolder}/igv_tracks/")
+    os.system(f"mv {args.outputfolder}/{sampleid}/HC*.vcf {args.outputfolder}/HC/")
+    os.system(f"mv {args.outputfolder}/{sampleid}/UMCU*.vcf {args.outputfolder}/UMCU/")
+    os.system(f"rm -r {args.outputfolder}/{sampleid}")
 
     hc_cnv_vcf = f"{args.outputfolder}/HC/HC_{refset}_{sampleid}_{run}_exome_calls"
     ed_igv = f"{args.outputfolder}/igv_tracks/HC_{refset}_{sampleid}_{run}"
@@ -224,7 +208,7 @@ if __name__ == "__main__":
 
     """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
-        sampleinfo = pool.starmap(exomedepth_analysis, [[bam, args, gender_dic, suffix_dic, refset_dic] for bam in bams])
+        sampleinfo = pool.starmap(exomedepth_analysis, [[bam, args, gender_dic, suffix_dic, refset_dic] for bam in bam_files])
 
     """ Make CNV summary file """
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
