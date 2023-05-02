@@ -34,13 +34,13 @@ def parse_ped(ped_file):
 def parse_reanalysis_file(reanalysis_file):
     reanalysis = {}
     for line in reanalysis_file:
-        sampleid, refset, suffix = (
-            lambda sampleid, refset, suffix = None:(sampleid, refset, suffix)
+        sampleid, refset, tag = (
+            lambda sampleid, refset, tag = None:(sampleid, refset, tag)
         )(
             *line.strip().split()
         )
 
-        reanalysis[sampleid] = {"refset": refset, "suffix": suffix}
+        reanalysis[sampleid] = {"refset": refset, "tag": tag}
     return reanalysis
 
 
@@ -110,9 +110,9 @@ def make_single_igv_session(args):
 
     if args.reanalysis:
         reanalysis = parse_reanalysis_file(args.reanalysis)
-        if reanalysis[args.sampleid]['suffix']:
-            igv_extension = "{}_ref.igv".format(settings.reanalysis_dic[reanalysis[args.sampleid]['suffix']][1])
-            vcf_extension = "exome_calls_{}.vcf".format(settings.reanalysis_dic[reanalysis[args.sampleid]['suffix']][1])
+        if reanalysis[args.sampleid]['tag']:
+            igv_extension = "{}_ref.igv".format(settings.reanalysis_dic[reanalysis[args.sampleid]['tag']][1])
+            vcf_extension = "exome_calls_{}.vcf".format(settings.reanalysis_dic[reanalysis[args.sampleid]['tag']][1])
 
     for statistic in settings.igv_settings:
         write_file = open("{0}/{1}_{2}_{3}_igv.xml".format(
