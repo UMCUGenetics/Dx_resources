@@ -9,25 +9,26 @@ import settings
 
 def parse_ped(ped_file):
     samples = {}  # 'sample_id': {'family': 'fam_id', 'parents': ['sample_id', 'sample_id']}
-    for line in ped_file:
-        ped_data = line.strip().split()
-        family, sample, father, mother, sex, phenotype = ped_data
+    with open(ped_file, 'r') as ped_file_lines:
+        for line in ped_file_lines:
+            ped_data = line.strip().split()
+            family, sample, father, mother, sex, phenotype = ped_data
 
-        # Create samples
-        if sample not in samples:
-            samples[sample] = {'family': family, 'parents': [], 'children': []}
-        if father != '0' and father not in samples:
-            samples[father] = {'family': family, 'parents': [], 'children': []}
-        if mother != '0' and mother not in samples:
-            samples[mother] = {'family': family, 'parents': [], 'children': []}
+            # Create samples
+            if sample not in samples:
+                samples[sample] = {'family': family, 'parents': [], 'children': []}
+            if father != '0' and father not in samples:
+                samples[father] = {'family': family, 'parents': [], 'children': []}
+            if mother != '0' and mother not in samples:
+                samples[mother] = {'family': family, 'parents': [], 'children': []}
 
-        # Save sample relations
-        if father != '0':
-            samples[sample]['parents'].append(father)
-            samples[father]['children'].append(sample)
-        if mother != '0':
-            samples[sample]['parents'].append(mother)
-            samples[mother]['children'].append(sample)
+            # Save sample relations
+            if father != '0':
+                samples[sample]['parents'].append(father)
+                samples[father]['children'].append(sample)
+            if mother != '0':
+                samples[sample]['parents'].append(mother)
+                samples[mother]['children'].append(sample)
     return samples
 
 
@@ -237,7 +238,7 @@ if __name__ == "__main__":
 
     parser_family = subparser.add_parser('family_igv', help='Make family IGV session')
     parser_family.add_argument('output', help='Output folder')
-    parser_family.add_argument('ped_file', type=argparse.FileType('r'), help='full path to ped_file')
+    parser_family.add_argument('ped_file', help='full path to ped_file')
     parser_family.add_argument('runid', help='Run ID')
     parser_family.add_argument(
         '--bam_files',
@@ -283,7 +284,7 @@ if __name__ == "__main__":
         help='pipeline used for sample processing (nf = nexflow, IAP = illumina analysis pipeline'
     )
     parser_family.add_argument(
-        '--fontsize', default=10, type=int,
+        '--fontsize', default=settings.fontsize, type=int,
         help='fontzise within IGV session for headers [default 12]'
     )
     parser_family.set_defaults(func=make_family_igv_session)
