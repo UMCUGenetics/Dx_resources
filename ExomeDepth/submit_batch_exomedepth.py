@@ -9,6 +9,7 @@ from multiprocessing import Pool
 from datetime import date
 
 import database.functions
+from igv_xml_session import *
 import utils.utils
 import settings
 
@@ -30,8 +31,8 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     os.symlink(f"{bam}.bai", f"{args.outputfolder}/{sampleid}/{bamfile}.bai")
 
     action = (
-        f"python {args.exomedepth} callcnv {args.outputfolder}/{sampleid} {bamfile} {run} {sampleid} "
-        "--refset {refset} --expectedCNVlength {args.expectedCNVlength} --pipeline {args.pipeline}"
+        f"python {args.exomedepth} callcnv {args.outputfolder}/{sampleid} {bamfile} {run} {sampleid}"
+        f" --refset {refset} --expectedCNVlength {args.expectedCNVlength} --pipeline {args.pipeline}"
         )
 
     if sampleid in gender_dic:
@@ -46,7 +47,7 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
 
     os.chdir(f"{args.outputfolder}")
 
-    os.makedirs(f"{args.outputfolderoutput}/logs", exist_ok=True)
+    os.makedirs(f"{args.outputfolder}/logs", exist_ok=True)
     os.makedirs(f"{args.outputfolder}/igv_tracks", exist_ok=True)
     os.makedirs(f"{args.outputfolder}/UMCU/", exist_ok=True)
     os.makedirs(f"{args.outputfolder}/HC/", exist_ok=True)
@@ -242,24 +243,17 @@ if __name__ == "__main__":
     for bam in bam_files:
         bam_file_basenames.append(os.path.basename(bam))
 
-    action = (
-        "python {0} family_igv {1} {2} {3} --bam_files {4} "
-        "--snv_vcf_files {5} --cnv_vcf_files {6} --igv_files {7} "
-        "--upd_files {8} --baf_files {9}"
-    ).format(
-        settings.igv_xml,
-        args.outputfolder,
-        args.pedfile,
-        args.runid,
-        " ".join(bam_file_basenames),
-        " ".join(snv_vcf_files),
-        " ".join(cnv_vcf_files),
-        " ".join(igv_files),
-        " ".join(upd_files),
-        " ".join(baf_files)
-    )
-
-    if args.reanalysis:
-        f"{action} --reanalysis {args.reanalysis}"
-
-    os.system(action)
+    arguments = argparse.Namespace()
+    arguments.ped_file = args.pedfile
+    arguments.bam_files = bam_file_basenames
+    arguments.runid = args.runid
+    arguments.output = args.outputfolder
+    arguments.template_xml = settings.template_single_xml
+    arguments.upd_files = upd_files
+    arguments.baf_files = baf_files
+    arguments.igv_files = igv_files
+    arguments.snv_vcf_files = snv_vcf_files
+    arguments.cnv_vcf_files = cnv_vcf_files
+    arguments.fontsize = settings.fontsize
+    arguments.template_xml = settings.template_family_xml
+    make_family_igv_session(arguments)
