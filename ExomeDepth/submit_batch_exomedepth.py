@@ -111,7 +111,7 @@ if __name__ == "__main__":
     elif args.pipeline == "nf":
         bam_files = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)
 
-    print("Number of BAM files = "+str(len(bam_files)))
+    print(f"Number of BAM files = {len(bam_files)}")
 
     if bam_files:
         os.system("echo \"{user} {today}\tExomeDepth reanalysis performed\" >> {inputfolder}/logbook.txt".format(
