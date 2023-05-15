@@ -7,10 +7,10 @@ from string import Template
 import settings
 
 
-def parse_ped(ped_file):
+def parse_ped(ped_file_path):
     samples = {}  # 'sample_id': {'family': 'fam_id', 'parents': ['sample_id', 'sample_id']}
-    with open(ped_file, 'r') as ped_file_lines:
-        for line in ped_file_lines:
+    with open(ped_file_path, 'r') as ped_file:
+        for line in ped_file:
             ped_data = line.strip().split()
             family, sample, father, mother, sex, phenotype = ped_data
 
