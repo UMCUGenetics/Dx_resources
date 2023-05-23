@@ -35,13 +35,11 @@ def parse_ped(ped_file_path):
 def parse_reanalysis_file(reanalysis_file):
     reanalysis = {}
     for line in reanalysis_file:
-        sampleid, refset, tag = (
-            lambda sampleid, refset, tag = None:(sampleid, refset, tag)
-        )(
-            *line.strip().split()
-        )
-
-        reanalysis[sampleid] = {"refset": refset, "tag": tag}
+        sampleid, refset, *tag = line.strip().split()
+        if len(tag) == 1:
+            reanalysis[sampleid] = {"refset": refset, "tag": tag[0]}
+        else:
+            reanalysis[sampleid] = {"refset": refset, "tag": None}
     return reanalysis
 
 
