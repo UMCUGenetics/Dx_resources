@@ -62,7 +62,7 @@ def detect_merge(inputfolder, outputfile):
         if not any(keyword in bam.lower() for keyword in skip_file_keywords):  # Skip files in folder with keywords
             with pysam.AlignmentFile(bam, "rb") as bam_file:
                 """ Extract sample_ID """
-                sample_id = re.split('_|\.', bam.split("/")[-1])[0]
+                sample_id = re.split(r'_|\.', bam.split("/")[-1])[0]
                 """ Extract run ID """
                 run_id = bam.split("/")[-3]
                 if run_id == sample_id:  # Run is old IAP run
