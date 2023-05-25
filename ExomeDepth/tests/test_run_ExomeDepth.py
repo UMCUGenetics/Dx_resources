@@ -4,7 +4,7 @@ import os
 import pytest
 
 from run_ExomeDepth import get_sampleid
-from run_ExomeDepth import return_vcf_stats
+from run_ExomeDepth import get_vcf_stats
 from run_ExomeDepth import write_log_stats
 
 
@@ -28,13 +28,13 @@ def test_split_sampleid(sample_id, expected):
     assert sample_id == expected
 
 
-# Test return_vcf_stats function
+# Test get_vcf_stats function
 
 
 VCF_test_file = os.path.join(
     rootdir(), 'HC_RS-SSv7-2023-1_U224111CM2023D06051_230324_A01131_0312_AHGK2MDMXY_NICU_U224111_exome_calls.vcf'
 )
-assert return_vcf_stats(VCF_test_file) == (0.9923, 56.98, 86)
+assert get_vcf_stats(VCF_test_file) == (0.9923, 56.98, 86)
 
 # Test write_log_stats function
 
