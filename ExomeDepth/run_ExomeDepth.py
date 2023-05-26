@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
 import os
-import subprocess
 import re
 import argparse
 import glob
@@ -9,6 +8,7 @@ from multiprocessing import Pool
 import pysam
 from genologics.lims import Lims
 
+import vcf
 import database.functions
 import utils.utils
 
@@ -232,9 +232,15 @@ def multiprocess_call(multiprocess_list):
     os.system(action)
 
 
-def get_vcf_stats(vcf):
-    stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
-    correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
+def get_vcf_stats(vcf_file):
+    with open(vcf_file, 'r') as vcf_file:
+        vcf_reader = vcf.Reader(vcf_file)
+        for record in vcf_reader:
+            for sample in record.samples:  # assume single sample VCF
+                correlation = sample['CR']
+                del_dup_ratio = sample['PD']
+                number_calls = sample['TC']
+                break  # Assume single sample VCF. CR,PD,TC should be same in all record
     return correlation, del_dup_ratio, number_calls
 
 
@@ -322,7 +328,7 @@ def call_cnv(args):
 
     """Make log for stats of each model """
     for model in analysis:
-        vcf = (
+        vcf_file = (
             "{output}/{model}_{refset}_{sample}_{run}_{vcf_suffix}.vcf"
         ).format(
             output=args.output,
@@ -332,7 +338,7 @@ def call_cnv(args):
             run=args.run,
             vcf_suffix=vcf_suffix
         )
-        correlation, del_dup_ratio, number_calls = get_vcf_stats(vcf)
+        correlation, del_dup_ratio, number_calls = get_vcf_stats(vcf_file)
 
         write_log_stats(
             stats_log_suffix, vcf_suffix, qc_status, correlation, del_dup_ratio,
