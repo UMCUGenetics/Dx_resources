@@ -21,7 +21,8 @@ def exomedepth_summary(exomedepth_logs, stdout=None):
                 stats_dic["PD"].append(deldupratio)
                 stats_dic["TC"].append(totalcount)
                 sample_line = (
-                    "{sample};CM={model};REFSET={refset};GENDER={gender};CR={correl};PD={deldupratio};TC={totalcount}\t{warnings}\r"
+                    "{sample};CM={model};REFSET={refset};GENDER={gender};CR={correl}"
+                    "PD={deldupratio};TC={totalcount}\t{warnings}\r"
                 ).format(
                     sample=splitline[0],
                     model=splitline[1],
