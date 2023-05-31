@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
 import os
-import subprocess
 import re
 import argparse
 import glob
@@ -9,6 +8,7 @@ from multiprocessing import Pool
 import pysam
 from genologics.lims import Lims
 
+import vcf
 import database.functions
 import utils.utils
 
@@ -232,6 +232,56 @@ def multiprocess_call(multiprocess_list):
     os.system(action)
 
 
+def get_vcf_stats(vcf_file):
+    with open(vcf_file, 'r') as vcf_file:
+        vcf_reader = vcf.Reader(vcf_file)
+        for record in vcf_reader:
+            for sample in record.samples:  # assume single sample VCF
+                correlation = sample['CR']
+                del_dup_ratio = sample['PD']
+                number_calls = sample['TC']
+                break  # Assume single sample VCF. CR,PD,TC should be same in all record
+    return correlation, del_dup_ratio, number_calls
+
+
+def write_log_stats(
+        stats_log_suffix,
+        vcf_suffix,
+        qc_status,
+        correlation,
+        del_dup_ratio,
+        number_calls,
+        output,
+        model,
+        sample,
+        refset,
+        gender
+     ):
+
+    sample_model_log_file = (
+        "{output}/{model}_{sample}{stats_log_suffix}stats.log"
+    ).format(
+        output=output,
+        model=model,
+        stats_log_suffix=stats_log_suffix,
+        sample=sample
+    )
+
+    with open(sample_model_log_file, "w") as sample_model_log:
+        sample_model_log.write((
+            "{sample}\t{model}\t{refset}\t{gender}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n"
+        ).format(
+            sample=sample,
+            model=model,
+            refset=refset,
+            gender=gender,
+            correlation=correlation,
+            del_dup_ratio=del_dup_ratio,
+            number_calls=number_calls,
+            qc_status=qc_status
+        ))
+
+
 def call_cnv(args):
 
     """Call CNV from BAMs"""
@@ -241,11 +291,11 @@ def call_cnv(args):
     os.makedirs(output_folder, exist_ok=True)
 
     """Determine gender"""
-    qc_status_gender = ""
+    qc_status = ""
     if args.refset_gender:  # Used gender if used as input parameter.
         gender = args.refset_gender
     else:  # Otherwise determine based on chrX, Clarity LIMS, or force
-        gender, qc_status_gender = get_gender(bam, force=True)
+        gender, qc_status = get_gender(bam, force=True)
 
     if args.refset:  # Do not query database to query refset
         refset = args.refset
@@ -269,26 +319,16 @@ def call_cnv(args):
     with Pool(processes=int(args.simjobs)) as pool:
         pool.map(multiprocess_call, multiprocess_list, 1)
 
+    stats_log_suffix = "_"
+    vcf_suffix = "exome_calls"
+    if args.vcf_filename_suffix:
+        stats_log_suffix = "{0}{1}_".format(stats_log_suffix, args.vcf_filename_suffix)
+        vcf_suffix = "{}_{}".format(vcf_suffix, args.vcf_filename_suffix)
+        qc_status = "{qc_status}\tWARNING:{qc_suffix}".format(qc_status=qc_status, qc_suffix=args.vcf_filename_suffix)
+
     """Make log for stats of each model """
     for model in analysis:
-
-        stats_log_suffix = "_"
-        if args.vcf_filename_suffix:
-            stats_log_suffix = "{0}{1}_".format(stats_log_suffix, args.vcf_filename_suffix)
-
-        sample_model_log = open("{output}/{model}_{sample}{stats_log_suffix}stats.log".format(
-            output=args.output,
-            model=model,
-            stats_log_suffix=stats_log_suffix,
-            sample=args.sample
-            ), "w")
-
-        """ Get stats from VCF """
-        vcf_suffix = "exome_calls"
-        if args.vcf_filename_suffix:
-            vcf_suffix = "{}_{}".format(vcf_suffix, args.vcf_filename_suffix)
-
-        vcf = (
+        vcf_file = (
             "{output}/{model}_{refset}_{sample}_{run}_{vcf_suffix}.vcf"
         ).format(
             output=args.output,
@@ -298,33 +338,12 @@ def call_cnv(args):
             run=args.run,
             vcf_suffix=vcf_suffix
         )
+        correlation, del_dup_ratio, number_calls = get_vcf_stats(vcf_file)
 
-        stats = (subprocess.getoutput("tail -n1 {}".format(vcf)).split()[-1]).split(":")
-        correlation, del_dup_ratio, number_calls = float(stats[4]), float(stats[8]), int(stats[9])
-
-        qc_status = qc_status_gender
-        if args.qc_stats:
-            if(correlation < float(settings.correlation) or
-               number_calls < int(settings.number_calls[0]) or
-               number_calls > int(settings.number_calls[1]) or
-               del_dup_ratio < float(settings.del_dup_ratio[0]) or
-               del_dup_ratio > float(settings.del_dup_ratio[1])):
-                qc_status = "{qc_status}\tWARNING:QC_FAIL".format(qc_status=qc_status)
-        if args.vcf_filename_suffix:
-            qc_status = "{qc_status}\tWARNING:{qc_suffix}".format(qc_status=qc_status, qc_suffix=args.vcf_filename_suffix)
-
-        sample_model_log.write((
-            "{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n"
-        ).format(
-            sample=args.sample,
-            model=model,
-            refset=refset,
-            correlation=correlation,
-            del_dup_ratio=del_dup_ratio,
-            number_calls=number_calls,
-            qc_status=qc_status
-        ))
-        sample_model_log.close()
+        write_log_stats(
+            stats_log_suffix, vcf_suffix, qc_status, correlation, del_dup_ratio,
+            number_calls, args.output, model, args.sample, refset, gender
+        )
 
 
 def call_exomedepth_summary(args):
@@ -387,10 +406,6 @@ if __name__ == "__main__":
     parser_cnv.add_argument(
         "--expectedCNVlength", default=settings.expectedCNVlength,
         help="expected CNV length (basepairs) taken into account by ExomeDepth [default expectedCNVlength in settings.py]"
-    )
-    parser_cnv.add_argument(
-        "--qc_stats", action="store_true",
-        help="switch on QC check for exomedepth VCF stats (default = off)"
     )
     parser_cnv.set_defaults(func=call_cnv)
 
