@@ -77,6 +77,7 @@ chromosome_order = {
     "22": 21, "X": 22, "Y": 23, "MT": 24
 }
 force_gender = "male"
+fontsize = 10
 
 # Clarity settings
 monster_udf = "Dx Monsternummer"
