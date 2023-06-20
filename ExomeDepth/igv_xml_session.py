@@ -283,7 +283,7 @@ if __name__ == "__main__":
     )
     parser_family.add_argument(
         '--fontsize', default=settings.fontsize, type=int,
-        help='fontzise within IGV session for headers [default 12]'
+        help='fontsize within IGV session for headers [default 12]'
     )
     parser_family.set_defaults(func=make_family_igv_session)
     args = parser.parse_args()
