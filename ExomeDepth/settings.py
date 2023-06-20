@@ -71,6 +71,7 @@ chromosome_order = {
     '16': 15, '17': 16, '18': 17, '19': 18, '20': 19, '21': 20,
     '22': 21, 'X': 22, 'Y': 23, 'MT': 24
 }
+fontsize = 10
 
 # IGV session settings:
 template_single_xml = str(cwd)+"/templates/igv_session_template_single.xml"
