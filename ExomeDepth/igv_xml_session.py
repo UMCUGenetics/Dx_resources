@@ -229,7 +229,7 @@ if __name__ == "__main__":
         help='Tab delimited file with SampleID, RefsetID, and optional reanalysis female/male mode'
     )
     parser_single.add_argument(
-        '--fontsize', default=10, type=int,
+        '--fontsize', default=settings.fontsize, type=int,
         help='fontzise within IGV session for headers [default 12]'
     )
     parser_single.set_defaults(func=make_single_igv_session)
