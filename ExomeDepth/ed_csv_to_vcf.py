@@ -105,7 +105,7 @@ if __name__ == "__main__":
             new_record.REF = reference_base
 
             """Write type of call."""
-            new_record.ALT = ["."]
+            new_record.ALT = ["N"]
             if row_type == "duplication":
                 new_record.INFO['SVTYPE'] = "DUP"
             elif row_type == "deletion":
