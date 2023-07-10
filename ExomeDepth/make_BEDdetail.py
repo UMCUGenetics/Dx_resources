@@ -290,9 +290,9 @@ def make_bed_detail(args, event_dic, children, parents):
         outputfolder=args.outputfolder, outputfile=args.outputfile
     )
     with \
-         open(event_file_ucsc, "w") as event_file_ucsc, \
-         open(event_file_igv, "w") as event_file_igv, \
-         open(event_file_alissa, "w") as event_file_alissa:
+            open(event_file_ucsc, "w") as event_file_ucsc, \
+            open(event_file_igv, "w") as event_file_igv, \
+            open(event_file_alissa, "w") as event_file_alissa:
 
         """ Write header in BED file """
         event_file_ucsc.write((
