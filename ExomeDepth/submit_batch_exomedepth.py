@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
         """ Rename relative paths in IGV sessions"""
         if not archivefolder:
-            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {archive_folder_exomedepth}/*xml".format(
+            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {archive_folder_exomedepth}/*xml".format(  # noqa: W605
                 archive_folder_exomedepth=archive_folder_exomedepth
             ))
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
             ))
 
         """ Copy CNV summary file into archive folder """
-        if(glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
+        if (glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
            inputfolder=args.inputfolder, runid=args.runid))):
             os.makedirs(
                 "{inputfolder}/QC/CNV/archive_{today}/".format(
