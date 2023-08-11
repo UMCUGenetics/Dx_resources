@@ -13,19 +13,21 @@ def exomedepth_summary(exomedepth_logs, stdout=None):
         with open(exomedepth_qc_file, 'r') as exomedepth_qc_lines:
             for line in exomedepth_qc_lines:
                 splitline = line.split()
-                correlation = float(splitline[3])
-                deldupratio = float(splitline[4])
-                totalcount = float(splitline[5])
-                warnings = splitline[6:]
+                correlation = float(splitline[4])
+                deldupratio = float(splitline[5])
+                totalcount = float(splitline[6])
+                warnings = splitline[7:]
                 stats_dic["CR"].append(correlation)
                 stats_dic["PD"].append(deldupratio)
                 stats_dic["TC"].append(totalcount)
                 sample_line = (
-                    "{sample};CM={model};REFSET={refset};CR={correl};PD={deldupratio};TC={totalcount}\t{warnings}\r"
+                    "{sample};CM={model};REFSET={refset};GENDER={gender};CR={correl};"
+                    "PD={deldupratio};TC={totalcount}\t{warnings}\r"
                 ).format(
                     sample=splitline[0],
                     model=splitline[1],
                     refset=splitline[2],
+                    gender=splitline[3],
                     correl="%.4f" % correlation,
                     deldupratio="%.2f" % deldupratio,
                     totalcount="%.0f" % totalcount,
@@ -61,7 +63,7 @@ def detect_merge(inputfolder, outputfile):
         if not any(keyword in bam.lower() for keyword in skip_file_keywords):  # Skip files in folder with keywords
             with pysam.AlignmentFile(bam, "rb") as bam_file:
                 """ Extract sample_ID """
-                sample_id = re.split('_|\.', bam.split("/")[-1])[0]
+                sample_id = re.split(r'_|\.', bam.split("/")[-1])[0]
                 """ Extract run ID """
                 run_id = bam.split("/")[-3]
                 if run_id == sample_id:  # Run is old IAP run

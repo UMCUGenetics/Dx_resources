@@ -35,7 +35,7 @@ reffile_repo = "/hpc/diaggen/software/production/Dx_tracks"
 reffile_dir = "{}/ExomeDepth".format(reffile_repo)
 
 # Reference set
-refset = "RS-SSv7-2023-2"               # Annotation for HC and UMCU refsets
+refset = "RS-SSv7-2023-4"               # Annotation for HC and UMCU refsets
 callingmodel_HC = "HC_SSv7-2021-1"      # High Confident track annotation
 callingmodel_UMCU = "UMCU"              # UMCU track annotation
 
@@ -77,11 +77,14 @@ chromosome_order = {
     "22": 21, "X": 22, "Y": 23, "MT": 24
 }
 force_gender = "male"
+fontsize = 10
 
 # Clarity settings
 monster_udf = "Dx Monsternummer"
 geslacht_udf = "Dx Geslacht"
+familie_udf = "Dx Familie status"
 gender_translation = {"vrouw": "female", "man": "male", "onbekend": "unknown"}
+family_translation = {"kind": "child", "ouder": "parent"}
 
 # IGV session settings:
 template_single_xml = str(cwd)+"/templates/igv_session_template_single.xml"

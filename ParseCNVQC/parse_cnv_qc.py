@@ -151,7 +151,7 @@ if __name__ == "__main__":
                 with open(qc_file, 'r') as qc_lines:
                     for line in qc_lines:
                         if "REFSET" in line:
-                            splitline = line.rstrip().split(";")
+                            splitline = line.rstrip().split("\t")[0].split(";")
                             count["total"] += 1
                             CR_passed = "Failed"
                             PD_passed = "Failed"
@@ -188,7 +188,7 @@ if __name__ == "__main__":
                             if QC_failed == "Failed":
                                 count["QC_failed"] += 1
                             sample_qc.append("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
-                                analysis, "\t".join(splitline[0:3]), CR, PD, TC, CR_passed, PD_passed, TC_passed, QC_failed)
+                                analysis, "\t".join(splitline[0:4]), CR, PD, TC, CR_passed, PD_passed, TC_passed, QC_failed)
                             )
 
             else:
@@ -203,10 +203,9 @@ if __name__ == "__main__":
     with open(output, 'w') as outputfile:
         outputfile.write("Note: The software that produced this file has not been validated for diagnostic use.\n\n")
         outputfile.write("###SAMPLE specific QC\n")
-        outputfile.write("Analysis\tSample\tHC\tREFSET\tCR\tPD\tTC\tCR_passed\tPD_passed\tTC_passed\tQC_passed\n")
+        outputfile.write("Analysis\tSample\tHC\tREFSET\tGENDER\tCR\tPD\tTC\tCR_passed\tPD_passed\tTC_passed\tQC_passed\n")
         for sample in sample_qc:
             outputfile.write("{}\n".format(sample))
-
         outputfile.write("\n###Run specific QC\n")
         outputfile.write("Run\tFailed%\tPassed%\t#SamplesProject\t#SamplesRun\n")
         for folder in folder_summary:
@@ -216,16 +215,16 @@ if __name__ == "__main__":
 
             failed_perc = float("%.2f" % ((total_failed/total_assesed) * 100))
             passed_perc = 100 - failed_perc
-            outputfile.write("{}\t{}\t{}\t{}\t{}").format(
+            outputfile.write("{}\t{}\t{}\t{}\t{}".format(
                 folder.split("/")[-1], failed_perc, passed_perc, int(total_assesed), int(total_run)
-            )
+            ))
             if total_run > 0:
                 if (total_assesed/total_run) < args.threshold:
-                    outputfile.write(
+                    outputfile.write((
                         "\tWARNING: number of samples within run is less than {}% of total in samplesheet."
                     ).format(
                         args.threshold * 100
-                    )
+                    ))
                     run_status["partial"].append(folder.split("/")[-1])
                 else:
                     run_status["full"].append(folder.split("/")[-1])

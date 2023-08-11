@@ -9,6 +9,7 @@ from multiprocessing import Pool
 from datetime import date
 
 import database.functions
+from igv_xml_session import *
 import utils.utils
 import settings
 
@@ -17,86 +18,56 @@ def exomedepth_analysis(bam, args, gender_dic, suffix_dic, refset_dic):
     bamfile = bam.split("/")[-1]
     sampleid = database.functions.get_sample_id(bam)
     bam_path = os.path.abspath(bam)
+    run = args.inputfolder.rstrip("/").split("/")[-1]
 
     if args.reanalysis and sampleid in refset_dic:  # Use refset in reanalysis argument file if provided in argument
         refset = refset_dic[sampleid]
     else:
         refset = database.functions.add_sample_to_db_and_return_refset_bam(bam_path, settings.refset)[2]
 
-    os.makedirs("{output}/{sample}".format(output=args.outputfolder, sample=sampleid), exist_ok=True)
-    os.chdir("{output}/{sample}".format(output=args.outputfolder, sample=sampleid))
-
-    os.symlink(
-        "{bam}".format(bam=bam),
-        "{output}/{sample}/{bamfile}".format(output=args.outputfolder, bamfile=bamfile, sample=sampleid)
-    )
-
-    os.symlink(
-        "{bam}.bai".format(bam=bam),
-        "{output}/{sample}/{bamfile}.bai".format(output=args.outputfolder, bamfile=bamfile, sample=sampleid)
-    )
+    os.makedirs(f"{args.outputfolder}/{sampleid}", exist_ok=True)
+    os.chdir(f"{args.outputfolder}/{sampleid}")
+    os.symlink(f"{bam}", f"{args.outputfolder}/{sampleid}/{bamfile}")
+    os.symlink(f"{bam}.bai", f"{args.outputfolder}/{sampleid}/{bamfile}.bai")
 
     action = (
-        "python {exomedepth} callcnv {output}/{sample} {inputbam} {run} {sample} "
-        "--refset {refset} --expectedCNVlength {length} --pipeline {pipeline}").format(
-            exomedepth=args.exomedepth,
-            output=args.outputfolder,
-            inputbam=bamfile,
-            run=args.inputfolder.rstrip("/").split("/")[-1],
-            sample=sampleid,
-            refset=refset,
-            length=args.expectedCNVlength,
-            pipeline=args.pipeline
+        f"python {args.exomedepth} callcnv {args.outputfolder}/{sampleid} {bamfile} {run} {sampleid}"
+        f" --refset {refset} --expectedCNVlength {args.expectedCNVlength} --pipeline {args.pipeline}"
         )
 
     if sampleid in gender_dic:
         gender = gender_dic[sampleid]
-        action = "{action} --refset_gender {gender}".format(action=action, gender=gender)
+        action = f"{action} --refset_gender {gender}"
 
     if sampleid in suffix_dic:
         suffix = suffix_dic[sampleid]
-        action = "{action} --vcf_filename_suffix {suffix}".format(action=action, suffix=suffix)
+        action = f"{action} --vcf_filename_suffix {suffix}"
 
     os.system(action)
 
-    os.chdir("{output}".format(output=args.outputfolder))
+    os.chdir(f"{args.outputfolder}")
 
-    os.makedirs("{output}/logs".format(output=args.outputfolder), exist_ok=True)
-    os.makedirs("{output}/igv_tracks".format(output=args.outputfolder), exist_ok=True)
-    os.makedirs("{output}/UMCU/".format(output=args.outputfolder), exist_ok=True)
-    os.makedirs("{output}/HC/".format(output=args.outputfolder), exist_ok=True)
+    os.makedirs(f"{args.outputfolder}/logs", exist_ok=True)
+    os.makedirs(f"{args.outputfolder}/igv_tracks", exist_ok=True)
+    os.makedirs(f"{args.outputfolder}/UMCU/", exist_ok=True)
+    os.makedirs(f"{args.outputfolder}/HC/", exist_ok=True)
 
-    os.system("mv {output}/{sampleid}/*.log {output}/logs/".format(sampleid=sampleid, output=args.outputfolder))
-    os.system("mv {output}/{sampleid}/*.igv {output}/igv_tracks/".format(sampleid=sampleid, output=args.outputfolder))
-    os.system("mv {output}/{sampleid}/HC*.vcf {output}/HC/".format(sampleid=sampleid, output=args.outputfolder))
-    os.system("mv {output}/{sampleid}/UMCU*.vcf {output}/UMCU/".format(sampleid=sampleid, output=args.outputfolder))
-    os.system("rm -r {output}/{sample}".format(output=args.outputfolder, sample=sampleid))
+    os.system(f"mv {args.outputfolder}/{sampleid}/*.log {args.outputfolder}/logs/")
+    os.system(f"mv {args.outputfolder}/{sampleid}/*.igv {args.outputfolder}/igv_tracks/")
+    os.system(f"mv {args.outputfolder}/{sampleid}/HC*.vcf {args.outputfolder}/HC/")
+    os.system(f"mv {args.outputfolder}/{sampleid}/UMCU*.vcf {args.outputfolder}/UMCU/")
+    os.system(f"rm -r {args.outputfolder}/{sampleid}")
 
-    return [sampleid, bamfile, refset]
+    hc_cnv_vcf = f"{args.outputfolder}/HC/HC_{refset}_{sampleid}_{run}_exome_calls"
+    ed_igv = f"{args.outputfolder}/igv_tracks/HC_{refset}_{sampleid}_{run}"
+    if sampleid in suffix_dic:
+        hc_cnv_vcf = f"{hc_cnv_vcf}_{suffix_dic[sampleid]}.vcf"
+        ed_igv = f"{ed_igv}_{suffix_dic[sampleid]}_ref.igv"
+    else:
+        hc_cnv_vcf = f"{hc_cnv_vcf}.vcf"
+        ed_igv = f"{ed_igv}_ref.igv"
 
-
-def parse_ped(ped_file):
-    samples = {}  # 'sample_id': {'family': 'fam_id', 'parents': ['sample_id', 'sample_id']}
-    for line in ped_file:
-        ped_data = line.strip().split()
-        family, sample, father, mother, sex, phenotype = ped_data
-
-        # Create samples
-        if sample not in samples:
-            samples[sample] = {'family': family, 'parents': [], 'children': []}
-        if father != '0' and father not in samples:
-            samples[father] = {'family': family, 'parents': [], 'children': []}
-        if mother != '0' and mother not in samples:
-            samples[mother] = {'family': family, 'parents': [], 'children': []}
-
-        # Save sample relations
-        if father != '0':
-            samples[sample]['parents'].append(father)
-            samples[father]['children'].append(sample)
-        if mother != '0':
-            samples[sample]['parents'].append(mother)
-            samples[mother]['children'].append(sample)
-    return samples
+    return [sampleid, bamfile, refset, hc_cnv_vcf, ed_igv]
 
 
 if __name__ == "__main__":
@@ -133,20 +104,40 @@ if __name__ == "__main__":
 
     """Find BAM files to be processed"""
     if args.pipeline == "iap":
-        bams = (
+        bam_files = (
             set(glob.glob("{}/**/*.realigned.bam".format(args.inputfolder), recursive=True))
             - set(glob.glob("{}/[eE]xome[dD]epth*/**/*.realigned.bam".format(args.inputfolder), recursive=True))
         )
     elif args.pipeline == "nf":
-        bams = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)
-    print("Number of BAM files = "+str(len(bams)))
+        bam_files = glob.glob("{}/bam_files/**/*.bam".format(args.inputfolder), recursive=True)
 
-    if bams:
+    print(f"Number of BAM files = {len(bam_files)}")
+
+    if bam_files:
         os.system("echo \"{user} {today}\tExomeDepth reanalysis performed\" >> {inputfolder}/logbook.txt".format(
             user=user, today=today, inputfolder=args.inputfolder)
         )
     else:
         sys.exit("no bam files detected")
+
+    snv_vcf_files = []
+    for snv_vcf_file in glob.glob(f"{args.inputfolder}/single_sample_vcf/*.vcf", recursive=True):
+        snv_vcf_files.append(os.path.basename(snv_vcf_file))
+
+    baf_files = []
+    for baf_file in glob.glob(f"{args.inputfolder}/baf/*.igv", recursive=True):
+        baf_files.append(os.path.basename(baf_file))
+
+    upd_files = []
+    for upd_file in glob.glob(f"{args.inputfolder}/upd/*.igv", recursive=True):
+        upd_files.append(os.path.basename(upd_file))
+
+    if any(len(file_list) != len(bam_files) for file_list in [snv_vcf_files, baf_files]):
+        sys.exit((
+            "unequal number of files found: bams={0}, snvVCF={1}, baf={2}"
+        ).format(
+            len(bam_files), len(snv_vcf_files), len(baf_files)
+        ))
 
     """ Check if previous exomedepth analysis is already present """
     if os.path.isdir(args.outputfolder):
@@ -166,7 +157,7 @@ if __name__ == "__main__":
 
         """ Rename relative paths in IGV sessions"""
         if not archivefolder:
-            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {archive_folder_exomedepth}/*xml".format(
+            os.system("sed -i 's/\"\.\.\//\"\.\.\/\.\.\//g' {archive_folder_exomedepth}/*xml".format(  # noqa: W605
                 archive_folder_exomedepth=archive_folder_exomedepth
             ))
 
@@ -177,7 +168,7 @@ if __name__ == "__main__":
             ))
 
         """ Copy CNV summary file into archive folder """
-        if(glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
+        if (glob.glob("{inputfolder}/QC/CNV/{runid}_exomedepth_summary.txt".format(
            inputfolder=args.inputfolder, runid=args.runid))):
             os.makedirs(
                 "{inputfolder}/QC/CNV/archive_{today}/".format(
@@ -195,7 +186,6 @@ if __name__ == "__main__":
     refset_dic = {}
     gender_dic = {}
     suffix_dic = {}
-    metadata_dic = {}
     if args.reanalysis:  # Use predetermined refset for each sample based on the reanalysis option input
         with open(args.reanalysis) as refset_file:
             for line in refset_file:
@@ -219,7 +209,7 @@ if __name__ == "__main__":
 
     """Start exomedepth re-analysis"""
     with Pool(processes=int(args.simjobs)) as pool:
-        sampleinfo = pool.starmap(exomedepth_analysis, [[bam, args, gender_dic, suffix_dic, refset_dic] for bam in bams])
+        sampleinfo = pool.starmap(exomedepth_analysis, [[bam, args, gender_dic, suffix_dic, refset_dic] for bam in bam_files])
 
     """ Make CNV summary file """
     logs = glob.glob("{outputfolder}/logs/HC*stats.log".format(outputfolder=args.outputfolder), recursive=True)
@@ -234,17 +224,36 @@ if __name__ == "__main__":
         write_file_summary.write(utils.utils.exomedepth_summary(logs))
 
     """ Make single sample IGV sessions for all samples """
-    for item in sampleinfo:
+    for analysis in sampleinfo:
         action = "python {0} single_igv {1} {2} {3} {4} --bam {5}".format(
-            settings.igv_xml, args.outputfolder, item[0], args.runid, item[2], item[1]
+            settings.igv_xml, args.outputfolder, analysis[0], args.runid, analysis[2], analysis[1]
         )
+        if analysis[0] in suffix_dic:
+            action = f"{action} --reanalysis {args.reanalysis}"
         os.system(action)
 
     """ Make family IGV session(s)"""
-    families = parse_ped(open(args.pedfile, "r"))
-    for item in sampleinfo:
-        if len(list(set(families[item[0]]["parents"]))) == 2:
-            action = "python {0} family_igv {1} {2} {3} {4} {5}".format(
-                settings.igv_xml, args.outputfolder, args.pedfile, args.runid, item[0], " ".join(bams)
-            )
-            os.system(action)
+    cnv_vcf_files = []
+    igv_files = []
+    for analysis in sampleinfo:
+        cnv_vcf_files.append(os.path.basename(analysis[3]))
+        igv_files.append(os.path.basename(analysis[4]))
+
+    bam_file_basenames = []
+    for bam in bam_files:
+        bam_file_basenames.append(os.path.basename(bam))
+
+    arguments = argparse.Namespace()
+    arguments.ped_file = args.pedfile
+    arguments.bam_files = bam_file_basenames
+    arguments.runid = args.runid
+    arguments.output = args.outputfolder
+    arguments.template_xml = settings.template_single_xml
+    arguments.upd_files = upd_files
+    arguments.baf_files = baf_files
+    arguments.igv_files = igv_files
+    arguments.snv_vcf_files = snv_vcf_files
+    arguments.cnv_vcf_files = cnv_vcf_files
+    arguments.fontsize = settings.fontsize
+    arguments.template_xml = settings.template_family_xml
+    make_family_igv_session(arguments)
