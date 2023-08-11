@@ -4,8 +4,8 @@ rawdatafolder = ''
 outputfolder = ''
 
 
-# Mail settings 
-email_to = [ 
+# Mail settings
+email_to = [
     '',
     '',
 ]

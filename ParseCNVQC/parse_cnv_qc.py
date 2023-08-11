@@ -151,7 +151,7 @@ if __name__ == "__main__":
                 with open(qc_file, 'r') as qc_lines:
                     for line in qc_lines:
                         if "REFSET" in line:
-                            splitline = line.rstrip().split(";")
+                            splitline = line.rstrip().split("\t")[0].split(";")
                             count["total"] += 1
                             CR_passed = "Failed"
                             PD_passed = "Failed"

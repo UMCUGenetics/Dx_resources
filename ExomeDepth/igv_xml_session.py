@@ -198,7 +198,7 @@ def make_family_igv_session(args):
             father = samples[sample]['parents'][0]
             mother = samples[sample]['parents'][1]
             joined_bams = "".join(args.bam_files)
-            if sample in joined_bams and father in joined_bams and mother in joined_bams:  
+            if sample in joined_bams and father in joined_bams and mother in joined_bams:
                 # Makes sure sample, father, and mother are in within analysis, not only in PED file
                 for statistic in settings.igv_settings:
                     session = "FAM{0}_{1}_{2}_{3}_igv.xml".format(familyid, sample, statistic, args.runid)
