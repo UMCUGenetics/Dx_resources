@@ -128,7 +128,7 @@ if __name__ == "__main__":
                 sample_section = False
                 for line in samplesheet:
                     if sample_section:
-                        for project in projects:
+                        for project in settings.projects:
                             if project in line.upper():
                                 number_samples_run += 1
                     if "Sample_ID" not in line:
