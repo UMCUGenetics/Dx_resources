@@ -188,7 +188,7 @@ if __name__ == "__main__":
                             if QC_failed == "Failed":
                                 count["QC_failed"] += 1
                             sample_qc.append("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
-                                analysis, "\t".join(splitline[0:4]), CR, PD, TC, CR_passed, PD_passed, TC_passed, QC_failed)
+                                analysis, "\t".join(splitline[0:333]), CR, PD, TC, CR_passed, PD_passed, TC_passed, QC_failed)
                             )
 
             else:
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     with open(output, 'w') as outputfile:
         outputfile.write("Note: The software that produced this file has not been validated for diagnostic use.\n\n")
         outputfile.write("###SAMPLE specific QC\n")
-        outputfile.write("Analysis\tSample\tHC\tREFSET\tGENDER\tCR\tPD\tTC\tCR_passed\tPD_passed\tTC_passed\tQC_passed\n")
+        outputfile.write("Analysis\tSample\tHC\tREFSET\tCR\tPD\tTC\tCR_passed\tPD_passed\tTC_passed\tQC_passed\n")
         for sample in sample_qc:
             outputfile.write("{}\n".format(sample))
         outputfile.write("\n###Run specific QC\n")
