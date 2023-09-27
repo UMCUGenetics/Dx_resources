@@ -35,8 +35,8 @@ reffile_repo = "/hpc/diaggen/software/production/Dx_tracks"
 reffile_dir = "{}/ExomeDepth".format(reffile_repo)
 
 # Reference set
-refset = "RS-SSv7-2023-4"               # Annotation for HC and UMCU refsets
-callingmodel_HC = "HC_SSv7-2021-1"      # High Confident track annotation
+refset = "RS-CREv4-2023-1"               # Annotation for HC and UMCU refsets
+callingmodel_HC = "HC_CREv4-2023-1"      # High Confident track annotation
 callingmodel_UMCU = "UMCU"              # UMCU track annotation
 
 analysis = {
