@@ -189,7 +189,7 @@ if __name__ == "__main__":
                             if QC_failed == "Failed":
                                 count["QC_failed"] += 1
                             sample_qc.append("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
-                                analysis, "\t".join(splitline[0:333]), CR, PD, TC, CR_passed, PD_passed, TC_passed, QC_failed)
+                                analysis, "\t".join(splitline[0:3]), CR, PD, TC, CR_passed, PD_passed, TC_passed, QC_failed)
                             )
 
             else:
