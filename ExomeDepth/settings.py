@@ -64,7 +64,7 @@ par2 = [154931044, 155260560]
 locus_y = "Y:2649520-59034050"
 locus_x = "X:2699520-154931044"
 ratio_y = [0.02, 0.12]
-ratio_x = [2.1, 3.6]
+ratio_x = [5.5, 7.5]
 normal_CN = {
     "female": {"auto": 2, "chrX": 2, "chrXpar": 2, "chrY": 0},
     "male": {"auto": 2, "chrX": 1, "chrXpar": 2, "chrY": 1}
