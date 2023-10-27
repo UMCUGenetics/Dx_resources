@@ -27,6 +27,8 @@ def make_merge_dic(merge_samples):
 
 def get_familystatus_clarity(sampleid):
     """Get family status from Clarity LIMS."""
+    if "-" in sampleid:
+        sampleid = sampleid.split("-")[0]
     lims_client = Lims(settings.clarity_baseuri, settings.clarity_username, settings.clarity_password)
     samples = lims_client.get_samples(udf={settings.monster_udf: sampleid})
     familystatus = []
