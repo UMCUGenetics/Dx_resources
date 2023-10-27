@@ -31,6 +31,8 @@ def get_sampleid(sample_id):
 def get_gender_clarity(bam):
     """Get sample gender from Clarity LIMS."""
     sample_id = get_sampleid(database.functions.get_sample_id(bam))
+    if "-" in sampleid:
+        sampleid = sampleid.split("-")[0]
     gender_translation = settings.gender_translation
     lims_client = Lims(settings.clarity_baseuri, settings.clarity_username, settings.clarity_password)
     samples = lims_client.get_samples(udf={settings.monster_udf: sample_id})
