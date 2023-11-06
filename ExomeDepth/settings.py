@@ -95,7 +95,7 @@ igv_settings = {"ratio": [-0.1, 1, 2.1], "log2ratio": [-2.5, 0, 2.5]}
 
 # Check VCF stats criteria
 correlation = 0.98
-number_calls = [35, 33300]
+number_calls = [35, 300]
 del_dup_ratio = [15, 85]
 
 reanalysis_dic = {
