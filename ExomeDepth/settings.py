@@ -35,7 +35,7 @@ reffile_repo = "/hpc/diaggen/software/production/Dx_tracks"
 reffile_dir = "{}/ExomeDepth".format(reffile_repo)
 
 # Reference set
-refset = "RS-CREv4-2023-1"               # Annotation for HC and UMCU refsets
+refset = "RS-CREv4-2023-2"               # Annotation for HC and UMCU refsets
 callingmodel_HC = "HC_CREv4-2023-1"      # High Confident track annotation
 callingmodel_UMCU = "UMCU"              # UMCU track annotation
 
@@ -64,7 +64,7 @@ par2 = [154931044, 155260560]
 locus_y = "Y:2649520-59034050"
 locus_x = "X:2699520-154931044"
 ratio_y = [0.02, 0.12]
-ratio_x = [2.1, 3.6]
+ratio_x = [5.5, 7.5]
 normal_CN = {
     "female": {"auto": 2, "chrX": 2, "chrXpar": 2, "chrY": 0},
     "male": {"auto": 2, "chrX": 1, "chrXpar": 2, "chrY": 1}
@@ -95,7 +95,7 @@ igv_settings = {"ratio": [-0.1, 1, 2.1], "log2ratio": [-2.5, 0, 2.5]}
 
 # Check VCF stats criteria
 correlation = 0.98
-number_calls = [35, 200]
+number_calls = [35, 300]
 del_dup_ratio = [15, 85]
 
 reanalysis_dic = {
