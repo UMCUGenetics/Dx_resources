@@ -256,8 +256,7 @@ def write_log_stats(
         output,
         model,
         sample,
-        refset,
-        gender
+        refset
      ):
 
     sample_model_log_file = (
@@ -271,12 +270,11 @@ def write_log_stats(
 
     with open(sample_model_log_file, "w") as sample_model_log:
         sample_model_log.write((
-            "{sample}\t{model}\t{refset}\t{gender}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n"
+            "{sample}\t{model}\t{refset}\t{correlation}\t{del_dup_ratio}\t{number_calls}{qc_status}\n"
         ).format(
             sample=sample,
             model=model,
             refset=refset,
-            gender=gender,
             correlation=correlation,
             del_dup_ratio=del_dup_ratio,
             number_calls=number_calls,
@@ -344,7 +342,7 @@ def call_cnv(args):
 
         write_log_stats(
             stats_log_suffix, vcf_suffix, qc_status, correlation, del_dup_ratio,
-            number_calls, args.output, model, args.sample, refset, gender
+            number_calls, args.output, model, args.sample, refset
         )
 
 
