@@ -39,11 +39,11 @@ def test_write_logstats(tmp_path):
     path = tmp_path / "logstats_folder"
     path.mkdir()
     logstats = path / "HC_TestSample_stats.log"
-    message = "TestSample\tHC\tRefset1\tfemale\t0.9923\t56.98\t86\tWARNNG:ThisIsATest"
+    message = "TestSample\tHC\tRefset1\t0.9923\t56.98\t86\tWARNNG:ThisIsATest"
 
     write_log_stats(
         "_", "exome_calls", "\tWARNNG:ThisIsATest", 0.9923, 56.98,
-        86, path, "HC", "TestSample", "Refset1", "female"
+        86, path, "HC", "TestSample", "Refset1"
     )
 
     assert message in logstats.read_text()
