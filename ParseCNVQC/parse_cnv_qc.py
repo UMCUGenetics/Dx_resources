@@ -63,8 +63,9 @@ def make_mail(today, daysago, attachment, run_status):
 
 def include_sample_number(folder, rawfolder, projects, warnings):
     """
-    Determine number of samples in run based on the SampleSheet.
-    Only includes samples that are in defined projects.
+    Determine number of samples in a run based on the SampleSheet.
+    Only includes samples that are in predefined projects as stated in settings file.
+    Includes a warning if Samplesheet.csv is not detected in the raw data folder
 
     Args:
         folder (string): full path to raw data folder
