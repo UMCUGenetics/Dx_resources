@@ -61,6 +61,7 @@ def make_mail(today, daysago, attachment, run_status):
     text = '{}</p></body></html>'.format(text)
     send_email(settings.email_from, settings.email_to, subject, text, attachment)
 
+
 def include_sample_number(folder, rawfolder, projects, warnings):
     """
     Determine number of samples in a run based on the SampleSheet.
@@ -80,6 +81,7 @@ def include_sample_number(folder, rawfolder, projects, warnings):
     """
     number_samples_run = 0
     lanes = []
+    lane_index = ""
     if os.path.exists("{}/SampleSheet.csv".format(folder)):
         with open("{}/SampleSheet.csv".format(folder), 'r') as samplesheet:
             sample_section = False
