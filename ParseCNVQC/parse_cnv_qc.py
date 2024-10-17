@@ -101,11 +101,9 @@ def include_sample_number(folder, rawfolder, projects, warnings):
     else:
         warnings.append("no samplesheet for run {}, assuming unknown number of samples in run".format(folder))
 
-    if number_samples_run == 0:
-        rawfolder[folder][1] += 0
-    else:  # If samples, there will be at least 1 lane.
+    # prevent division by zero.
+    if len(lanes) > 0:
         rawfolder[folder][1] += number_samples_run/len(lanes)
-
     return rawfolder, warnings
 
 
