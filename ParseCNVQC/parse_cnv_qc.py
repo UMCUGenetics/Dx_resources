@@ -62,7 +62,7 @@ def make_mail(today, daysago, attachment, run_status):
     send_email(settings.email_from, settings.email_to, subject, text, attachment)
 
 
-def include_sample_number(folder, rawfolder, projects, warnings):
+def get_number_samples_per_run_from_samplesheet(folder, rawfolder, projects, warnings):
     """
     Determine number of samples in a run based on the SampleSheet.
     Only includes samples that are in predefined projects as stated in settings file.
@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
     # Get number of samples for each run
     for folder in rawfolder:
-        rawfolder, warnings = include_sample_number(folder, rawfolder, settings.projects, warnings)
+        rawfolder, warnings = get_number_samples_per_run_from_samplesheet(folder, rawfolder, settings.projects, warnings)
 
     folder_summary = {}
     sample_qc = []
