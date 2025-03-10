@@ -7,6 +7,7 @@ cwd = "/hpc/diaggen/software/production/Dx_resources/ExomeDepth"
 clarity_baseuri = ""
 clarity_username = ""
 clarity_password = ""
+api_timeout = 120
 
 # R script for RefSet and CNV calling
 call_cnv_r = str(cwd)+"/Rscripts/Exomedepth_callCNVs.R"

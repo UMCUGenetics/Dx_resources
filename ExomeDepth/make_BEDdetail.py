@@ -8,7 +8,7 @@ from string import Template
 import statistics
 import vcf
 
-from genologics.lims import Lims
+import genologics.lims
 
 import settings
 
@@ -25,12 +25,11 @@ def make_merge_dic(merge_samples):
     return merge_dic
 
 
-def get_familystatus_clarity(sampleid):
+def get_familystatus_clarity(sampleid, lims):
     """Get family status from Clarity LIMS."""
     if "-" in sampleid:
         sampleid = sampleid.split("-")[0]
-    lims_client = Lims(settings.clarity_baseuri, settings.clarity_username, settings.clarity_password)
-    samples = lims_client.get_samples(udf={settings.monster_udf: sampleid})
+    samples = lims.get_samples(udf={settings.monster_udf: sampleid})
     familystatus = []
     for sample in samples:
         familystatus.append(settings.family_translation[sample.udf[settings.familie_udf].lower()])
@@ -49,7 +48,7 @@ def get_familystatus_sampleid(sampleid):
         return "unknown"
 
 
-def slice_vcf(args, merge_dic):
+def slice_vcf(args, merge_dic, lims):
     vcf_files = subprocess.getoutput("find -L {input} -type f -iname \"*vcf\"".format(
         input=args.inputfolder
     )).split()
@@ -123,7 +122,7 @@ def slice_vcf(args, merge_dic):
                 """ Determine Child or Parent status based on sampleid. """
                 sampletype = get_familystatus_sampleid(sampleid)
                 if sampletype == "unknown":
-                    sampletype = get_familystatus_clarity(sampleid)
+                    sampletype = get_familystatus_clarity(sampleid, lims)
                 if sampletype == "unknown":
                     excluded_samples_file.write(
                         "Sample {sampleid} run {runid} is excluded as no child or parent status could be determined\n".format(
@@ -421,8 +420,11 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    lims = genologics.lims.Lims(settings.clarity_baseuri, settings.clarity_username, settings.clarity_password)
+    genologics.lims.TIMEOUT = settings.api_timeout
+
     if not os.path.isdir(args.outputfolder):
         os.makedirs("{outputfolder}".format(outputfolder=args.outputfolder), exist_ok=True)
     merge_dic = make_merge_dic(args.merge_samples)
-    event_dic, children, parents = slice_vcf(args, merge_dic)
+    event_dic, children, parents = slice_vcf(args, merge_dic, lims)
     make_bed_detail(args, event_dic, children, parents)
