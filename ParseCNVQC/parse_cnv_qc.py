@@ -82,8 +82,8 @@ def get_number_samples_per_run_from_samplesheet(raw_folder, raw_folders, project
     number_samples_run = 0
     lanes = []
     lane_index = ""
-    if os.path.exists("{}/SampleSheet.csv".format(raw_folder)):
-        with open("{}/SampleSheet.csv".format(raw_folder), 'r') as samplesheet:
+    if os.path.exists(f"{raw_folder}/SampleSheet.csv"):
+        with open(f"{raw_folder}/SampleSheet.csv", 'r') as samplesheet:
             sample_section = False
             for line in samplesheet:
                 if sample_section:
