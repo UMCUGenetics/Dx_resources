@@ -62,28 +62,28 @@ def make_mail(today, daysago, attachment, run_status):
     send_email(settings.email_from, settings.email_to, subject, text, attachment)
 
 
-def get_number_samples_per_run_from_samplesheet(folder, rawfolder, projects, warnings):
+def get_number_samples_per_run_from_samplesheet(raw_folder, raw_folders, projects, warnings):
     """
     Determine number of samples in a run based on the SampleSheet.
     Only includes samples that are in predefined projects as stated in settings file.
     Includes a warning if Samplesheet.csv is not detected in the raw data folder
 
     Args:
-        folder (string): full path to raw data folder
-        rawfolder (dict):
+        raw_folder (string): full path to raw data folder
+        raw_folders (dict):
             key: full path to raw data folder, values: list of all processed folder from run, total number of samples (int)
         projects (list): projectIDs to include in total sample calculation. Excludes i.e. non-dx projects in calculations
         warnings (list): List with warning messages
 
     Returns:
-        rawfolder (dict): rawfolder including sample count
+        raw_folders (dict): raw_folder paths including sample count
         warnings (list): message list including potential new warnings
     """
     number_samples_run = 0
     lanes = []
     lane_index = ""
-    if os.path.exists("{}/SampleSheet.csv".format(folder)):
-        with open("{}/SampleSheet.csv".format(folder), 'r') as samplesheet:
+    if os.path.exists("{}/SampleSheet.csv".format(raw_folder)):
+        with open("{}/SampleSheet.csv".format(raw_folder), 'r') as samplesheet:
             sample_section = False
             for line in samplesheet:
                 if sample_section:
@@ -99,12 +99,12 @@ def get_number_samples_per_run_from_samplesheet(folder, rawfolder, projects, war
                     header = [column for column in line.split(",")]
                     lane_index = header.index('Lane')
     else:
-        warnings.append("no samplesheet for run {}, assuming unknown number of samples in run".format(folder))
+        warnings.append("no samplesheet for run {}, assuming unknown number of samples in run".format(raw_folder))
 
     # prevent division by zero.
     if len(lanes) > 0:
-        rawfolder[folder][1] += number_samples_run/len(lanes)
-    return rawfolder, warnings
+        raw_folders[raw_folder][1] += number_samples_run/len(lanes)
+    return raw_folders, warnings
 
 
 if __name__ == "__main__":
