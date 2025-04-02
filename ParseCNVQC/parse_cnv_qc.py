@@ -87,6 +87,8 @@ def get_number_samples_per_run_from_samplesheet(raw_folder, raw_folders, project
             sample_section = False
             for line in samplesheet:
                 if sample_section:
+                    if "[" in line:
+                        break
                     for project in projects:
                         if project in line.upper():
                             number_samples_run += 1
