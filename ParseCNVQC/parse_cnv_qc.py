@@ -62,6 +62,53 @@ def make_mail(today, daysago, attachment, run_status):
     send_email(settings.email_from, settings.email_to, subject, text, attachment)
 
 
+def get_number_samples_per_run_from_samplesheet(raw_folder, raw_folders, projects, warnings):
+    """
+    Determine number of samples in a run based on the SampleSheet.
+    Only includes samples that are in predefined projects as stated in settings file.
+    Includes a warning if Samplesheet.csv is not detected in the raw data folder
+
+    Args:
+        raw_folder (string): full path to raw data folder
+        raw_folders (dict):
+            key: full path to raw data folder, values: list of all processed folder from run, total number of samples (int)
+        projects (list): projectIDs to include in total sample calculation. Excludes i.e. non-dx projects in calculations
+        warnings (list): List with warning messages
+
+    Returns:
+        raw_folders (dict): raw_folder paths including sample count
+        warnings (list): message list including potential new warnings
+    """
+    number_samples_run = 0
+    lanes = []
+    lane_index = ""
+    if os.path.exists(f"{raw_folder}/SampleSheet.csv"):
+        with open(f"{raw_folder}/SampleSheet.csv", 'r') as samplesheet:
+            sample_section = False
+            for line in samplesheet:
+                if sample_section:
+                    if "[" in line:
+                        break
+                    for project in projects:
+                        if project in line.upper():
+                            number_samples_run += 1
+                            if line.split(",")[lane_index] not in lanes:
+                                lanes.append(line.split(",")[lane_index])
+                if "Sample_ID" not in line:
+                    continue
+                else:
+                    sample_section = True
+                    header = [column for column in line.split(",")]
+                    lane_index = header.index('Lane')
+    else:
+        warnings.append("no samplesheet for run {}, assuming unknown number of samples in run".format(raw_folder))
+
+    # prevent division by zero.
+    if len(lanes) > 0:
+        raw_folders[raw_folder][1] += number_samples_run/len(lanes)
+    return raw_folders, warnings
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -121,23 +168,9 @@ if __name__ == "__main__":
                 rawfolder[run_path] = [[], 0]
             rawfolder[run_path][0].append(folder)
 
+    # Get number of samples for each run
     for folder in rawfolder:
-        number_samples_run = 0
-        if os.path.exists("{}/SampleSheet.csv".format(folder)):
-            with open("{}/SampleSheet.csv".format(folder), 'r') as samplesheet:
-                sample_section = False
-                for line in samplesheet:
-                    if sample_section:
-                        for project in settings.projects:
-                            if project in line.upper():
-                                number_samples_run += 1
-                    if "Sample_ID" not in line:
-                        continue
-                    else:
-                        sample_section = True
-        else:
-            warnings.append("no samplesheet for run {}, assuming unknown number of samples in run".format(folder))
-        rawfolder[folder][1] += number_samples_run
+        rawfolder, warnings = get_number_samples_per_run_from_samplesheet(folder, rawfolder, settings.projects, warnings)
 
     folder_summary = {}
     sample_qc = []
