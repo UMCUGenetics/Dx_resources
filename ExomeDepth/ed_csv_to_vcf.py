@@ -105,13 +105,15 @@ if __name__ == "__main__":
             new_record.REF = reference_base
 
             """Write type of call."""
-            new_record.ALT = ["N"]
             if row_type == "duplication":
                 new_record.INFO['SVTYPE'] = "DUP"
+                new_record.ALT = ["<DUP>"]
             elif row_type == "deletion":
                 new_record.INFO['SVTYPE'] = "DEL"
+                new_record.ALT = ["<DEL>"]
             else:
                 new_record.INFO['SVTYPE'] = "NaN"
+                new_record.ALT = ["N"]
 
             """Add QUAL and Filter fields """
             new_record.QUAL = "1000"  # as STRING
@@ -191,6 +193,7 @@ if __name__ == "__main__":
             new_record.INFO['END'] = row['end']
             new_record.INFO['NTARGETS'] = row['nexons']
             new_record.INFO['SVLEN'] = int(row['end']) - int(row['start'])  # Input is assumed 0-based
+            new_record.INFO['REFLEN'] = int(row['end']) - int(row['start'])  # Input is assumed 0-based
             new_record.INFO['CN'] = copynumber
             call_conrad = row['Conrad.hg19']
             if str(call_conrad) == "nan":
