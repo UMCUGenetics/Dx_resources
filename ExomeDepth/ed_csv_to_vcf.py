@@ -50,7 +50,7 @@ if __name__ == "__main__":
     new_record.samples[0].data = collections.namedtuple('CallData', format_keys)  # For single sample VCF only!
     format_vals = [record.samples[0].data[vx] for vx in range(len(format_keys))]
     format_dict = dict(zip(format_keys, format_vals))
-    for f in ['GT', 'CCN', 'BF', 'RT', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
+    for f in ['GT', 'CCN', 'BF', 'SM', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
         format_dict[f] = ""
     new_vals = [format_dict[x] for x in format_keys]
     new_record.samples[0].data = new_record.samples[0].data._make(new_vals)
@@ -201,12 +201,12 @@ if __name__ == "__main__":
             new_record.INFO['cCNV'] = call_conrad
 
             """Change FORMAT fields"""
-            for f in ['GT', 'CCN', 'BF', 'RT', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
+            for f in ['GT', 'CCN', 'BF', 'SM', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
                 format_dict[f] = ""
             format_dict['GT'] = str(genotype)
             format_dict['CCN'] = "%.2f" % (float(calc_copynumber))
             format_dict['BF'] = "%.2f" % (float(row['BF']))
-            format_dict['RT'] = "%.2f" % (float(ratio))
+            format_dict['SM'] = "%.2f" % (float(ratio))
             format_dict['CR'] = "%.4f" % (float(row['correlation']))
             format_dict['RS'] = row['refsize']
             format_dict['IH'] = "NaN"  # Inheritence is not build in yet
