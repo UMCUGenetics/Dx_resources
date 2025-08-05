@@ -204,7 +204,7 @@ def multiprocess_call(multiprocess_list):
     os.system(action)
 
     """Perform csv to vcf conversion """
-    inputcsv = "{0}/{1}_{2}_{3}_{4}_exome_calls.csv".format(
+    inputcsv = "{0}/{3}_{4}_{1}_{2}_exome_calls.csv".format(
         multiprocess_list["output_folder"],
         multiprocess_list["model"],
         multiprocess_list["refset"],
@@ -329,7 +329,7 @@ def call_cnv(args):
     """Make log for stats of each model """
     for model in analysis:
         vcf_file = (
-            "{output}/{model}_{refset}_{sample}_{run}_{vcf_suffix}.vcf"
+            "{output}/{sample}_{run}_{model}_{refset}_{vcf_suffix}.vcf"
         ).format(
             output=args.output,
             model=model,

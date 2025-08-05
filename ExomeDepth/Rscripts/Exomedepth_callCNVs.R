@@ -63,7 +63,7 @@ for (i in 1:nsamples) {
       n.bins.reduced = 10000
   )
 
-  file_name=paste(model, refset, sample_id, run_id, log_extension, sep="_")
+  file_name=paste(sample_id, run_id, model, refset, log_extension, sep="_")
   write_file = file(file_name, "w")
   line1=paste("Number of selected reference samples ",toString(length(my.choice[[1]])), sep="\t")
   write(line1, write_file, append=T)
@@ -97,10 +97,10 @@ for (i in 1:nsamples) {
   )
 
   str(all.exons)
-  output.file <- paste(model, refset, sample_id, run_id,'exome_calls.csv', sep = "_")
+  output.file <- paste(sample_id, run_id, model, refset, 'exome_calls.csv', sep = "_")
 
 
-  save(all.exons, file=paste(model, refset, sample_id, run_id, "all.exons", sep = "_"))
+  save(all.exons, file=paste(sample_id, run_id, model, refset, "all.exons", sep = "_"))
   refsize <- toString(length(my.choice[[1]]))
   correlation <- all.exons@refcorrelation
   print_array <- cbind(all.exons@CNV.calls, correlation, refsize)
@@ -152,4 +152,4 @@ correl <- all.exons@refcorrelation
 
 ref_df = data.frame(chroms, starts, ends, name, observed, log2ratio, freq, expected, min, max, correl)
 colnames(ref_df) <- c("chr", "start", "end", "locusID", "ratio_test", "log2ratio_test", "frequency_test", "ratio_expected", "ref_min.ratio", "ref_max.ratio", "refset_correlation")
-write.table(ref_df, paste(model, refset, sample_id, run_id, igv_extension, sep = "_"), sep="\t", row.names=FALSE, quote=FALSE)
+write.table(ref_df, paste(sample_id, run_id, model, refset, igv_extension, sep = "_"), sep="\t", row.names=FALSE, quote=FALSE)
