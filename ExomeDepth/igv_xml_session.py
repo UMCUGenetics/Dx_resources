@@ -72,9 +72,9 @@ def make_single_igv_file(args, sample_id, statistic, igv_extension, vcf_extensio
         'igv_umcu_ratio': igv_umcu_ratio,
         'baf': baf,
         'bam_path': bam_path,
-        'hc_cnv_vcf': "HC/{1}_{3}_{0}_{2}".format(args.refset, args.sampleid, args.runid, vcf_extension),  # HC CNV-VCF file
+        'hc_cnv_vcf': "HC/{1}_{2}_HC_{0}_{3}".format(args.refset, args.sampleid, args.runid, vcf_extension),  # HC CNV-VCF file
         'snv_vcf_id': "SNV/MNV:{0}".format(os.path.basename(snv_vcf)),  # SNV/MNV track ID in IGV
-        'hc_cnv_vcf_id': "CNV:{1}_{3}_HC_{0}_{2}".format(
+        'hc_cnv_vcf_id': "CNV:{1}_{2}_HC_{0}_{3}".format(
             args.refset, args.sampleid, args.runid, vcf_extension
         ),  # HC CNV -VCF track id in IGV
         'igv_hc_ratio_track': "{0}_{1}_test".format(igv_hc_ratio, statistic),  # Ratio track within HC CNV igv session
