@@ -50,7 +50,7 @@ if __name__ == "__main__":
     new_record.samples[0].data = collections.namedtuple('CallData', format_keys)  # For single sample VCF only!
     format_vals = [record.samples[0].data[vx] for vx in range(len(format_keys))]
     format_dict = dict(zip(format_keys, format_vals))
-    for f in ['GT', 'CCN', 'BF', 'SM', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
+    for f in ['GT', 'CN', 'BF', 'BC', 'SM', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
         format_dict[f] = ""
     new_vals = [format_dict[x] for x in format_keys]
     new_record.samples[0].data = new_record.samples[0].data._make(new_vals)
@@ -116,7 +116,7 @@ if __name__ == "__main__":
                 new_record.ALT = ["N"]
 
             """Add QUAL and Filter fields """
-            new_record.QUAL = "1000"  # as STRING
+            new_record.QUAL = "%.0f" % (float(row['BF']))  # BF will be used as QUAL
             new_record.FILTER = "PASS"
 
             """Determine genotype."""
@@ -194,18 +194,19 @@ if __name__ == "__main__":
             new_record.INFO['NTARGETS'] = row['nexons']
             new_record.INFO['SVLEN'] = int(row['end']) - int(row['start'])  # Input is assumed 0-based
             new_record.INFO['REFLEN'] = int(row['end']) - int(row['start'])  # Input is assumed 0-based
-            new_record.INFO['CN'] = copynumber
+            #new_record.INFO['CN'] = copynumber
             call_conrad = row['Conrad.hg19']
             if str(call_conrad) == "nan":
                 call_conrad = "NaN"
             new_record.INFO['cCNV'] = call_conrad
 
             """Change FORMAT fields"""
-            for f in ['GT', 'CCN', 'BF', 'SM', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
+            for f in ['GT', 'CN', 'BF', 'BC', 'SM', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
                 format_dict[f] = ""
             format_dict['GT'] = str(genotype)
-            format_dict['CCN'] = "%.2f" % (float(calc_copynumber))
+            format_dict['CN'] = "%.2f" % (float(calc_copynumber))
             format_dict['BF'] = "%.2f" % (float(row['BF']))
+            format_dict['BC'] = row['nexons']
             format_dict['SM'] = "%.2f" % (float(ratio))
             format_dict['CR'] = "%.4f" % (float(row['correlation']))
             format_dict['RS'] = row['refsize']
