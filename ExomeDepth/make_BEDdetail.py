@@ -158,14 +158,15 @@ def slice_vcf(args, merge_dic, lims):
                     deldupratio = float(record.genotype(sampleid)['PD'])
                     totalcalls = int(record.genotype(sampleid)['TC'])
                     refsamples = int(record.genotype(sampleid)['RS'])
-                    if "SM" in record.genotype(sampleid):  # New Franklin format
+
+                    if "SM" in record.FORMAT: # New Franklin format
                         ratio = float(record.genotype(sampleid)['SM'])
                     else:  # Old Alissa format
                         ratio = float(record.genotype(sampleid)['RT'])
-                    if "CCN" not in record.genotype(sampleid):  # New Franklin format
+                    if "CCN" not in record.FORMAT and "CN" in record.FORMAT: # New Franklin format
                         ccn = float(record.genotype(sampleid)['CN'])
                     else:   # Old Alissa format
-                        cn = float(record.genotype(sampleid)['CCN'])
+                        ccn = float(record.genotype(sampleid)['CCN'])
                     bf = float(record.genotype(sampleid)['BF'])
 
                     if(
