@@ -194,7 +194,6 @@ if __name__ == "__main__":
             new_record.INFO['NTARGETS'] = row['nexons']
             new_record.INFO['SVLEN'] = int(row['end']) - int(row['start'])  # Input is assumed 0-based
             new_record.INFO['REFLEN'] = int(row['end']) - int(row['start'])  # Input is assumed 0-based
-            #new_record.INFO['CN'] = copynumber
             call_conrad = row['Conrad.hg19']
             if str(call_conrad) == "nan":
                 call_conrad = "NaN"
