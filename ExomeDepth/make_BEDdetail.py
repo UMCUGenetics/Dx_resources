@@ -158,8 +158,8 @@ def slice_vcf(args, merge_dic, lims):
                     deldupratio = float(record.genotype(sampleid)['PD'])
                     totalcalls = int(record.genotype(sampleid)['TC'])
                     refsamples = int(record.genotype(sampleid)['RS'])
-                    ratio = float(record.genotype(sampleid)['RT'])
-                    ccn = float(record.genotype(sampleid)['CCN'])
+                    ratio = float(record.genotype(sampleid)['SM'])
+                    ccn = float(record.genotype(sampleid)['CN'])
                     bf = float(record.genotype(sampleid)['BF'])
 
                     if(
