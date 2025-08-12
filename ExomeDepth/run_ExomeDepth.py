@@ -204,12 +204,9 @@ def multiprocess_call(multiprocess_list):
     os.system(action)
 
     """Perform csv to vcf conversion """
-    inputcsv = "{0}/{3}_{4}_{1}_{2}_exome_calls.csv".format(
-        multiprocess_list["output_folder"],
-        multiprocess_list["model"],
-        multiprocess_list["refset"],
-        args.sample,
-        args.run
+    inputcsv = (
+        f"{multiprocess_list['output_folder']}/"
+        f"{args.sample}_{args.run}_{multiprocess_list['model']}_{multiprocess_list['refset']}_exome_calls.csv"
     )
 
     action = (
