@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import re
 from string import Template
 
 import settings
@@ -138,13 +139,9 @@ def make_family_igv_file(args, familyid, child, father, mother, statistic):
     hc_cnv_vcf_child_file = get_file(child, args.cnv_vcf_files)
     hc_cnv_vcf_father_file = get_file(father, args.cnv_vcf_files)
     hc_cnv_vcf_mother_file = get_file(mother, args.cnv_vcf_files)
-
-    if snv_vcf_child_file.endswith(".franklin.vcf"):
-        snv_vcf_child_file = snv_vcf_child_file.replace(".franklin.vcf", ".vcf")
-    if snv_vcf_father_file.endswith(".franklin.vcf"):
-        snv_vcf_father_file = snv_vcf_father_file.replace(".franklin.vcf", ".vcf")
-    if snv_vcf_mother_file.endswith(".franklin.vcf"):
-        snv_vcf_mother_file = snv_vcf_mother_file.replace(".franklin.vcf", ".vcf")
+    snv_vcf_child_file = re.sub('\.franklin\.vcf$', '.vcf', snv_vcf_child_file)
+    snv_vcf_father_file = re.sub('\.franklin\.vcf$', '.vcf', snv_vcf_father_file)
+    snv_vcf_mother_file = re.sub('\.franklin\.vcf$', '.vcf', snv_vcf_mother_file)
 
     #  Scale XML variables
     min_axis, mid_axis, max_axis = settings.igv_settings[statistic]  # Get axis values out of settings.py
