@@ -50,7 +50,7 @@ if __name__ == "__main__":
     new_record.samples[0].data = collections.namedtuple('CallData', format_keys)  # For single sample VCF only!
     format_vals = [record.samples[0].data[vx] for vx in range(len(format_keys))]
     format_dict = dict(zip(format_keys, format_vals))
-    for f in ['GT', 'CCN', 'BF', 'RT', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
+    for f in ['GT', 'CN', 'BF', 'SM', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC', 'BC']:
         format_dict[f] = ""
     new_vals = [format_dict[x] for x in format_keys]
     new_record.samples[0].data = new_record.samples[0].data._make(new_vals)
@@ -105,16 +105,18 @@ if __name__ == "__main__":
             new_record.REF = reference_base
 
             """Write type of call."""
-            new_record.ALT = ["N"]
             if row_type == "duplication":
                 new_record.INFO['SVTYPE'] = "DUP"
+                new_record.ALT = ["<DUP>"]
             elif row_type == "deletion":
                 new_record.INFO['SVTYPE'] = "DEL"
+                new_record.ALT = ["<DEL>"]
             else:
                 new_record.INFO['SVTYPE'] = "NaN"
+                new_record.ALT = ["N"]
 
             """Add QUAL and Filter fields """
-            new_record.QUAL = "1000"  # as STRING
+            new_record.QUAL = round(float(row['BF']))  # BF will be used as QUAL
             new_record.FILTER = "PASS"
 
             """Determine genotype."""
@@ -190,26 +192,28 @@ if __name__ == "__main__":
             """Change INFO fields"""
             new_record.INFO['END'] = row['end']
             new_record.INFO['NTARGETS'] = row['nexons']
-            new_record.INFO['SVLEN'] = int(row['end']) - int(row['start'])  # Input is assumed 0-based
-            new_record.INFO['CN'] = copynumber
+            sv_len = int(row['end']) - int(row['start'])  # Input is assumed 0-based
+            new_record.INFO['SVLEN'] = sv_len
+            new_record.INFO['REFLEN'] = sv_len
             call_conrad = row['Conrad.hg19']
             if str(call_conrad) == "nan":
                 call_conrad = "NaN"
             new_record.INFO['cCNV'] = call_conrad
 
             """Change FORMAT fields"""
-            for f in ['GT', 'CCN', 'BF', 'RT', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC']:
+            for f in ['GT', 'CN', 'BF', 'SM', 'CR', 'RS', 'IH', 'CM', 'PD', 'TC', 'BC']:
                 format_dict[f] = ""
             format_dict['GT'] = str(genotype)
-            format_dict['CCN'] = "%.2f" % (float(calc_copynumber))
-            format_dict['BF'] = "%.2f" % (float(row['BF']))
-            format_dict['RT'] = "%.2f" % (float(ratio))
-            format_dict['CR'] = "%.4f" % (float(row['correlation']))
+            format_dict['CN'] = f"{calc_copynumber:.2f}"
+            format_dict['BF'] = f"{row['BF']:.2f}"
+            format_dict['SM'] = f"{ratio:.2f}"
+            format_dict['CR'] = f"{row['correlation']:.4f}"
             format_dict['RS'] = row['refsize']
             format_dict['IH'] = "NaN"  # Inheritence is not build in yet
             format_dict['CM'] = args.calling_model
             format_dict['PD'] = perc_del
             format_dict['TC'] = total_calls
+            format_dict['BC'] = row['nexons']
             new_vals = [format_dict[x] for x in format_keys]
             new_record.samples[0].data = new_record.samples[0].data._make(new_vals)  # GT must be first in order of metadata!
             vcf_writer.write_record(new_record)
