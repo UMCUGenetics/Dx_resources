@@ -32,6 +32,8 @@ def get_familystatus_clarity(sampleid, lims):
     samples = lims.get_samples(udf={settings.monster_udf: sampleid})
     familystatus = []
     for sample in samples:
+        if not settings.familie_udf in sample.udf:
+            continue
         familystatus.append(settings.family_translation[sample.udf[settings.familie_udf].lower()])
     if len(set(familystatus)) == 1:
         return familystatus[0]
